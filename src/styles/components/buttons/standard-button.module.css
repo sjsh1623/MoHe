@@ -1,0 +1,32 @@
+.btn {
+    width: 100%;
+    max-width: 19.375rem;        /* 310px */
+    padding: 1rem 2rem;          /* 16px 32px */
+    background: #f5f5f5;
+    border: none;
+    border-radius: 3.125rem;     /* 50px */
+    font-size: 1rem;             /* 16px */
+    font-weight: 600;
+    color: #1e1e1e;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+    
+    /* Improve touch target */
+    min-height: 44px; /* iOS recommended minimum */
+    touch-action: manipulation;
+}
+
+.btn:hover {
+    background: #e8e8e8;
+}
+
+.btn:active {
+    transform: scale(0.98);
+    background: #d8d8d8;
+}
+
+/* Ensure accessibility */
+.btn:focus-visible {
+    outline: 2px solid #007aff;
+    outline-offset: 2px;
+}

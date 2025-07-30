@@ -1,0 +1,60 @@
+/* Mobile-first responsive stack component */
+.stack {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Consistent spacing scale for mobile */
+.spacing-xs {
+  gap: 0.5rem; /* 8px */
+}
+
+.spacing-sm {
+  gap: 0.75rem; /* 12px */
+}
+
+.spacing-md {
+  gap: 1rem; /* 16px */
+}
+
+.spacing-lg {
+  gap: 1.5rem; /* 24px */
+}
+
+.spacing-xl {
+  gap: 2rem; /* 32px */
+}
+
+/* Alignment options */
+.align-start {
+  align-items: flex-start;
+}
+
+.align-center {
+  align-items: center;
+}
+
+.align-end {
+  align-items: flex-end;
+}
+
+.align-stretch {
+  align-items: stretch;
+}
+
+/* Justify options */
+.justify-start {
+  justify-content: flex-start;
+}
+
+.justify-center {
+  justify-content: center;
+}
+
+.justify-end {
+  justify-content: flex-end;
+}
+
+.justify-between {
+  justify-content: space-between;
+}

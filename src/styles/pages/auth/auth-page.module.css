@@ -1,0 +1,25 @@
+/* Mobile-optimized auth page */
+.pageContainer {
+    min-height: 100dvh; /* Dynamic viewport height for mobile */
+    display: flex;
+    align-items: center;
+}
+
+.content {
+    width: 100%;
+    padding: 1rem 0;
+}
+
+.illustration {
+    width: min(80vw, 19.0625rem); /* Responsive but capped at 305px */
+    height: auto;
+    max-width: 100%;
+}
+
+.signupLink {
+    font-size: 0.8125rem; /* 13px */
+    color: #1e1e1e;
+    text-decoration: underline;
+    display: block;
+    text-align: center;
+}

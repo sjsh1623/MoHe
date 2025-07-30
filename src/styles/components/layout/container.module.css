@@ -1,0 +1,64 @@
+/* Mobile-optimized container with consistent padding */
+.container {
+  width: 100%;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+/* Responsive padding scale */
+.padding-none {
+  padding: 0;
+}
+
+.padding-sm {
+  padding: 0.75rem; /* 12px */
+}
+
+.padding-md {
+  padding: 1rem; /* 16px */
+}
+
+.padding-lg {
+  padding: 1.5rem; /* 24px */
+}
+
+.padding-xl {
+  padding: 2rem; /* 32px */
+}
+
+/* Max width constraints for mobile WebView */
+.max-width-mobile {
+  max-width: 100%;
+}
+
+.max-width-sm {
+  max-width: 480px;
+}
+
+.max-width-md {
+  max-width: 768px;
+}
+
+/* Mobile WebView safe area handling */
+@supports (padding: max(0px)) {
+  .container {
+    padding-left: max(var(--padding, 1rem), env(safe-area-inset-left));
+    padding-right: max(var(--padding, 1rem), env(safe-area-inset-right));
+  }
+  
+  .padding-sm {
+    --padding: 0.75rem;
+  }
+  
+  .padding-md {
+    --padding: 1rem;
+  }
+  
+  .padding-lg {
+    --padding: 1.5rem;
+  }
+  
+  .padding-xl {
+    --padding: 2rem;
+  }
+}
