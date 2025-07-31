@@ -13,7 +13,9 @@ export default function AuthPage() {
             <Stack spacing="lg" align="center" className={styles.content}>
                 <AuthHeader/>
                 <img className={styles.illustration} src={loginImage} alt="MOHE Login Illustration"/>
-                <StandardButton>MOHE 아이디로 로그인</StandardButton>
+                <StandardButton onClick={() => window.location.href = '/login'}>
+                    MOHE 아이디로 로그인
+                </StandardButton>
                 <SocialButtons/>
                 <Link className={styles.signupLink} to={"/signup"}>
                     회원가입

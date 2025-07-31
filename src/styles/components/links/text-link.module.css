@@ -1,0 +1,36 @@
+/* Text link component */
+.link {
+  font-family: 'Inter', system-ui, sans-serif;
+  text-decoration: underline;
+  cursor: pointer;
+  transition: color 0.2s ease;
+  
+  /* Improve touch target */
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  touch-action: manipulation;
+}
+
+/* Default variant */
+.default {
+  font-size: 0.75rem; /* 12px */
+  font-weight: 400;
+  color: #9E9E9E;
+  text-align: center;
+}
+
+.default:hover {
+  color: #777777;
+}
+
+.default:active {
+  color: #555555;
+}
+
+/* Focus state for accessibility */
+.link:focus-visible {
+  outline: 2px solid #007AFF;
+  outline-offset: 2px;
+  border-radius: 2px;
+}

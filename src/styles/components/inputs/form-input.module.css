@@ -1,0 +1,62 @@
+/* Mobile-optimized form input */
+.container {
+  width: 100%;
+}
+
+.label {
+  display: block;
+  font-size: 0.75rem; /* 12px */
+  font-family: 'Inter', system-ui, sans-serif;
+  font-weight: 500;
+  color: #000000;
+}
+
+.inputWrapper {
+  position: relative;
+  width: 100%;
+}
+
+.input {
+  width: 100%;
+  padding: 0.5rem 0;
+  font-size: 1rem; /* 16px */
+  font-family: 'Inter', system-ui, sans-serif;
+  font-weight: 500;
+  color: #000000;
+  background: transparent;
+  border: none;
+  outline: none;
+  
+  /* Prevent zoom on iOS */
+  font-size: 16px;
+}
+
+.input::placeholder {
+  color: #9E9E9E;
+}
+
+.underline {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background-color: #E8E8E8;
+  transition: background-color 0.2s ease;
+}
+
+.underlineFocused {
+  background-color: #007AFF; /* iOS blue */
+}
+
+/* Mobile WebView optimizations */
+.input:focus {
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Improve touch targets */
+.input {
+  min-height: 44px; /* iOS recommended minimum */
+  touch-action: manipulation;
+}
