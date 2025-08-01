@@ -1,6 +1,7 @@
 /* Mobile-optimized form input */
 .container {
   width: 100%;
+  /* No extra margin - let Stack handle spacing */
 }
 
 .label {
@@ -9,6 +10,7 @@
   font-family: 'Inter', system-ui, sans-serif;
   font-weight: 500;
   color: #000000;
+  margin-bottom: 0.5rem; /* Match login page tight spacing */
 }
 
 .inputWrapper {

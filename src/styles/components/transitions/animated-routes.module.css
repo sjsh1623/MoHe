@@ -1,0 +1,79 @@
+/* Animated route transitions for mobile WebView */
+.transitionGroup {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+}
+
+.page {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: white;
+  
+  /* Hardware acceleration for smooth transitions */
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  will-change: transform, opacity;
+}
+
+/* Enter animations (new page sliding in) */
+.pageEnter {
+  transform: translateX(100%);
+  opacity: 0.8;
+}
+
+.pageEnterActive {
+  transform: translateX(0);
+  opacity: 1;
+  transition: transform 300ms cubic-bezier(0.25, 0.46, 0.45, 0.94),
+              opacity 300ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* Exit animations (old page sliding out) */
+.pageExit {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+.pageExitActive {
+  transform: translateX(-100%);
+  opacity: 0.8;
+  transition: transform 300ms cubic-bezier(0.25, 0.46, 0.45, 0.94),
+              opacity 300ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* Mobile WebView optimizations */
+@media (max-width: 768px) {
+  .page {
+    /* Optimize for mobile performance */
+    -webkit-perspective: 1000px;
+    perspective: 1000px;
+  }
+}
+
+/* Accessibility: Reduce motion */
+@media (prefers-reduced-motion: reduce) {
+  .pageEnterActive,
+  .pageExitActive {
+    transition: none;
+  }
+  
+  .pageEnter,
+  .pageEnterActive {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  
+  .pageExit,
+  .pageExitActive {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}

@@ -1,0 +1,85 @@
+/* Mobile-optimized OTP input component */
+.container {
+  display: flex;
+  gap: 1rem; /* 12px gap between inputs */
+  justify-content: center;
+  align-items: center;
+  margin: 1rem 0;
+}
+
+.input {
+  width: 60px;
+  height: 60px;
+  border: 1px solid #C5C6CC;
+  border-radius: 12px;
+  background: white;
+  
+  /* Typography */
+  font-size: 1.5rem; /* 24px */
+  font-family: 'Inter', system-ui, sans-serif;
+  font-weight: 600;
+  color: #000000;
+  text-align: center;
+  
+  /* Remove default styling */
+  outline: none;
+  -webkit-appearance: none;
+  -moz-appearance: textfield;
+  
+  /* Transitions */
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  
+  /* Mobile optimizations */
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Focus state */
+.input:focus {
+  border-color: #007AFF;
+  box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+}
+
+/* Filled state */
+.input.filled {
+  border-color: #007AFF;
+  background: rgba(0, 122, 255, 0.05);
+}
+
+/* Error state (can be added via className) */
+.input.error {
+  border-color: #FF3B30;
+  box-shadow: 0 0 0 3px rgba(255, 59, 48, 0.1);
+}
+
+/* Hide number input spinners */
+.input::-webkit-outer-spin-button,
+.input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+.input[type=number] {
+  -moz-appearance: textfield;
+}
+
+/* Mobile responsive */
+@media (max-width: 480px) {
+  .input {
+    width: 55px;
+    height: 55px;
+    font-size: 1.25rem; /* 20px */
+  }
+}
+
+/* Animation for invalid input */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+.container.shake {
+  animation: shake 0.5s ease-in-out;
+}

@@ -1,15 +1,14 @@
 /* Mobile-optimized login page */
 .pageContainer {
-  min-height: 100vh;
   min-height: 100dvh;
   background: white;
-  padding: 1.5rem 1.875rem; /* 24px 30px to match Figma */
+  padding: 1.5rem 2rem; /* 24px 32px to match other pages */
   max-width: 440px; /* Match Figma design width */
   margin: 0 auto;
 }
 
 .header {
-  margin-bottom: 2rem;
+  margin-bottom: 1rem;
 }
 
 .content {

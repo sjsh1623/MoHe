@@ -32,8 +32,7 @@ export default function LoginPage() {
     };
 
     const handleForgotPassword = () => {
-        // TODO: Navigate to forgot password page
-        console.log('Forgot password clicked');
+        navigate('/forgot-password');
     };
 
     const isFormValid = formData.email.trim() && formData.password.trim();
@@ -44,13 +43,13 @@ export default function LoginPage() {
                 <BackButton onClick={handleBack}/>
             </div>
 
-            <Stack spacing="xl" className={styles.content}>
+            <Stack spacing="md" className={styles.content}>
                 <h1 className={styles.title}>
                     MOHE 계정으로<br/>
                     로그인
                 </h1>
 
-                <Stack spacing="lg">
+                <Stack spacing="sm">
                     <FormInput
                         label="이메일 주소"
                         type="email"
@@ -68,7 +67,7 @@ export default function LoginPage() {
                     />
                 </Stack>
 
-                <Stack spacing="lg" align="center" className={styles.actions}>
+                <Stack spacing="sm" align="center" className={styles.actions}>
                     <PrimaryButton
                         disabled={!isFormValid}
                         onClick={handleLogin}

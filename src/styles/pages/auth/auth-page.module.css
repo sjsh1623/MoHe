@@ -3,6 +3,10 @@
     min-height: 100dvh; /* Dynamic viewport height for mobile */
     display: flex;
     align-items: center;
+    padding: 1.5rem 2rem; /* 24px 32px - LOGIN PAGE STANDARD */
+    max-width: 440px;
+    margin: 0 auto;
+    background: white;
 }
 
 .content {
@@ -11,9 +15,9 @@
 }
 
 .illustration {
-    width: min(80vw, 19.0625rem); /* Responsive but capped at 305px */
+    width: 80%; /* Responsive but capped at 305px */
+    max-width: 440px;
     height: auto;
-    max-width: 100%;
 }
 
 .signupLink {
@@ -22,4 +26,25 @@
     text-decoration: underline;
     display: block;
     text-align: center;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    padding: 0.5rem;
+    min-height: 44px;
+    touch-action: manipulation;
+}
+
+/* Mobile WebView optimizations - LOGIN PAGE STANDARD */
+@media (max-width: 480px) {
+  .pageContainer {
+    padding: 2rem; /* LOGIN PAGE STANDARD */
+    max-width: 100%;
+  }
+}
+
+/* Improve touch interactions */
+* {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }

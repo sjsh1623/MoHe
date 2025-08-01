@@ -1,16 +1,14 @@
 import {createRoot} from 'react-dom/client'
 import '@/styles/global.css'
-import AuthPage from "@/pages/auth/index.jsx";
-import LoginPage from "@/pages/auth/LoginPage.jsx";
+import AnimatedRoutes from '@/components/ui/transitions/AnimatedRoutes.jsx';
 import React from 'react';
-import {BrowserRouter, Routes, Route} from 'react-router-dom';
+import {BrowserRouter} from 'react-router-dom';
 
 
 createRoot(document.getElementById('root')).render(
     <BrowserRouter>
-        <Routes>
-            <Route path="/" element={<AuthPage />} />
-            <Route path="/login" element={<LoginPage />} />
-        </Routes>
+        <div style={{ position: 'relative', width: '100%', height: '100vh', overflow: 'hidden' }}>
+            <AnimatedRoutes />
+        </div>
     </BrowserRouter>
 )

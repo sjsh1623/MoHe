@@ -1,0 +1,100 @@
+/* Mobile-optimized email verification page */
+.pageContainer {
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: white;
+  padding: 1.5rem 2rem; /* 24px 32px - LOGIN PAGE STANDARD */
+  max-width: 440px;
+  margin: 0 auto;
+}
+
+.header {
+  margin-bottom: 1rem; /* LOGIN PAGE STANDARD */
+}
+
+.content {
+  flex: 1;
+}
+
+.titleSection {
+  margin-top: 0; /* Tight spacing like login page */
+}
+
+.title {
+  font-size: 1.5rem; /* 24px */
+  font-family: 'Inter', system-ui, sans-serif;
+  font-weight: 600;
+  line-height: 1.2; /* 28.8px / 24px */
+  color: black;
+  margin: 0; /* LOGIN PAGE STANDARD */
+  max-width: 304px; /* Match Figma width */
+}
+
+.description {
+  font-size: 0.875rem; /* 14px */
+  font-family: 'Inter', system-ui, sans-serif;
+  font-weight: 400;
+  line-height: 1.2; /* 16.8px / 14px */
+  color: #363636;
+  margin: 0.5rem 0 0 0; /* Minimal margin like login page */
+}
+
+.otpSection {
+  margin-top: 1.5rem; /* Space before OTP input */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.errorState {
+  animation: shake 0.5s ease-in-out;
+}
+
+.errorMessage {
+  color: #FF3B30;
+  font-size: 0.875rem; /* 14px */
+  font-family: 'Inter', system-ui, sans-serif;
+  font-weight: 400;
+  text-align: center;
+  margin-top: 0.5rem;
+}
+
+
+.buttonSection {
+  margin-top: 2rem; /* Space before button */
+  padding-bottom: 2rem; /* Bottom padding for mobile */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+/* Shake animation for error state */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-10px); }
+  75% { transform: translateX(10px); }
+}
+
+/* Mobile WebView optimizations - LOGIN PAGE STANDARD */
+@media (max-width: 480px) {
+  .pageContainer {
+    padding: 2rem; /* LOGIN PAGE STANDARD */
+    max-width: 100%;
+  }
+  
+  .title {
+    font-size: 1.25rem; /* LOGIN PAGE STANDARD */
+    max-width: 100%;
+  }
+  
+  .description {
+    font-size: 0.8125rem; /* 13px */
+  }
+}
+
+/* Improve touch interactions */
+* {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
