@@ -68,9 +68,8 @@ export default function TermsAgreementPage() {
   };
 
   const handleNext = () => {
-    // TODO: Navigate to next step in signup flow
     console.log('Proceeding with agreements:', agreements);
-    // Example: navigate('/signup/profile') or similar
+    navigate('/password-setup');
   };
 
   // Check if required terms are agreed

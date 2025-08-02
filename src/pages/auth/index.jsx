@@ -1,9 +1,9 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import {useNavigate} from 'react-router-dom';
 import styles from '@/styles/pages/auth/auth-page.module.css';
 
-import { Container, Stack } from '@/components/ui/layout';
-import { StandardButton, SocialButtons } from '@/components/ui/buttons';
+import {Container, Stack} from '@/components/ui/layout';
+import {StandardButton, SocialButtons} from '@/components/ui/buttons';
 import AuthHeader from '@/components/layout/AuthHeader';
 import loginImage from '@/assets/image/login_image.png';
 
@@ -29,8 +29,8 @@ export default function AuthPage() {
                     MOHE 아이디로 로그인
                 </StandardButton>
                 <SocialButtons/>
-                <button 
-                    className={styles.signupLink} 
+                <button
+                    className={styles.signupLink}
                     onClick={handleSignup}
                     type="button"
                 >

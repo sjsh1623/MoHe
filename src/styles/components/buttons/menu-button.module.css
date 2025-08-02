@@ -1,0 +1,33 @@
+/* Menu button component */
+.menuButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+  
+  /* Improve touch target */
+  min-width: 44px;
+  min-height: 44px;
+  touch-action: manipulation;
+}
+
+.menuButton:hover {
+  opacity: 0.8;
+  transform: scale(1.05);
+}
+
+.menuButton:active {
+  transform: scale(0.95);
+}
+
+.menuButton:focus-visible {
+  outline: 2px solid #007AFF;
+  outline-offset: 2px;
+  border-radius: 4px;
+}

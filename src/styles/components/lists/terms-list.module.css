@@ -10,8 +10,6 @@
 }
 
 .allAgreeCheckbox {
-  background: #F8F9FA !important;
-  border-color: #E9ECEF !important;
   font-weight: 500 !important;
   margin-bottom: 1rem !important;
   border-radius: 8px !important;
@@ -19,7 +17,6 @@
 
 .individualTerms {
   background: white;
-  border: 1px solid #C8C8C8;
   border-radius: 8px;
   overflow: hidden; /* Ensure children don't overflow rounded corners */
 }
@@ -28,8 +25,4 @@
   border: none !important; /* Remove all borders from individual items */
   border-radius: 0 !important; /* Remove border radius from individual items */
   margin-bottom: 0 !important;
-}
-
-.individualTerms > *:not(:last-child) {
-  border-bottom: 1px solid #C8C8C8 !important; /* Add separator between items */
 }

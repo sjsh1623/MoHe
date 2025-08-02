@@ -43,7 +43,16 @@ body {
 }
 
 #root {
-    min-height: 100vh;
-    min-height: 100dvh;
     width: 100%;
+}
+
+/* Global container class for consistent padding across all pages */
+.container-padding {
+    padding: 0 32px; /* Desktop padding */
+}
+
+@media (max-width: 480px) {
+    .container-padding {
+        padding: 0 24px; /* Mobile padding */
+    }
 }

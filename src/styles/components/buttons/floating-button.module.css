@@ -1,0 +1,65 @@
+/* Floating action button */
+.floatingButton {
+  background: transparent;
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  width: 60px;
+  height: 60px;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  z-index: 1000;
+}
+
+.floatingButton:hover {
+  transform: scale(1.05);
+  box-shadow: 0 8px 24px rgba(91, 95, 239, 0.3);
+}
+
+.floatingButton:active {
+  transform: scale(0.95);
+}
+
+.background {
+  position: absolute;
+  width: 60px;
+  height: 60px;
+  background: #5B5FEF;
+  border-radius: 30px;
+  box-shadow: 0 4px 16px rgba(91, 95, 239, 0.2);
+}
+
+.content {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+}
+
+/* Mobile responsive */
+@media (max-width: 480px) {
+  .floatingButton {
+    bottom: 1.5rem;
+    right: 1.5rem;
+    width: 56px;
+    height: 56px;
+  }
+  
+  .background {
+    width: 56px;
+    height: 56px;
+    border-radius: 28px;
+  }
+}
+
+/* Touch interactions */
+.floatingButton {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}

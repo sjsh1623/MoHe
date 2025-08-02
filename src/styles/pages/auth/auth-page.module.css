@@ -35,6 +35,29 @@
     touch-action: manipulation;
 }
 
+.skipLink {
+    font-size: 0.8125rem; /* 13px */
+    color: #7D848D;
+    text-decoration: underline;
+    display: block;
+    text-align: center;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    padding: 0.5rem;
+    min-height: 44px;
+    touch-action: manipulation;
+}
+
+.skipLink:hover {
+    color: #666;
+}
+
+.skipLink:active {
+    color: #555;
+}
+
 /* Mobile WebView optimizations - LOGIN PAGE STANDARD */
 @media (max-width: 480px) {
   .pageContainer {

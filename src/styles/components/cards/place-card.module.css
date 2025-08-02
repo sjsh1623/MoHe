@@ -1,0 +1,234 @@
+/* Mobile-optimized place card component */
+.card {
+  background: white;
+  border-radius: 5.45vw; /* Responsive border radius */
+  overflow: hidden;
+  position: relative;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  width: 100%;
+  max-width: 54.55vw;
+}
+
+.imageContainer {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1; /* Force square aspect ratio */
+  max-width: 240px;
+  max-height: 240px;
+  overflow: hidden;
+}
+
+.image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 4.55vw; /* Responsive border radius */
+}
+
+.imagePlaceholder {
+  width: 100%;
+  height: 100%;
+  background: #f5f5f5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4.55vw;
+}
+
+.placeholderText {
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 0.875rem;
+  color: #7D848D;
+  text-align: center;
+}
+
+.bookmarkButton {
+  position: absolute;
+  top: 1.2vh;
+  right: 3.18vw;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  width: 7.73vw;
+  height: 7.73vh;
+  max-width: 34px;
+  max-height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease;
+  z-index: 2;
+}
+
+.bookmarkButton svg {
+  display: block;
+  position: relative;
+  z-index: 3;
+}
+
+.bookmarkButton:hover {
+  transform: scale(1.1);
+}
+
+.bookmarkButton:active {
+  transform: scale(0.95);
+}
+
+.bookmarkBg {
+  position: absolute;
+  width: 7.73vw;
+  height: 7.73vh;
+  max-width: 34px;
+  max-height: 34px;
+  background: rgba(27, 30, 40, 0.4);
+  border-radius: 50%;
+  backdrop-filter: blur(3.41vw);
+}
+
+.content {
+  padding: 2.29vh 2.27vw; /* Responsive padding */
+  display: flex;
+  flex-direction: column;
+  gap: 1.14vh;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.title {
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 1.125rem; /* 18px */
+  font-weight: 400;
+  line-height: 1.33; /* 24px */
+  letter-spacing: 0.5px;
+  color: #1B1E28;
+  margin: 0;
+  flex: 1;
+}
+
+.rating {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  flex-shrink: 0;
+}
+
+.rating svg {
+  display: block;
+  flex-shrink: 0;
+}
+
+.rating span {
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 0.9375rem; /* 15px */
+  font-weight: 400;
+  line-height: 1.33; /* 20px */
+  letter-spacing: 0.3px;
+  color: #1B1E28;
+}
+
+.locationRow {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.locationRow svg {
+  display: block;
+  flex-shrink: 0;
+}
+
+.location {
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 0.9375rem; /* 15px */
+  font-weight: 400;
+  line-height: 1.33; /* 20px */
+  letter-spacing: 0.3px;
+  color: #7D848D;
+}
+
+.avatarRow {
+  display: flex;
+  align-items: center;
+  gap: -6px; /* Overlap avatars */
+  margin-top: 0.25rem;
+}
+
+.avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid white;
+  object-fit: cover;
+  margin-left: -6px;
+}
+
+.avatar:first-child {
+  margin-left: 0;
+}
+
+.additionalCount {
+  width: 24px;
+  height: 24px;
+  background: #E5F4FF;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 0.6875rem; /* 11px */
+  font-weight: 400;
+  line-height: 1.18; /* 13px */
+  color: #1B1E28;
+  margin-left: -6px;
+  border: 2px solid white;
+}
+
+/* Compact variant for smaller cards */
+.card.compact {
+  width: 254px;
+}
+
+.card.compact .imageContainer {
+  aspect-ratio: 1 / 1; /* Keep square aspect ratio for compact variant too */
+}
+
+.card.compact .title {
+  font-weight: 500;
+}
+
+/* Mobile responsive */
+@media (max-width: 480px) {
+  .card {
+    width: 100%;
+    max-width: 300px;
+  }
+  
+  .imageContainer {
+    aspect-ratio: 1 / 1; /* Keep square on mobile too */
+  }
+  
+  .content {
+    padding: 0.75rem;
+  }
+  
+  .title {
+    font-size: 1rem;
+  }
+  
+  .rating span,
+  .location {
+    font-size: 0.875rem;
+  }
+}
+
+/* Touch interactions */
+* {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}

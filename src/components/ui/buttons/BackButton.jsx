@@ -1,11 +1,22 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import styles from '@/styles/components/buttons/back-button.module.css';
 
 export default function BackButton({ onClick, className = '', ...props }) {
+  const navigate = useNavigate();
+
+  const handleClick = (e) => {
+    if (onClick) {
+      onClick(e);
+    } else {
+      navigate(-1); // Go back to previous page
+    }
+  };
+
   return (
     <button 
       className={`${styles.button} ${className}`}
-      onClick={onClick}
+      onClick={handleClick}
       aria-label="뒤로 가기"
       {...props}
     >
