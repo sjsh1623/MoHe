@@ -31,22 +31,51 @@ export default function MBTISelectionPage() {
     const [sensing, setSensing] = useState(''); // S or N
     const [thinking, setThinking] = useState(''); // T or F
     const [judging, setJudging] = useState(''); // J or P
+    
+    // Animation state
+    const [isUpdating, setIsUpdating] = useState(false);
+    const [justCompleted, setJustCompleted] = useState(false);
 
 
     const handleLetterSelect = (category, letter) => {
+        // Check if MBTI was complete before this change
+        const wasComplete = extroversion && sensing && thinking && judging;
+        
+        let newExtroversion = extroversion;
+        let newSensing = sensing;
+        let newThinking = thinking;
+        let newJudging = judging;
+        
         switch (category) {
             case 'EI':
+                newExtroversion = letter;
                 setExtroversion(letter);
                 break;
             case 'SN':
+                newSensing = letter;
                 setSensing(letter);
                 break;
             case 'TF':
+                newThinking = letter;
                 setThinking(letter);
                 break;
             case 'JP':
+                newJudging = letter;
                 setJudging(letter);
                 break;
+        }
+        
+        // Check if MBTI becomes complete after this change
+        const willBeComplete = newExtroversion && newSensing && newThinking && newJudging;
+        
+        // Trigger update animation for any change
+        setIsUpdating(true);
+        setTimeout(() => setIsUpdating(false), 300);
+        
+        // Trigger completion animation if MBTI just became complete
+        if (!wasComplete && willBeComplete) {
+            setJustCompleted(true);
+            setTimeout(() => setJustCompleted(false), 600);
         }
     };
 
@@ -159,19 +188,19 @@ export default function MBTISelectionPage() {
                     </div>
 
                     {/* MBTI Display */}
-                    <div className={styles.mbtiDisplay}>
+                    <div className={`${styles.mbtiDisplay} ${isUpdating ? styles.update : ''} ${justCompleted ? styles.complete : ''}`}>
                         {getCurrentMBTI()}
                     </div>
 
                     {/* Description */}
-                    <div className={styles.description}>
+                    <div className={`${styles.description} ${isUpdating ? styles.fadeIn : ''}`}>
                         {getCurrentDescription()}
                     </div>
                 </div>
 
                 {/* Progress Bar */}
                 <div className={styles.progressContainer}>
-                    <div className={styles.progressStep}></div>
+                    <div className={`${styles.progressStep} ${styles.active}`}></div>
                     <div className={`${styles.progressStep} ${styles.active}`}></div>
                     <div className={styles.progressStep}></div>
                     <div className={styles.progressStep}></div>

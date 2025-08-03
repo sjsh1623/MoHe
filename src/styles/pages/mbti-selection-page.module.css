@@ -131,6 +131,15 @@
   margin: 20px 0 16px 42px;
   height: 30px;
   line-height: 1;
+  transition: all 0.3s ease;
+}
+
+.mbtiDisplay.update {
+  animation: gentleFadeIn 0.4s ease-out;
+}
+
+.mbtiDisplay.complete {
+  animation: completeFadeIn 0.6s ease-out;
 }
 
 /* Description */
@@ -144,6 +153,41 @@
   font-size: 15px;
   line-height: 1.67;
   white-space: pre-line;
+  transition: all 0.3s ease;
+}
+
+.description.fadeIn {
+  animation: softFadeIn 0.6s ease-out;
+}
+
+
+@keyframes gentleFadeIn {
+  0% {
+    opacity: 0.3;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes completeFadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes softFadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* Progress Bar */
