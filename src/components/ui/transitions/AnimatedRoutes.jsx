@@ -17,6 +17,7 @@ import HomePage from '@/pages/HomePage.jsx';
 import PlacesListPage from '@/pages/PlacesListPage.jsx';
 import PlaceDetailPage from '@/pages/PlaceDetailPage.jsx';
 import ProfileSettingsPage from '@/pages/ProfileSettingsPage.jsx';
+import ProfileEditPage from '@/pages/ProfileEditPage.jsx';
 
 // Navigation flow hierarchy (lower = earlier in flow)
 const ROUTE_HIERARCHY = {
@@ -30,8 +31,9 @@ const ROUTE_HIERARCHY = {
   '/password-setup': 5,
   '/home': 6,
   '/profile-settings': 7,
-  '/places': 8,
-  '/place': 9
+  '/profile-edit': 8,
+  '/places': 9,
+  '/place': 10
 };
 
 
@@ -97,7 +99,7 @@ export default function AnimatedRoutes() {
 
   const slideVariants = {
     initial: (direction) => ({
-      x: direction === 'forward' ? '-100%' : '100%', // Fixed direction
+      x: direction === 'forward' ? '100%' : '-100%', // Forward: right to left, Backward: left to right
       opacity: 1
     }),
     animate: {
@@ -105,7 +107,7 @@ export default function AnimatedRoutes() {
       opacity: 1
     },
     exit: (direction) => ({
-      x: direction === 'forward' ? '100%' : '-100%', // Fixed direction
+      x: direction === 'forward' ? '-100%' : '100%', // Forward: exit left, Backward: exit right
       opacity: 1
     })
   };
@@ -146,6 +148,7 @@ export default function AnimatedRoutes() {
             <Route path="/password-setup" element={<PasswordSetupPage />} />
             <Route path="/home" element={<HomePage />} />
             <Route path="/profile-settings" element={<ProfileSettingsPage />} />
+            <Route path="/profile-edit" element={<ProfileEditPage />} />
             <Route path="/places" element={<PlacesListPage />} />
             <Route path="/place/:id" element={<PlaceDetailPage />} />
           </Routes>
