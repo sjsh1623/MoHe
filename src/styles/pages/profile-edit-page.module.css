@@ -39,16 +39,25 @@ a {
     overflow: hidden;
 }
 
-.arrowBack {
-    position: absolute;
-    width: 30px;
-    height: 30px;
-    top: 30px;
-    left: 33px;
-    cursor: pointer;
+/* Header - matching PlacesListPage standard */
+.header {
     display: flex;
     align-items: center;
     justify-content: center;
+    padding: 25px 5px 10px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: white;
+    z-index: 100;
+}
+
+.header button {
+    position: absolute;
+    left: 10px;
+    top: 55%;
+    transform: translateY(-25%);
 }
 
 /* Profile Image Section */
@@ -56,7 +65,7 @@ a {
     position: absolute;
     width: 100%;
     height: 120px;
-    top: 120px;
+    top: 160px;
     left: 0;
     display: flex;
     justify-content: center;
@@ -80,7 +89,7 @@ a {
     position: absolute;
     width: 259px;
     height: 42px;
-    top: 280px;
+    top: 320px;
     left: 50%;
     transform: translateX(-50%);
 }
@@ -167,7 +176,7 @@ a {
 /* Save Button */
 .saveButtonContainer {
     position: absolute;
-    top: 340px;
+    top: 380px;
     left: 50%;
     transform: translateX(-50%);
     width: min(320px, 80vw);

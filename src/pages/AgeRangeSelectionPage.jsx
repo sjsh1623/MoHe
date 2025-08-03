@@ -1,22 +1,25 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styles from '@/styles/pages/age-range-selection-page.module.css';
+import BackButton from '@/components/ui/buttons/BackButton';
 
 export default function AgeRangeSelectionPage() {
   const navigate = useNavigate();
   const [selectedAge, setSelectedAge] = useState(null);
 
-  const handleBack = () => {
-    navigate(-1);
-  };
 
   const handleAgeSelect = (ageId) => {
     setSelectedAge(ageId);
   };
 
+  const isReady = () => {
+    return selectedAge !== null;
+  };
+
   const handleNext = () => {
+    if (!isReady()) return;
     console.log('Selected age range:', selectedAge);
-    navigate('/home');
+    navigate('/mbti-selection');
   };
 
   const handleSkip = () => {
@@ -27,20 +30,13 @@ export default function AgeRangeSelectionPage() {
   return (
     <div className={styles.container}>
       <div className={styles.content}>
-        {/* Back Button */}
-        <button className={styles.backButton} onClick={handleBack}>
-          <svg width="26" height="26" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <mask id="mask0_51_136" style={{maskType:"alpha"}} maskUnits="userSpaceOnUse" x="0" y="0" width="30" height="30">
-              <rect width="30" height="30" fill="#D9D9D9"/>
-            </mask>
-            <g mask="url(#mask0_51_136)">
-              <path d="M8.62 15.7853L16.1122 23.2691L15 24.375L5.625 15L15 5.625L16.1122 6.73094L8.62 14.2147H24.375V15.7853H8.62Z" fill="#1C1B1F"/>
-            </g>
-          </svg>
-        </button>
+        {/* Header */}
+        <header className={styles.header}>
+          <BackButton />
+        </header>
 
         {/* Header Text */}
-        <div className={styles.header}>
+        <div className={styles.contentHeader}>
           <h1 className={styles.title}>
             연령대를 알려주시면,<br />
             더 잘 맞춰드릴 수 있어요
@@ -135,7 +131,11 @@ export default function AgeRangeSelectionPage() {
         </div>
 
         {/* Next Button */}
-        <button className={styles.nextButton} onClick={handleNext}>
+        <button 
+          className={`${styles.nextButton} ${isReady() ? styles.ready : ''}`} 
+          onClick={handleNext}
+          disabled={!isReady()}
+        >
           다음
         </button>
 

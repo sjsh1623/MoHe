@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styles from '@/styles/pages/profile-edit-page.module.css';
+import BackButton from '@/components/ui/buttons/BackButton';
 
 export default function ProfileEditPage() {
   const navigate = useNavigate();
@@ -29,16 +30,10 @@ export default function ProfileEditPage() {
   return (
     <div className={styles.iphoneProMax}>
       <div className={styles.div}>
-        <div className={styles.arrowBack} onClick={handleBack}>
-          <svg width="26" height="26" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <mask id="mask0_51_136" style={{maskType:"alpha"}} maskUnits="userSpaceOnUse" x="0" y="0" width="30" height="30">
-              <rect width="30" height="30" fill="#D9D9D9"/>
-            </mask>
-            <g mask="url(#mask0_51_136)">
-              <path d="M8.62 15.7853L16.1122 23.2691L15 24.375L5.625 15L15 5.625L16.1122 6.73094L8.62 14.2147H24.375V15.7853H8.62Z" fill="#1C1B1F"/>
-            </g>
-          </svg>
-        </div>
+        {/* Header */}
+        <header className={styles.header}>
+          <BackButton />
+        </header>
         
         {/* Profile Image Section */}
         <div className={styles.profileSection}>
