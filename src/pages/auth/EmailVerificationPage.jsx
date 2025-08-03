@@ -49,8 +49,8 @@ export default function EmailVerificationPage() {
       
       // For demo, accept any 5-digit code
       if (code.length === 5) {
-        // Success - navigate to next step
-        navigate('/terms');
+        // Success - navigate to nickname setup
+        navigate('/nickname-setup');
       } else {
         setError('인증번호가 올바르지 않습니다. 다시 시도해주세요.');
       }
