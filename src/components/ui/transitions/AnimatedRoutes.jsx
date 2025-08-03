@@ -18,6 +18,7 @@ import PlacesListPage from '@/pages/PlacesListPage.jsx';
 import PlaceDetailPage from '@/pages/PlaceDetailPage.jsx';
 import ProfileSettingsPage from '@/pages/ProfileSettingsPage.jsx';
 import ProfileEditPage from '@/pages/ProfileEditPage.jsx';
+import AgeRangeSelectionPage from '@/pages/AgeRangeSelectionPage.jsx';
 
 // Navigation flow hierarchy (lower = earlier in flow)
 const ROUTE_HIERARCHY = {
@@ -30,10 +31,11 @@ const ROUTE_HIERARCHY = {
   '/terms': 4,
   '/password-setup': 5,
   '/home': 6,
-  '/profile-settings': 7,
-  '/profile-edit': 8,
-  '/places': 9,
-  '/place': 10
+  '/age-range': 7,
+  '/profile-settings': 8,
+  '/profile-edit': 9,
+  '/places': 10,
+  '/place': 11
 };
 
 
@@ -147,6 +149,7 @@ export default function AnimatedRoutes() {
             <Route path="/terms" element={<TermsAgreementPage />} />
             <Route path="/password-setup" element={<PasswordSetupPage />} />
             <Route path="/home" element={<HomePage />} />
+            <Route path="/age-range" element={<AgeRangeSelectionPage />} />
             <Route path="/profile-settings" element={<ProfileSettingsPage />} />
             <Route path="/profile-edit" element={<ProfileEditPage />} />
             <Route path="/places" element={<PlacesListPage />} />

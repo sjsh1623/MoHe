@@ -1,0 +1,312 @@
+/* Age Range Selection Page - Clean rebuild */
+
+.container {
+  background-color: #ffffff;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.content {
+  width: 100%;
+  max-width: 440px;
+  height: 100vh;
+  position: relative;
+  padding: 0 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Back Button */
+.backButton {
+  position: absolute;
+  top: 36px;
+  left: 30px;
+  width: 44px;
+  height: 44px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.backButton:hover {
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 50%;
+}
+
+/* Header */
+.header {
+  margin-top: 80px;
+  margin-bottom: 40px;
+  text-align: left;
+  padding: 0 20px;
+}
+
+.title {
+  font-family: "Inter", sans-serif;
+  font-size: 24px;
+  font-weight: 600;
+  color: #000000;
+  line-height: 1.4;
+  margin: 0 0 16px 0;
+}
+
+.subtitle {
+  font-family: "Inter", sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  color: #7d848d;
+  line-height: 1.4;
+  margin: 0;
+}
+
+/* Age Selection Grid */
+.ageGrid {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 40px;
+  padding: 20px 0;
+  margin-top: -60px;
+}
+
+.ageRow {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+}
+
+.ageOption {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.ageButton {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  border: 2px solid #7d848d;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.ageButton:hover {
+  border-color: #0d6efd;
+  transform: scale(1.05);
+}
+
+.ageButton.selected {
+  border-color: #0d6efd;
+  border-width: 3px;
+}
+
+.ageContent {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  margin-left: 10px;
+}
+
+.ageNumber {
+  font-family: "Inter", sans-serif;
+  font-size: 30px;
+  font-weight: 400;
+  color: #7d848d;
+  line-height: 1;
+}
+
+.ageButton.selected .ageNumber {
+  color: #0d6efd;
+}
+
+.ageButton.selected svg path {
+  fill: #0d6efd !important;
+}
+
+.ageLabel {
+  font-family: "Inter", sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: #7d848d;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.ageOption:has(.ageButton.selected) .ageLabel {
+  color: #0d6efd;
+}
+
+/* Progress Bar */
+.progressContainer {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin: 40px 0 20px 0;
+}
+
+.progressStep {
+  width: 70px;
+  height: 4px;
+  background-color: #e5e5e5;
+  border-radius: 2px;
+  transition: background-color 0.3s ease;
+}
+
+.progressStep.active {
+  background-color: #0d6efd;
+}
+
+/* Buttons */
+.nextButton {
+  width: 100%;
+  max-width: 320px;
+  height: 56px;
+  background-color: #0d6efd;
+  color: white;
+  border: none;
+  border-radius: 16px;
+  font-family: "Inter", sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  margin: 0 auto 16px auto;
+  transition: background-color 0.2s ease;
+}
+
+.nextButton:hover {
+  background-color: #0056cc;
+}
+
+.nextButton:active {
+  transform: scale(0.98);
+}
+
+.skipButton {
+  background: none;
+  border: none;
+  font-family: "Inter", sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  color: #7d848d;
+  text-decoration: underline;
+  cursor: pointer;
+  margin: 0 auto 40px auto;
+  padding: 8px;
+}
+
+.skipButton:hover {
+  color: #5a6169;
+}
+
+/* Responsive Design */
+@media (max-height: 700px) {
+  .header {
+    margin-top: 60px;
+    margin-bottom: 20px;
+  }
+  
+  .title {
+    font-size: 20px;
+  }
+  
+  .subtitle {
+    font-size: 14px;
+  }
+  
+  .ageGrid {
+    gap: 20px;
+    margin-top: -40px;
+  }
+  
+  .ageButton {
+    width: 90px;
+    height: 90px;
+  }
+  
+  .ageNumber {
+    font-size: 26px;
+  }
+  
+  .progressContainer {
+    margin: 20px 0 16px 0;
+  }
+  
+  .nextButton {
+    height: 48px;
+  }
+}
+
+@media (max-height: 600px) {
+  .header {
+    margin-top: 40px;
+    margin-bottom: 16px;
+  }
+  
+  .title {
+    font-size: 18px;
+  }
+  
+  .ageGrid {
+    gap: 16px;
+    margin-top: -20px;
+  }
+  
+  .ageButton {
+    width: 80px;
+    height: 80px;
+  }
+  
+  .ageNumber {
+    font-size: 22px;
+  }
+  
+  .ageLabel {
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .content {
+    padding: 0 16px;
+  }
+  
+  .backButton {
+    left: 20px;
+  }
+  
+  .header {
+    padding: 0 10px;
+  }
+  
+  .ageRow {
+    gap: 12px;
+  }
+  
+  .progressStep {
+    width: 60px;
+  }
+}
+
+/* Focus states for accessibility */
+.ageButton:focus-visible,
+.nextButton:focus-visible,
+.skipButton:focus-visible,
+.backButton:focus-visible {
+  outline: 2px solid #0d6efd;
+  outline-offset: 2px;
+}

@@ -126,7 +126,7 @@ export default function HomePage() {
 
           {/* Mood-based section */}
           <section className={`${styles.moodSection} container-padding`}>
-            <div className={styles.moodCard}>
+            <div className={styles.moodCard} onClick={() => navigate('/age-range')} style={{ cursor: 'pointer' }}>
               <div className={styles.moodContent}>
                 <h3 className={styles.moodTitle}>지금 뭐하지?</h3>
                 <p className={styles.moodDescription}>
