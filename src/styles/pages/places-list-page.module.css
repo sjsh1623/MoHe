@@ -13,8 +13,13 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 25px 5px;
-    position: relative;
+    padding: 25px 5px 10px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: white;
+    z-index: 100;
 }
 
 .pageTitle {
@@ -29,12 +34,12 @@
 .header button {
     position: absolute;
     left: 10px;
-    top: 50%;
+    top: 55%;
     transform: translateY(-25%);
 }
 
 .contentContainer {
-    padding: 0 15px;
+    padding: 80px 15px 0 15px;
     width: 100%;
     height: auto;
 }

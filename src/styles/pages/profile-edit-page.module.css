@@ -26,15 +26,17 @@ a {
     flex-direction: row;
     justify-content: center;
     width: 100%;
-    min-height: 100vh;
+    height: 100vh;
+    overflow: hidden;
 }
 
 .div {
     background-color: #ffffff;
     width: 100%;
     max-width: 440px;
-    height: 956px;
+    height: 100vh;
     position: relative;
+    overflow: hidden;
 }
 
 .arrowBack {

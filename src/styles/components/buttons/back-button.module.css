@@ -2,13 +2,11 @@
 .button {
   width: 30px;
   height: 30px;
-  background: #ffffff;
+  background: transparent;
   border: none;
-  border-radius: 50%;
   display: flex;
   cursor: pointer;
   transition: background-color 0.2s ease, transform 0.1s ease;
-  
   /* Improve touch target */
   min-width: 44px;
   min-height: 44px;
