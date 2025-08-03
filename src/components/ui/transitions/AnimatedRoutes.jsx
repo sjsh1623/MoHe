@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 
@@ -30,9 +30,11 @@ const ROUTE_HIERARCHY = {
   '/place': 7
 };
 
+
 export default function AnimatedRoutes() {
   const location = useLocation();
   const prevLocation = useRef(location.pathname);
+  const [visitedPages, setVisitedPages] = useState(new Set([location.pathname]));
 
   // Determine slide direction based on route hierarchy
   const getSlideDirection = () => {
@@ -60,6 +62,9 @@ export default function AnimatedRoutes() {
         console.log(`Saved: ${prevLocation.current} = ${window.scrollY}px`);
       }
       prevLocation.current = location.pathname;
+      
+      // Add current page to visited pages for caching
+      setVisitedPages(prev => new Set([...prev, location.pathname]));
     }
     
     // Disable browser scroll restoration
@@ -67,13 +72,14 @@ export default function AnimatedRoutes() {
       history.scrollRestoration = 'manual';
     }
     
-    // Restore scroll position after animation completes
+    // Restore scroll position immediately for instant restoration
     const savedPosition = scrollPositions.get(location.pathname) || 0;
     console.log(`Restoring: ${location.pathname} = ${savedPosition}px`);
     
-    setTimeout(() => {
+    // Use requestAnimationFrame for smoother restoration
+    requestAnimationFrame(() => {
       window.scrollTo({ top: savedPosition, behavior: 'instant' });
-    }, 220); // After 200ms animation + small buffer
+    });
     
     // Track scroll for current page
     const handleScroll = () => {
@@ -127,18 +133,77 @@ export default function AnimatedRoutes() {
             background: 'white'
           }}
         >
-          <Routes location={location}>
-            <Route path="/" element={<AuthPage />} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-            <Route path="/signup" element={<EmailSignupPage />} />
-            <Route path="/verify-email" element={<EmailVerificationPage />} />
-            <Route path="/terms" element={<TermsAgreementPage />} />
-            <Route path="/password-setup" element={<PasswordSetupPage />} />
-            <Route path="/home" element={<HomePage />} />
-            <Route path="/places" element={<PlacesListPage />} />
-            <Route path="/place/:id" element={<PlaceDetailPage />} />
-          </Routes>
+          {/* Render all visited pages but only show the current one */}
+          <div style={{ position: 'relative', width: '100%', minHeight: '100vh' }}>
+            {/* Always render visited pages to keep them cached */}
+            {visitedPages.has('/') && (
+              <div style={{ display: location.pathname === '/' ? 'block' : 'none' }}>
+                <AuthPage />
+              </div>
+            )}
+            {visitedPages.has('/login') && (
+              <div style={{ display: location.pathname === '/login' ? 'block' : 'none' }}>
+                <LoginPage />
+              </div>
+            )}
+            {visitedPages.has('/forgot-password') && (
+              <div style={{ display: location.pathname === '/forgot-password' ? 'block' : 'none' }}>
+                <ForgotPasswordPage />
+              </div>
+            )}
+            {visitedPages.has('/signup') && (
+              <div style={{ display: location.pathname === '/signup' ? 'block' : 'none' }}>
+                <EmailSignupPage />
+              </div>
+            )}
+            {visitedPages.has('/verify-email') && (
+              <div style={{ display: location.pathname === '/verify-email' ? 'block' : 'none' }}>
+                <EmailVerificationPage />
+              </div>
+            )}
+            {visitedPages.has('/terms') && (
+              <div style={{ display: location.pathname === '/terms' ? 'block' : 'none' }}>
+                <TermsAgreementPage />
+              </div>
+            )}
+            {visitedPages.has('/password-setup') && (
+              <div style={{ display: location.pathname === '/password-setup' ? 'block' : 'none' }}>
+                <PasswordSetupPage />
+              </div>
+            )}
+            {visitedPages.has('/home') && (
+              <div style={{ display: location.pathname === '/home' ? 'block' : 'none' }}>
+                <HomePage />
+              </div>
+            )}
+            {visitedPages.has('/places') && (
+              <div style={{ display: location.pathname === '/places' ? 'block' : 'none' }}>
+                <PlacesListPage />
+              </div>
+            )}
+            {/* Handle dynamic routes like /place/:id */}
+            {Array.from(visitedPages).filter(path => path.startsWith('/place/')).map(path => (
+              <div key={path} style={{ display: location.pathname === path ? 'block' : 'none' }}>
+                <PlaceDetailPage />
+              </div>
+            ))}
+            
+            {/* Fallback for unvisited pages */}
+            {!visitedPages.has(location.pathname) && (
+              <Routes location={location}>
+                <Route path="/" element={<AuthPage />} />
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+                <Route path="/signup" element={<EmailSignupPage />} />
+                <Route path="/verify-email" element={<EmailVerificationPage />} />
+                <Route path="/terms" element={<TermsAgreementPage />} />
+                <Route path="/password-setup" element={<PasswordSetupPage />} />
+                <Route path="/home" element={<HomePage />} />
+                <Route path="/places" element={<PlacesListPage />} />
+                <Route path="/place/:id" element={<PlaceDetailPage />} />
+              </Routes>
+            )}
+          </div>
         </motion.div>
       </AnimatePresence>
     </div>
