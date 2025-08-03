@@ -1,0 +1,122 @@
+/* Settings Item Component */
+.settingsItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 16px;
+  background: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+  font-family: inherit;
+}
+
+.settingsItem:hover {
+  background: #F8F9FA;
+  transform: translateY(-1px);
+}
+
+.settingsItem:active {
+  transform: translateY(0);
+  background: #F0F0F0;
+}
+
+/* Content Layout */
+.content {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  gap: 12px;
+}
+
+.iconContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: #F8F9FA;
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+
+.icon {
+  color: #7D848D;
+  transition: color 0.2s ease;
+}
+
+.settingsItem:hover .icon {
+  color: #5A6ACF;
+}
+
+/* Text Content */
+.textContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.title {
+  font-size: 16px;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-weight: 500;
+  color: #1B1E28;
+  line-height: 1.2;
+}
+
+.subtitle {
+  font-size: 14px;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-weight: 400;
+  color: #7D848D;
+  line-height: 1.2;
+}
+
+/* Arrow */
+.arrowContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-left: 8px;
+}
+
+.arrow {
+  color: #C1C7CD;
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.settingsItem:hover .arrow {
+  color: #7D848D;
+  transform: translateX(2px);
+}
+
+/* Mobile optimizations */
+@media (max-width: 480px) {
+  .settingsItem {
+    padding: 14px 12px;
+  }
+  
+  .iconContainer {
+    width: 36px;
+    height: 36px;
+  }
+  
+  .title {
+    font-size: 15px;
+  }
+  
+  .subtitle {
+    font-size: 13px;
+  }
+}
+
+/* Touch interactions */
+.settingsItem {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}

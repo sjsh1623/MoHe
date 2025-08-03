@@ -1,0 +1,65 @@
+/* Profile Button Component */
+.profileButton {
+    width: 30px;
+    height: 30px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.2s ease;
+}
+
+.profileButton:hover {
+    opacity: 0.7;
+}
+
+.profileButton:active {
+    opacity: 0.5;
+}
+
+.profileIcon {
+    width: 30px;
+    height: 30px;
+    position: relative;
+}
+
+/* Head/Avatar circle - based on Figma measurements */
+.avatarCircle {
+    width: 10px;
+    height: 10px;
+    position: absolute;
+    left: 9.45px;
+    top: 5px;
+    border: 1.50px solid #292D32;
+    border-radius: 50%;
+    box-sizing: border-box;
+}
+
+/* Body/Shoulders shape - based on Figma measurements */
+.bodyShape {
+    width: 16px;
+    height: 10px;
+    position: absolute;
+    left: 6.68px;
+    top: 16px;
+    border: 1.50px solid #292D32;
+    border-radius: 10px; /* Rounded top for shoulders effect */
+    box-sizing: border-box;
+}
+
+/* Touch interactions */
+.profileButton {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+}
+
+/* Responsive design */
+@media (max-width: 480px) {
+    .profileButton:hover {
+        opacity: 1; /* Remove hover effects on mobile */
+    }
+}

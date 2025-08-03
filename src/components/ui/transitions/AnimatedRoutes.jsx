@@ -16,6 +16,7 @@ import PasswordSetupPage from '@/pages/auth/PasswordSetupPage.jsx';
 import HomePage from '@/pages/HomePage.jsx';
 import PlacesListPage from '@/pages/PlacesListPage.jsx';
 import PlaceDetailPage from '@/pages/PlaceDetailPage.jsx';
+import ProfileSettingsPage from '@/pages/ProfileSettingsPage.jsx';
 
 // Navigation flow hierarchy (lower = earlier in flow)
 const ROUTE_HIERARCHY = {
@@ -28,8 +29,9 @@ const ROUTE_HIERARCHY = {
   '/terms': 4,
   '/password-setup': 5,
   '/home': 6,
-  '/places': 7,
-  '/place': 8
+  '/profile-settings': 7,
+  '/places': 8,
+  '/place': 9
 };
 
 
@@ -143,6 +145,7 @@ export default function AnimatedRoutes() {
             <Route path="/terms" element={<TermsAgreementPage />} />
             <Route path="/password-setup" element={<PasswordSetupPage />} />
             <Route path="/home" element={<HomePage />} />
+            <Route path="/profile-settings" element={<ProfileSettingsPage />} />
             <Route path="/places" element={<PlacesListPage />} />
             <Route path="/place/:id" element={<PlaceDetailPage />} />
           </Routes>

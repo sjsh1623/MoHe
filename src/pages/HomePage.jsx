@@ -5,7 +5,7 @@ import styles from '@/styles/pages/home-page.module.css';
 import { Container } from '@/components/ui/layout';
 import PlaceCard from '@/components/ui/cards/PlaceCard';
 import LocationPin from '@/components/ui/indicators/LocationPin';
-import MenuButton from '@/components/ui/buttons/MenuButton';
+import ProfileButton from '@/components/ui/buttons/ProfileButton';
 import OutlineButton from '@/components/ui/buttons/OutlineButton';
 import FloatingButton from '@/components/ui/buttons/FloatingButton';
 import bannerLeft from '@/assets/image/banner_left.png';
@@ -57,9 +57,9 @@ export default function HomePage() {
   const navigate = useNavigate();
   console.log('HomePage component loaded');
 
-  const handleMenuClick = () => {
-    console.log('Menu clicked');
-    // TODO: Open sidebar menu
+  const handleProfileClick = () => {
+    console.log('Profile clicked');
+    navigate('/profile-settings');
   };
 
   const handleBookmarkToggle = (placeId, isBookmarked) => {
@@ -87,7 +87,7 @@ export default function HomePage() {
       {/* Header */}
       <header className={styles.header}>
         <h1 className={styles.logo}>MOHE</h1>
-        <MenuButton onClick={handleMenuClick} />
+        <ProfileButton onClick={handleProfileClick} />
       </header>
 
       {/* Location indicator */}

@@ -1,0 +1,676 @@
+/* CSS Variables */
+:root {
+  --lighttext-color: rgba(27, 30, 40, 1);
+  --lightprimary-color: rgba(13, 110, 253, 1);
+  --lightwhite-color: rgba(255, 255, 255, 1);
+  --lightsub-text-color: rgba(125, 132, 141, 1);
+}
+
+.iphoneProMax {
+  background-color: #ffffff;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  width: 100%;
+  min-height: 100vh;
+  overflow: hidden;
+}
+
+.div {
+  background-color: #ffffff;
+  width: 100%;
+  max-width: 440px;
+  min-height: 100vh;
+  height: 100vh;
+  position: relative;
+  overflow: hidden;
+}
+
+.arrowBack {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  top: max(33px, 2vh);
+  left: max(34px, 5vw);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.group {
+  position: absolute;
+  width: min(249px, 60vw);
+  height: min(265px, 30vh);
+  top: max(93px, 10vh);
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.groupWrapper {
+  position: absolute;
+  width: min(227px, 90%);
+  height: 78px;
+  top: 187px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: var(--lightwhite-color);
+  border-radius: 16px;
+}
+
+.group2 {
+  position: relative;
+  width: 211px;
+  height: 78px;
+}
+
+.rectangle {
+  position: absolute;
+  width: 2px;
+  height: 78px;
+  top: 0;
+  left: 114px;
+}
+
+.group3 {
+  position: absolute;
+  width: 105px;
+  height: 46px;
+  top: 16px;
+  left: 0;
+}
+
+.textWrapper {
+  position: absolute;
+  width: 101px;
+  top: 0;
+  left: 0;
+  font-family: "Inter", Helvetica, sans-serif;
+  font-weight: 600;
+  color: var(--lighttext-color);
+  font-size: 14px;
+  text-align: center;
+  letter-spacing: 0.50px;
+  line-height: 16px;
+}
+
+.textWrapper2 {
+  position: absolute;
+  width: 43px;
+  height: 20px;
+  top: 26px;
+  left: 30px;
+  font-family: "Inter", Helvetica, sans-serif;
+  font-weight: 600;
+  color: var(--lightprimary-color);
+  font-size: 16px;
+  text-align: center;
+  letter-spacing: 0.50px;
+  line-height: 20px;
+}
+
+.group4 {
+  position: absolute;
+  width: 93px;
+  height: 46px;
+  top: 16px;
+  left: 122px;
+}
+
+.textWrapper3 {
+  position: absolute;
+  width: 89px;
+  top: 0;
+  left: 0;
+  font-family: "Inter", Helvetica, sans-serif;
+  font-weight: 600;
+  color: var(--lighttext-color);
+  font-size: 14px;
+  text-align: center;
+  letter-spacing: 0.50px;
+  line-height: 16px;
+}
+
+.textWrapper4 {
+  position: absolute;
+  width: 32px;
+  top: 26px;
+  left: 29px;
+  font-family: "Inter", Helvetica, sans-serif;
+  font-weight: 600;
+  color: var(--lightprimary-color);
+  font-size: 16px;
+  text-align: center;
+  letter-spacing: 0.50px;
+  line-height: 20px;
+}
+
+.group5 {
+  position: absolute;
+  width: 100%;
+  height: 160px;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.group6 {
+  position: absolute;
+  width: 100%;
+  height: 57px;
+  top: 103px;
+  left: 0;
+}
+
+.textWrapper5 {
+  position: absolute;
+  width: 100%;
+  top: 0;
+  left: 0;
+  font-family: "Inter", Helvetica, sans-serif;
+  font-weight: 500;
+  color: var(--lighttext-color);
+  font-size: 24px;
+  text-align: center;
+  letter-spacing: 0;
+  line-height: 34px;
+}
+
+.p {
+  position: absolute;
+  width: 100%;
+  height: 16px;
+  top: 41px;
+  left: 0;
+  font-family: "Inter", Helvetica, sans-serif;
+  font-weight: 400;
+  color: #7c838d;
+  font-size: 14px;
+  text-align: center;
+  letter-spacing: 0;
+  line-height: 16px;
+}
+
+.img {
+  position: absolute;
+  width: 96px;
+  height: 96px;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.overlap {
+  position: absolute;
+  width: min(384px, 90vw);
+  height: min(337px, 40vh);
+  top: max(42vh, 390px);
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.divWrapper {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  background-image: url('/rectangle-839.svg');
+  background-size: 100% 100%;
+}
+
+.group7 {
+  position: relative;
+  height: 263px;
+  top: 27px;
+}
+
+.group8 {
+  position: absolute;
+  width: 100%;
+  height: 45px;
+  top: 73px;
+  left: 0;
+  cursor: pointer;
+}
+
+.group11 {
+  position: absolute;
+  width: 100%;
+  height: 45px;
+  top: 0;
+  left: 0;
+  cursor: pointer;
+}
+
+.group12 {
+  position: absolute;
+  width: 100%;
+  height: 45px;
+  top: 145px;
+  left: 0;
+  cursor: pointer;
+}
+
+.group14 {
+  position: absolute;
+  width: 100%;
+  height: 45px;
+  top: 218px;
+  left: 0;
+  cursor: pointer;
+}
+
+.vector {
+  position: absolute;
+  width: 386px;
+  height: 2px;
+  top: 45px;
+  left: -1px;
+}
+
+.group9 {
+  position: absolute;
+  width: 327px;
+  height: 27px;
+  top: 0;
+  left: 17px;
+}
+
+.backArrow {
+  position: absolute;
+  width: 26px;
+  height: 27px;
+  top: 0;
+  left: 301px;
+  transform: rotate(180deg);
+}
+
+.directionLeft {
+  position: relative;
+  width: 6px;
+  height: 13px;
+  top: 7px;
+  left: 10px;
+  background-image: url('/vector-175-stroke-2.svg');
+  background-size: 100% 100%;
+}
+
+.directionLeft2 {
+  position: relative;
+  width: 6px;
+  height: 13px;
+  top: 7px;
+  left: 10px;
+  background-image: url('/vector-175-stroke.svg');
+  background-size: 100% 100%;
+}
+
+.directionLeft3 {
+  position: relative;
+  width: 6px;
+  height: 13px;
+  top: 7px;
+  left: 10px;
+  background-image: url('/image.svg');
+  background-size: 100% 100%;
+}
+
+.group10 {
+  position: absolute;
+  width: 93px;
+  height: 27px;
+  top: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  flex-direction: row;
+}
+
+.group13 {
+  position: absolute;
+  width: 144px;
+  height: 27px;
+  top: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  flex-direction: row;
+}
+
+.textWrapper6 {
+  font-family: "Inter", Helvetica, sans-serif;
+  font-weight: 500;
+  color: var(--lighttext-color);
+  font-size: 16px;
+  letter-spacing: 0.50px;
+  line-height: 20px;
+  white-space: nowrap;
+}
+
+.textWrapper7 {
+  font-family: "Inter", Helvetica, sans-serif;
+  font-weight: 500;
+  color: var(--lighttext-color);
+  font-size: 16px;
+  letter-spacing: 0.50px;
+  line-height: 20px;
+  white-space: nowrap;
+}
+
+.version {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.version svg {
+  width: 26px;
+  height: 26px;
+}
+
+.bookmark {
+  position: relative;
+  width: 14px;
+  height: 19px;
+  top: 5px;
+  left: 6px;
+}
+
+.rectangle2 {
+  position: absolute;
+  width: 15px;
+  height: 19px;
+  top: -1px;
+  left: -1px;
+}
+
+.ellipse {
+  width: 17px;
+  height: 9px;
+  top: 15px;
+  left: 5px;
+  border-radius: 8.31px / 4.72px;
+  position: absolute;
+  border: 1.5px solid;
+  border-color: var(--lightsub-text-color);
+}
+
+.ellipse2 {
+  width: 10px;
+  height: 11px;
+  top: 3px;
+  left: 8px;
+  border-radius: 5.07px / 5.29px;
+  position: absolute;
+  border: 1.5px solid;
+  border-color: var(--lightsub-text-color);
+}
+
+.group15 {
+  position: absolute;
+  width: 112px;
+  height: 27px;
+  top: 0;
+  left: 17px;
+}
+
+.group16 {
+  position: relative;
+  width: 114px;
+  height: 27px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  flex-direction: row;
+}
+
+.textWrapper8 {
+  font-family: "Inter", Helvetica, sans-serif;
+  font-weight: 500;
+  color: var(--lighttext-color);
+  font-size: 16px;
+  letter-spacing: 0.50px;
+  line-height: 20px;
+  white-space: nowrap;
+}
+
+.element {
+  position: absolute;
+  top: 246px;
+  left: 302px;
+  font-family: "Inter", Helvetica, sans-serif;
+  font-weight: 500;
+  color: #adacac;
+  font-size: 16px;
+  letter-spacing: 0.50px;
+  line-height: 20px;
+  white-space: nowrap;
+}
+
+.group17 {
+  position: absolute;
+  width: 384px;
+  height: 98px;
+  top: 743px;
+  left: 28px;
+}
+
+.group18 {
+  height: 98px;
+}
+
+.group19 {
+  width: 384px;
+  height: 98px;
+}
+
+.overlapGroupWrapper {
+  width: 388px;
+  height: 98px;
+}
+
+.overlapGroup {
+  position: relative;
+  width: 384px;
+  height: 98px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.mbti {
+  position: absolute;
+  height: 30px;
+  top: 49px;
+  left: 14px;
+  font-family: "Inter", Helvetica, sans-serif;
+  font-weight: 400;
+  color: #000000;
+  font-size: 12px;
+  letter-spacing: 0;
+  line-height: normal;
+}
+
+.textWrapper9 {
+  position: absolute;
+  top: 22px;
+  left: 14px;
+  font-family: "Inter", Helvetica, sans-serif;
+  font-weight: 600;
+  color: #000000;
+  font-size: 14px;
+  letter-spacing: 0;
+  line-height: normal;
+}
+
+.bannerContent {
+  position: absolute;
+  top: 22px;
+  left: 14px;
+  z-index: 2;
+}
+
+.bannerTitle {
+  font-size: 20px;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-weight: 600;
+  line-height: 1.2;
+  margin: 0 0 8px 0;
+  color: white;
+}
+
+.bannerDescription {
+  font-size: 14px;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-weight: 400;
+  line-height: 1.4;
+  margin: 0;
+  opacity: 0.9;
+  color: white;
+}
+
+.bannerImage {
+  position: absolute;
+  width: 143px;
+  height: 88px;
+  top: 4px;
+  left: 235px;
+}
+
+/* Mood Section - Main Page Banner */
+.moodSection {
+  margin: 2vh 0;
+  position: absolute;
+  bottom: max(60px, 8vh);
+  left: 5vw;
+  right: 5vw;
+}
+
+.moodCard {
+  background: #F6F6F6;
+  border-radius: 16px;
+  padding: min(24px, 3vw);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  max-width: min(384px, 90vw);
+  height: min(98px, 12vh);
+  margin: 0 auto;
+}
+
+.moodContent {
+  flex: 1;
+}
+
+.moodTitle {
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: black;
+  margin: 0 0 8px 0;
+}
+
+.moodDescription {
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  color: black;
+  margin: 0;
+  line-height: 1.33;
+}
+
+.moodImage {
+  width: 143px;
+  height: 88px;
+  flex-shrink: 0;
+}
+
+.moodImage img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* Mobile Responsive */
+@media (max-width: 480px) {
+  .group {
+    width: min(300px, 80vw);
+    height: min(240px, 28vh);
+    top: max(80px, 8vh);
+  }
+  
+  .group5 {
+    width: 100%;
+    left: 0;
+    transform: none;
+  }
+  
+  .img {
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  
+  .group6 {
+    left: 0;
+    width: 100%;
+  }
+  
+  .textWrapper5 {
+    font-size: 20px;
+    left: 0;
+    width: 100%;
+  }
+  
+  .p {
+    font-size: 12px;
+    left: 0;
+    width: 100%;
+  }
+  
+  .overlap {
+    width: min(350px, 95vw);
+    height: min(300px, 35vh);
+    top: max(40vh, 350px);
+  }
+  
+  .moodCard {
+    height: min(90px, 10vh);
+    padding: min(16px, 4vw);
+  }
+  
+  .moodTitle {
+    font-size: 13px;
+  }
+  
+  .moodDescription {
+    font-size: 11px;
+  }
+  
+  .moodImage {
+    width: min(120px, 30vw);
+    height: min(75px, 8vh);
+  }
+}
+
+@media (max-height: 700px) {
+  .group {
+    height: min(220px, 25vh);
+    top: max(60px, 6vh);
+  }
+  
+  .overlap {
+    height: min(280px, 32vh);
+    top: max(35vh, 320px);
+  }
+  
+  .moodSection {
+    bottom: max(40px, 5vh);
+  }
+}
