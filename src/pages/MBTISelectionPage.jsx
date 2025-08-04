@@ -2,6 +2,7 @@ import React, {useState} from 'react';
 import {useNavigate} from 'react-router-dom';
 import styles from '@/styles/pages/mbti-selection-page.module.css';
 import BackButton from '@/components/ui/buttons/BackButton';
+import {useUserPreferences} from '@/contexts';
 
 // MBTI descriptions mapping
 const MBTI_DESCRIPTIONS = {
@@ -25,48 +26,42 @@ const MBTI_DESCRIPTIONS = {
 
 export default function MBTISelectionPage() {
     const navigate = useNavigate();
-
-    // Individual letter selections
-    const [extroversion, setExtroversion] = useState(''); // E or I
-    const [sensing, setSensing] = useState(''); // S or N
-    const [thinking, setThinking] = useState(''); // T or F
-    const [judging, setJudging] = useState(''); // J or P
+    const { mbtiState, updateMBTILetter, getMBTIString, isMBTIComplete } = useUserPreferences();
     
     // Animation state
     const [isUpdating, setIsUpdating] = useState(false);
     const [justCompleted, setJustCompleted] = useState(false);
 
+    // Destructure MBTI state for easier access
+    const { extroversion, sensing, thinking, judging } = mbtiState;
+
 
     const handleLetterSelect = (category, letter) => {
         // Check if MBTI was complete before this change
-        const wasComplete = extroversion && sensing && thinking && judging;
+        const wasComplete = isMBTIComplete();
         
-        let newExtroversion = extroversion;
-        let newSensing = sensing;
-        let newThinking = thinking;
-        let newJudging = judging;
-        
-        switch (category) {
-            case 'EI':
-                newExtroversion = letter;
-                setExtroversion(letter);
-                break;
-            case 'SN':
-                newSensing = letter;
-                setSensing(letter);
-                break;
-            case 'TF':
-                newThinking = letter;
-                setThinking(letter);
-                break;
-            case 'JP':
-                newJudging = letter;
-                setJudging(letter);
-                break;
-        }
+        // Update the letter using context
+        updateMBTILetter(category, letter);
         
         // Check if MBTI becomes complete after this change
-        const willBeComplete = newExtroversion && newSensing && newThinking && newJudging;
+        // We need to calculate this manually since state updates are async
+        let willBeComplete = false;
+        const currentState = { ...mbtiState };
+        switch (category) {
+            case 'EI':
+                currentState.extroversion = letter;
+                break;
+            case 'SN':
+                currentState.sensing = letter;
+                break;
+            case 'TF':
+                currentState.thinking = letter;
+                break;
+            case 'JP':
+                currentState.judging = letter;
+                break;
+        }
+        willBeComplete = currentState.extroversion && currentState.sensing && currentState.thinking && currentState.judging;
         
         // Trigger update animation for any change
         setIsUpdating(true);
@@ -80,7 +75,7 @@ export default function MBTISelectionPage() {
     };
 
     const getCurrentMBTI = () => {
-        return extroversion + sensing + thinking + judging;
+        return getMBTIString();
     };
 
     const getCurrentDescription = () => {
@@ -92,14 +87,14 @@ export default function MBTISelectionPage() {
     };
 
     const isReady = () => {
-        return extroversion && sensing && thinking && judging;
+        return isMBTIComplete();
     };
 
     const handleNext = () => {
         if (!isReady()) return;
         const mbti = getCurrentMBTI();
         console.log('Selected MBTI:', mbti);
-        navigate('/home');
+        navigate('/space-preference');
     };
 
     const handleSkip = () => {

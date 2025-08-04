@@ -1,15 +1,19 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import styles from '@/styles/pages/age-range-selection-page.module.css';
 import BackButton from '@/components/ui/buttons/BackButton';
+import {useUserPreferences} from '@/contexts';
 
 export default function AgeRangeSelectionPage() {
   const navigate = useNavigate();
-  const [selectedAge, setSelectedAge] = useState(null);
+  const { ageRange, setAgeRange } = useUserPreferences();
+  
+  // Convert context string to number for comparison (backwards compatibility)
+  const selectedAge = ageRange ? parseInt(ageRange) : null;
 
 
   const handleAgeSelect = (ageId) => {
-    setSelectedAge(ageId);
+    setAgeRange(ageId.toString());
   };
 
   const isReady = () => {
@@ -18,7 +22,7 @@ export default function AgeRangeSelectionPage() {
 
   const handleNext = () => {
     if (!isReady()) return;
-    console.log('Selected age range:', selectedAge);
+    console.log('Selected age range:', ageRange);
     navigate('/mbti-selection');
   };
 
