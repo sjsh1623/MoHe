@@ -21,6 +21,7 @@ import ProfileEditPage from '@/pages/ProfileEditPage.jsx';
 import AgeRangeSelectionPage from '@/pages/AgeRangeSelectionPage.jsx';
 import MBTISelectionPage from '@/pages/MBTISelectionPage.jsx';
 import SpacePreferenceSelectionPage from '@/pages/SpacePreferenceSelectionPage.jsx';
+import TransportationSelectionPage from '@/pages/TransportationSelectionPage.jsx';
 
 // Navigation flow hierarchy (lower = earlier in flow)
 const ROUTE_HIERARCHY = {
@@ -36,10 +37,11 @@ const ROUTE_HIERARCHY = {
   '/age-range': 7,
   '/mbti-selection': 8,
   '/space-preference': 9,
-  '/profile-settings': 10,
-  '/profile-edit': 11,
-  '/places': 12,
-  '/place': 13
+  '/transportation-selection': 10,
+  '/profile-settings': 11,
+  '/profile-edit': 12,
+  '/places': 13,
+  '/place': 14
 };
 
 
@@ -156,6 +158,7 @@ export default function AnimatedRoutes() {
             <Route path="/age-range" element={<AgeRangeSelectionPage />} />
             <Route path="/mbti-selection" element={<MBTISelectionPage />} />
             <Route path="/space-preference" element={<SpacePreferenceSelectionPage />} />
+            <Route path="/transportation-selection" element={<TransportationSelectionPage />} />
             <Route path="/profile-settings" element={<ProfileSettingsPage />} />
             <Route path="/profile-edit" element={<ProfileEditPage />} />
             <Route path="/places" element={<PlacesListPage />} />

@@ -1,58 +1,44 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import styles from '@/styles/pages/space-preference-selection-page.module.css';
+import styles from '@/styles/pages/transportation-selection-page.module.css';
 import BackButton from '@/components/ui/buttons/BackButton';
-import {useUserPreferences} from '@/contexts';
+import { useUserPreferences } from '@/contexts';
+import busImage from '@/assets/image/bus.png';
+import carImage from '@/assets/image/car.png';
 
-const SPACE_OPTIONS = [
+const TRANSPORTATION_OPTIONS = [
     {
-        id: 'workshop',
-        title: '공방 & 체험 공간',
-        description: '무언가를 만드는 시간이 좋아요'
+        id: 'public',
+        title: '대중교통',
+        image: busImage
     },
     {
-        id: 'exhibition',
-        title: '전시회 & 박물관',
-        description: '천천히 둘러보며 감상하는 게 좋아요'
-    },
-    {
-        id: 'shopping',
-        title: '편집숍 & 쇼핑몰',
-        description: '내 취향을 발견하는 재미가 있어요'
-    },
-    {
-        id: 'nature',
-        title: '산책 & 자연 명소',
-        description: '걷다 보면 생각이 정리돼요'
-    },
-    {
-        id: 'lounge',
-        title: '재즈바 & 라운지',
-        description: '음악과 조명 속에 잠시 머물고 싶어요'
+        id: 'car',
+        title: '자동차',
+        image: carImage
     }
 ];
 
-export default function SpacePreferenceSelectionPage() {
+export default function TransportationSelectionPage() {
     const navigate = useNavigate();
-    const { spacePreferences, toggleSpacePreference } = useUserPreferences();
+    const { transportationMethod, setTransportationMethod } = useUserPreferences();
 
-    const handleSpaceToggle = (spaceId) => {
-        toggleSpacePreference(spaceId);
+    const handleTransportationSelect = (transportationId) => {
+        setTransportationMethod(transportationId);
     };
 
     const isReady = () => {
-        return spacePreferences.size > 0;
+        return transportationMethod !== '';
     };
 
     const handleNext = () => {
         if (!isReady()) return;
-        const selectedSpacesList = Array.from(spacePreferences);
-        console.log('Selected spaces:', selectedSpacesList);
-        navigate('/transportation-selection');
+        console.log('Selected transportation:', transportationMethod);
+        navigate('/home');
     };
 
     const handleSkip = () => {
-        console.log('User skipped space preference selection');
+        console.log('User skipped transportation selection');
         navigate('/home');
     };
 
@@ -69,26 +55,31 @@ export default function SpacePreferenceSelectionPage() {
                     {/* Content Header */}
                     <div className={styles.contentHeader}>
                         <h1 className={styles.title}>
-                            어디에서 시간을<br />
-                            보내고 싶으신가요?
+                            어떻게 이동하시나요?
                         </h1>
                         <p className={styles.subtitle}>
-                            마음 가는 공간을 자유롭게 선택해보세요
+                            이동 수단에 따라 추천 장소가 달라져요
                         </p>
                     </div>
 
-                    {/* Space Options */}
+                    {/* Transportation Options */}
                     <div className={styles.optionsContainer}>
-                        {SPACE_OPTIONS.map((space) => (
+                        {TRANSPORTATION_OPTIONS.map((transport) => (
                             <button
-                                key={space.id}
+                                key={transport.id}
                                 className={`${styles.optionCard} ${
-                                    spacePreferences.has(space.id) ? styles.selected : styles.unselected
+                                    transportationMethod === transport.id ? styles.selected : styles.unselected
                                 }`}
-                                onClick={() => handleSpaceToggle(space.id)}
+                                onClick={() => handleTransportationSelect(transport.id)}
                             >
-                                <div className={styles.optionTitle}>{space.title}</div>
-                                <div className={styles.optionDescription}>{space.description}</div>
+                                <div className={styles.iconContainer}>
+                                    <img 
+                                        src={transport.image} 
+                                        alt={transport.title}
+                                        className={styles.transportImage}
+                                    />
+                                </div>
+                                <div className={styles.optionTitle}>{transport.title}</div>
                             </button>
                         ))}
                     </div>
@@ -99,7 +90,7 @@ export default function SpacePreferenceSelectionPage() {
                     <div className={`${styles.progressStep} ${styles.active}`}></div>
                     <div className={`${styles.progressStep} ${styles.active}`}></div>
                     <div className={`${styles.progressStep} ${styles.active}`}></div>
-                    <div className={styles.progressStep}></div>
+                    <div className={`${styles.progressStep} ${styles.active}`}></div>
                 </div>
 
                 {/* Next Button */}

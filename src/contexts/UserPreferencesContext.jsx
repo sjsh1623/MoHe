@@ -5,7 +5,8 @@ const UserPreferencesContext = createContext();
 const STORAGE_KEYS = {
   MBTI: 'mohe_user_mbti',
   SPACE_PREFERENCES: 'mohe_user_space_preferences',
-  AGE_RANGE: 'mohe_user_age_range'
+  AGE_RANGE: 'mohe_user_age_range',
+  TRANSPORTATION: 'mohe_user_transportation'
 };
 
 export function UserPreferencesProvider({ children }) {
@@ -22,6 +23,9 @@ export function UserPreferencesProvider({ children }) {
 
   // Age range state
   const [ageRange, setAgeRange] = useState('');
+
+  // Transportation method state
+  const [transportationMethod, setTransportationMethod] = useState('');
 
   // Load from localStorage on mount
   useEffect(() => {
@@ -44,6 +48,12 @@ export function UserPreferencesProvider({ children }) {
       const savedAge = localStorage.getItem(STORAGE_KEYS.AGE_RANGE);
       if (savedAge) {
         setAgeRange(savedAge);
+      }
+
+      // Load Transportation
+      const savedTransportation = localStorage.getItem(STORAGE_KEYS.TRANSPORTATION);
+      if (savedTransportation) {
+        setTransportationMethod(savedTransportation);
       }
     } catch (error) {
       console.warn('Failed to load user preferences from localStorage:', error);
@@ -76,6 +86,15 @@ export function UserPreferencesProvider({ children }) {
       console.warn('Failed to save age range to localStorage:', error);
     }
   }, [ageRange]);
+
+  // Save Transportation to localStorage whenever it changes
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEYS.TRANSPORTATION, transportationMethod);
+    } catch (error) {
+      console.warn('Failed to save transportation to localStorage:', error);
+    }
+  }, [transportationMethod]);
 
   // MBTI helper functions
   const updateMBTILetter = (category, letter) => {
@@ -130,11 +149,13 @@ export function UserPreferencesProvider({ children }) {
     });
     setSpacePreferences(new Set());
     setAgeRange('');
+    setTransportationMethod('');
     
     try {
       localStorage.removeItem(STORAGE_KEYS.MBTI);
       localStorage.removeItem(STORAGE_KEYS.SPACE_PREFERENCES);
       localStorage.removeItem(STORAGE_KEYS.AGE_RANGE);
+      localStorage.removeItem(STORAGE_KEYS.TRANSPORTATION);
     } catch (error) {
       console.warn('Failed to clear preferences from localStorage:', error);
     }
@@ -155,6 +176,10 @@ export function UserPreferencesProvider({ children }) {
     // Age Range
     ageRange,
     setAgeRange,
+
+    // Transportation
+    transportationMethod,
+    setTransportationMethod,
 
     // Utility
     clearPreferences
