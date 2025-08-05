@@ -1,7 +1,7 @@
 import React, {useState} from 'react';
 import {useNavigate} from 'react-router-dom';
 import styles from '@/styles/pages/mbti-selection-page.module.css';
-import BackButton from '@/components/ui/buttons/BackButton';
+import PreferencePageLayout from '@/components/layout/PreferencePageLayout';
 import {useUserPreferences} from '@/contexts';
 
 // MBTI descriptions mapping
@@ -103,27 +103,17 @@ export default function MBTISelectionPage() {
     };
 
     return (
-        <div className={styles.container}>
-            <div className={styles.content}>
-                {/* Header */}
-                <header className={styles.header}>
-                    <BackButton/>
-                </header>
-
-                {/* Main Content Area */}
-                <div className={styles.mainContent}>
-                    {/* Content Header */}
-                    <div className={styles.contentHeader}>
-                        <h1 className={styles.title}>
-                            MBTI를 알려주면,<br/>
-                            추천이 쉬워져요
-                        </h1>
-                        <p className={styles.subtitle}>
-                            아래에서 내 MBTI를 직접 선택해보세요
-                        </p>
-                    </div>
-
-                    {/* MBTI Selection Grid */}
+        <PreferencePageLayout
+            title={<>MBTI를 알려주면,<br/>추천이 쉬워져요</>}
+            subtitle="아래에서 내 MBTI를 직접 선택해보세요"
+            onNext={handleNext}
+            onSkip={handleSkip}
+            isReady={isReady()}
+            progressSteps={4}
+            activeSteps={2}
+            customStyles={styles}
+        >
+            {/* MBTI Selection Grid */}
                     <div className={styles.mbtiGrid}>
                         {/* Row 1: E/I and S/N */}
                         <div className={styles.mbtiRow}>
@@ -191,30 +181,6 @@ export default function MBTISelectionPage() {
                     <div className={`${styles.description} ${isUpdating ? styles.fadeIn : ''}`}>
                         {getCurrentDescription()}
                     </div>
-                </div>
-
-                {/* Progress Bar */}
-                <div className={styles.progressContainer}>
-                    <div className={`${styles.progressStep} ${styles.active}`}></div>
-                    <div className={`${styles.progressStep} ${styles.active}`}></div>
-                    <div className={styles.progressStep}></div>
-                    <div className={styles.progressStep}></div>
-                </div>
-
-                {/* Next Button */}
-                <button 
-                    className={`${styles.nextButton} ${isReady() ? styles.ready : ''}`} 
-                    onClick={handleNext}
-                    disabled={!isReady()}
-                >
-                    다음
-                </button>
-
-                {/* Skip Link */}
-                <button className={styles.skipButton} onClick={handleSkip}>
-                    여기까지만 알려줄게요
-                </button>
-            </div>
-        </div>
+        </PreferencePageLayout>
     );
 }

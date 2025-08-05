@@ -1,0 +1,225 @@
+/* Shared Preference Page Base Styles - WebView Optimized */
+
+.container {
+  background-color: #ffffff;
+  width: 100%;
+  height: 100vh;
+  height: 100dvh; /* Dynamic viewport height for mobile */
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  /* WebView optimizations */
+  -webkit-overflow-scrolling: touch;
+  overflow-scrolling: touch;
+}
+
+.content {
+  width: 100%;
+  max-width: 440px;
+  height: 100vh;
+  height: 100dvh; /* Dynamic viewport height for mobile */
+  position: relative;
+  padding: 0 20px;
+  display: flex;
+  flex-direction: column;
+  /* WebView touch optimizations */
+  touch-action: manipulation;
+}
+
+/* Header */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 50px 5px 10px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: white;
+  z-index: 100;
+}
+
+.header button {
+  position: absolute;
+  left: 10px;
+  top: 55%;
+  transform: translateY(-25%);
+}
+
+/* Main Content Area */
+.mainContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding-top: 86px;
+}
+
+/* Content Header */
+.contentHeader {
+  margin-bottom: 30px;
+  text-align: left;
+  padding: 0 18px;
+}
+
+.title {
+  font-family: "Inter", sans-serif;
+  font-size: 24px;
+  font-weight: 600;
+  color: #000000;
+  line-height: 1.2;
+  margin: 0 0 16px 0;
+}
+
+.subtitle {
+  font-family: "Inter", sans-serif;
+  font-size: 18px;
+  font-weight: 600;
+  color: #7d848d;
+  line-height: 1.2;
+  margin: 0;
+}
+
+/* Progress Bar */
+.progressContainer {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin: 20px 0;
+}
+
+.progressStep {
+  width: 70px;
+  height: 4px;
+  background-color: #e5e5e5;
+  border-radius: 2px;
+  transition: background-color 0.3s ease;
+}
+
+.progressStep.active {
+  background-color: #0d6efd;
+}
+
+/* Buttons - WebView Touch Optimized */
+.nextButton {
+  width: 100%;
+  max-width: 335px;
+  height: 56px;
+  background-color: #909090;
+  color: white;
+  border: none;
+  border-radius: 16px;
+  font-family: "Inter", sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: not-allowed;
+  margin: 0 auto 16px auto;
+  transition: background-color 0.2s ease;
+  /* WebView touch optimizations */
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.nextButton.ready {
+  background-color: #0d6efd;
+  cursor: pointer;
+}
+
+.nextButton.ready:hover {
+  background-color: #0056cc;
+}
+
+.nextButton.ready:active {
+  transform: scale(0.98);
+}
+
+.skipButton {
+  background: none;
+  border: none;
+  font-family: "Inter", sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  color: #7d848d;
+  text-decoration: underline;
+  cursor: pointer;
+  margin: 0 auto 40px auto;
+  padding: 8px;
+  /* WebView touch optimizations */
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.skipButton:hover {
+  color: #5a6169;
+}
+
+/* Responsive Design */
+@media (max-width: 480px) {
+  .content {
+    padding: 0 16px;
+  }
+  
+  .contentHeader {
+    padding: 0 14px;
+  }
+  
+  .progressStep {
+    width: 60px;
+  }
+}
+
+@media (max-height: 800px) {
+  .mainContent {
+    padding-top: 76px;
+  }
+  
+  .contentHeader {
+    margin-bottom: 20px;
+  }
+  
+  .title {
+    font-size: 20px;
+  }
+  
+  .subtitle {
+    font-size: 16px;
+  }
+}
+
+@media (max-height: 700px) {
+  .mainContent {
+    padding-top: 70px;
+  }
+  
+  .contentHeader {
+    margin-bottom: 16px;
+  }
+  
+  .title {
+    font-size: 18px;
+  }
+  
+  .subtitle {
+    font-size: 14px;
+  }
+  
+  .progressContainer {
+    margin: 16px 0;
+  }
+  
+  .nextButton {
+    height: 48px;
+  }
+}
+
+/* Focus states for accessibility */
+.nextButton:focus-visible,
+.skipButton:focus-visible {
+  outline: 2px solid #0d6efd;
+  outline-offset: 2px;
+}

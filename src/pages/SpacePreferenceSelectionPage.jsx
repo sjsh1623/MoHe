@@ -1,8 +1,8 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import styles from '@/styles/pages/space-preference-selection-page.module.css';
-import BackButton from '@/components/ui/buttons/BackButton';
-import {useUserPreferences} from '@/contexts';
+import PreferencePageLayout from '@/components/layout/PreferencePageLayout';
+import { useUserPreferences } from '@/contexts';
 
 const SPACE_OPTIONS = [
     {
@@ -57,27 +57,17 @@ export default function SpacePreferenceSelectionPage() {
     };
 
     return (
-        <div className={styles.container}>
-            <div className={styles.content}>
-                {/* Header */}
-                <header className={styles.header}>
-                    <BackButton />
-                </header>
-
-                {/* Main Content Area */}
-                <div className={styles.mainContent}>
-                    {/* Content Header */}
-                    <div className={styles.contentHeader}>
-                        <h1 className={styles.title}>
-                            어디에서 시간을<br />
-                            보내고 싶으신가요?
-                        </h1>
-                        <p className={styles.subtitle}>
-                            마음 가는 공간을 자유롭게 선택해보세요
-                        </p>
-                    </div>
-
-                    {/* Space Options */}
+        <PreferencePageLayout
+            title={<>어디에서 시간을<br />보내고 싶으신가요?</>}
+            subtitle="마음 가는 공간을 자유롭게 선택해보세요"
+            onNext={handleNext}
+            onSkip={handleSkip}
+            isReady={isReady()}
+            progressSteps={4}
+            activeSteps={3}
+            customStyles={styles}
+        >
+            {/* Space Options */}
                     <div className={styles.optionsContainer}>
                         {SPACE_OPTIONS.map((space) => (
                             <button
@@ -92,30 +82,6 @@ export default function SpacePreferenceSelectionPage() {
                             </button>
                         ))}
                     </div>
-                </div>
-
-                {/* Progress Bar */}
-                <div className={styles.progressContainer}>
-                    <div className={`${styles.progressStep} ${styles.active}`}></div>
-                    <div className={`${styles.progressStep} ${styles.active}`}></div>
-                    <div className={`${styles.progressStep} ${styles.active}`}></div>
-                    <div className={styles.progressStep}></div>
-                </div>
-
-                {/* Next Button */}
-                <button 
-                    className={`${styles.nextButton} ${isReady() ? styles.ready : ''}`} 
-                    onClick={handleNext}
-                    disabled={!isReady()}
-                >
-                    다음
-                </button>
-
-                {/* Skip Link */}
-                <button className={styles.skipButton} onClick={handleSkip}>
-                    여기까지만 알려줄게요
-                </button>
-            </div>
-        </div>
+        </PreferencePageLayout>
     );
 }

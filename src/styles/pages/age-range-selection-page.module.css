@@ -1,341 +1,173 @@
-/* Age Range Selection Page - Clean rebuild */
-
-.container {
-  background-color: #ffffff;
-  width: 100%;
-  height: 100vh;
-  overflow: hidden;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.content {
-  width: 100%;
-  max-width: 440px;
-  height: 100vh;
-  position: relative;
-  padding: 0 20px;
-  display: flex;
-  flex-direction: column;
-}
-
-/* Header - matching PlacesListPage standard */
-.header {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 50px 5px 10px;
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  background: white;
-  z-index: 100;
-}
-
-.header button {
-  position: absolute;
-  left: 10px;
-  top: 55%;
-  transform: translateY(-25%);
-}
-
-/* Main Content Area */
-.mainContent {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  padding-top: 86px;
-}
-
-/* Content Header */
-.contentHeader {
-  margin-bottom: 30px;
-  text-align: left;
-  padding: 0 18px;
-}
-
-.title {
-  font-family: "Inter", sans-serif;
-  font-size: 24px;
-  font-weight: 600;
-  color: #000000;
-  line-height: 1.4;
-  margin: 0 0 16px 0;
-}
-
-.subtitle {
-  font-family: "Inter", sans-serif;
-  font-size: 16px;
-  font-weight: 500;
-  color: #7d848d;
-  line-height: 1.4;
-  margin: 0;
-}
+/* Age Range Selection Page - Specific Styles Only */
 
 /* Age Selection Grid */
 .ageGrid {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 40px;
-  padding: 20px 0;
-  margin-top: -60px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    padding: 0 20px;
+    flex: 1;
+    margin-top: 40px;
+    align-items: center;
+    max-width: 100%;
+    box-sizing: border-box;
 }
 
 .ageRow {
-  display: flex;
-  justify-content: center;
-  gap: 20px;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    width: 100%;
+    max-width: 320px;
+}
+
+.ageRow:last-child {
+    gap: 35px;
+    justify-content: center;
 }
 
 .ageOption {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 .ageButton {
-  width: 100px;
-  height: 100px;
-  border-radius: 50%;
-  border: 2px solid #7d848d;
-  background: white;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
+    width: 110px;
+    height: 110px;
+    border: 3px solid #e5e5e5;
+    border-radius: 50%;
+    background: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    font-family: "Inter", sans-serif;
+    /* WebView touch optimizations */
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    user-select: none;
+    -webkit-user-select: none;
+    flex-shrink: 0;
 }
 
 .ageButton:hover {
-  border-color: #0d6efd;
-  transform: scale(1.05);
+    border-color: #0d6efd;
 }
 
 .ageButton.selected {
-  border-color: #0d6efd;
-  border-width: 3px;
-}
-
-.ageContent {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  margin-left: 10px;
-}
-
-.ageNumber {
-  font-family: "Inter", sans-serif;
-  font-size: 30px;
-  font-weight: 400;
-  color: #7d848d;
-  line-height: 1;
+    border-color: #0d6efd;
+    border-width: 1.5px;
+    background: white;
+    color: #7D848D;
 }
 
 .ageButton.selected .ageNumber {
-  color: #0d6efd;
+    color: #0d6efd;
 }
 
 .ageButton.selected svg path {
-  fill: #0d6efd !important;
+    fill: #0d6efd;
+}
+
+.ageContent {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    margin-left: 10px;
+}
+
+.ageNumber {
+    font-size: 30px;
+    color: #7D848D;
+    line-height: 1;
 }
 
 .ageLabel {
-  font-family: "Inter", sans-serif;
-  font-size: 14px;
-  font-weight: 500;
-  color: #7d848d;
-  text-align: center;
-  white-space: nowrap;
-}
-
-.ageOption:has(.ageButton.selected) .ageLabel {
-  color: #0d6efd;
-}
-
-/* Progress Bar */
-.progressContainer {
-  display: flex;
-  justify-content: center;
-  gap: 8px;
-  margin: 40px 0 20px 0;
-}
-
-.progressStep {
-  width: 70px;
-  height: 4px;
-  background-color: #e5e5e5;
-  border-radius: 2px;
-  transition: background-color 0.3s ease;
-}
-
-.progressStep.active {
-  background-color: #0d6efd;
-}
-
-/* Buttons */
-.nextButton {
-  width: 100%;
-  max-width: 320px;
-  height: 56px;
-  background-color: #909090;
-  color: white;
-  border: none;
-  border-radius: 16px;
-  font-family: "Inter", sans-serif;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: not-allowed;
-  margin: 0 auto 16px auto;
-  transition: background-color 0.2s ease;
-}
-
-.nextButton.ready {
-  background-color: #0d6efd;
-  cursor: pointer;
-}
-
-.nextButton.ready:hover {
-  background-color: #0056cc;
-}
-
-.nextButton.ready:active {
-  transform: scale(0.98);
-}
-
-.skipButton {
-  background: none;
-  border: none;
-  font-family: "Inter", sans-serif;
-  font-size: 12px;
-  font-weight: 500;
-  color: #7d848d;
-  text-decoration: underline;
-  cursor: pointer;
-  margin: 0 auto 40px auto;
-  padding: 8px;
-}
-
-.skipButton:hover {
-  color: #5a6169;
+    font-family: "Inter", sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    color: #7d848d;
+    margin-top: 5px;
+    text-align: center;
+    line-height: 1.2;
 }
 
 /* Responsive Design */
 @media (max-height: 800px) {
-  .mainContent {
-    padding-top: 76px;
-  }
-  
-  .contentHeader {
-    margin-bottom: 20px;
-  }
-  
-  .title {
-    font-size: 20px;
-  }
-  
-  .subtitle {
-    font-size: 16px;
-  }
+    .ageGrid {
+        gap: 12px;
+        padding: 0 15px;
+    }
+
+    .ageRow {
+        gap: 20px;
+        max-width: 300px;
+    }
+
+    .ageRow:last-child {
+        gap: 35px;
+    }
+
+    .ageButton {
+        width: 85px;
+        height: 85px;
+        border-width: 2px;
+    }
+
+    .ageNumber {
+        font-size: 18px;
+    }
+
+    .ageLabel {
+        font-size: 11px;
+        margin-top: 6px;
+    }
 }
 
 @media (max-height: 700px) {
-  .mainContent {
-    padding-top: 70px;
-  }
-  
-  .contentHeader {
-    margin-bottom: 16px;
-  }
-  
-  .title {
-    font-size: 20px;
-  }
-  
-  .subtitle {
-    font-size: 14px;
-  }
-  
-  .ageGrid {
-    gap: 20px;
-    margin-top: -40px;
-  }
-  
-  .ageButton {
-    width: 90px;
-    height: 90px;
-  }
-  
-  .ageNumber {
-    font-size: 26px;
-  }
-  
-  .progressContainer {
-    margin: 20px 0 16px 0;
-  }
-  
-  .nextButton {
-    height: 48px;
-  }
-}
+    .ageGrid {
+        gap: 10px;
+        padding: 0 15px;
+    }
 
-@media (max-height: 600px) {
-  .contentHeader {
-    margin-top: 75px;
-    margin-bottom: 16px;
-  }
-  
-  .title {
-    font-size: 18px;
-  }
-  
-  .ageGrid {
-    gap: 16px;
-    margin-top: -20px;
-  }
-  
-  .ageButton {
-    width: 80px;
-    height: 80px;
-  }
-  
-  .ageNumber {
-    font-size: 22px;
-  }
-  
-  .ageLabel {
-    font-size: 12px;
-  }
+    .ageRow {
+        gap: 15px;
+        max-width: 280px;
+    }
+
+    .ageRow:last-child {
+        gap: 30px;
+    }
+
+    .ageButton {
+        width: 75px;
+        height: 75px;
+        border-width: 2px;
+    }
+
+    .ageNumber {
+        font-size: 16px;
+    }
+
+    .ageLabel {
+        font-size: 10px;
+        margin-top: 5px;
+    }
 }
 
 @media (max-width: 480px) {
-  .content {
-    padding: 0 16px;
-  }
-  
-  .contentHeader {
-    padding: 0 10px;
-  }
-  
-  .ageRow {
-    gap: 12px;
-  }
-  
-  .progressStep {
-    width: 60px;
-  }
+    .ageGrid {
+        padding: 0 15px;
+    }
 }
 
 /* Focus states for accessibility */
-.ageButton:focus-visible,
-.nextButton:focus-visible,
-.skipButton:focus-visible,
-.backButton:focus-visible {
-  outline: 2px solid #0d6efd;
-  outline-offset: 2px;
+.ageButton:focus-visible {
+    outline: 2px solid #0d6efd;
+    outline-offset: 2px;
 }
