@@ -39,16 +39,18 @@ export default function AgeRangeSelectionPage() {
           <BackButton />
         </header>
 
-        {/* Header Text */}
-        <div className={styles.contentHeader}>
-          <h1 className={styles.title}>
-            연령대를 알려주시면,<br />
-            더 잘 맞춰드릴 수 있어요
-          </h1>
-          <p className={styles.subtitle}>
-            연령에 어울리는 플레이스를 찾아드릴게요
-          </p>
-        </div>
+        {/* Main Content Area */}
+        <div className={styles.mainContent}>
+          {/* Content Header */}
+          <div className={styles.contentHeader}>
+            <h1 className={styles.title}>
+              연령대를 알려주시면,<br />
+              더 잘 맞춰드릴 수 있어요
+            </h1>
+            <p className={styles.subtitle}>
+              연령에 어울리는 플레이스를 찾아드릴게요
+            </p>
+          </div>
 
         {/* Age Selection Grid */}
         <div className={styles.ageGrid}>
@@ -124,6 +126,7 @@ export default function AgeRangeSelectionPage() {
               <span className={styles.ageLabel}>50대 이상</span>
             </div>
           </div>
+        </div>
         </div>
 
         {/* Progress Bar */}

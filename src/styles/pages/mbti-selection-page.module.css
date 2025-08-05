@@ -46,14 +46,14 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  padding-top: 86px;
 }
 
 /* Content Header */
 .contentHeader {
-  margin-bottom: 20px;
+  margin-bottom: 30px;
   text-align: left;
-  padding: 0 15px;
+  padding: 0 18px;
 }
 
 .title {
@@ -258,9 +258,12 @@
 
 /* Responsive Design */
 @media (max-height: 800px) {
+  .mainContent {
+    padding-top: 76px;
+  }
+  
   .contentHeader {
-    margin-top: 65px;
-    margin-bottom: 16px;
+    margin-bottom: 20px;
   }
   
   .title {
@@ -289,9 +292,12 @@
 }
 
 @media (max-height: 700px) {
+  .mainContent {
+    padding-top: 70px;
+  }
+  
   .contentHeader {
-    margin-top: 65px;
-    margin-bottom: 12px;
+    margin-bottom: 16px;
   }
   
   .title {
