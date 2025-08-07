@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useCallback } from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 
@@ -52,6 +52,7 @@ const ROUTE_HIERARCHY = {
 export default function AnimatedRoutes() {
   const location = useLocation();
   const prevLocation = useRef(location.pathname);
+  const currentContainerRef = useRef(null);
 
   // Determine slide direction based on route hierarchy
   const getSlideDirection = () => {
@@ -74,62 +75,66 @@ export default function AnimatedRoutes() {
   useEffect(() => {
     // Save scroll position when route changes
     if (prevLocation.current !== location.pathname) {
-      if (prevLocation.current) {
-        scrollPositions.set(prevLocation.current, window.scrollY);
-        console.log(`Saved: ${prevLocation.current} = ${window.scrollY}px`);
-      }
+      // Find the previous route container and save its scroll position
+      const containers = document.querySelectorAll('[data-page-container]');
+      containers.forEach(container => {
+        if (container.getAttribute('data-route') === prevLocation.current) {
+          const scrollTop = container.scrollTop;
+          scrollPositions.set(prevLocation.current, scrollTop);
+        }
+      });
       prevLocation.current = location.pathname;
-      
-      // Page tracking for scroll preservation
     }
     
     // Disable browser scroll restoration
     if ('scrollRestoration' in history) {
       history.scrollRestoration = 'manual';
     }
-    
-    // Restore scroll position immediately for instant restoration
-    const savedPosition = scrollPositions.get(location.pathname) || 0;
-    console.log(`Restoring: ${location.pathname} = ${savedPosition}px`);
-    
-    // Use requestAnimationFrame for smoother restoration
-    requestAnimationFrame(() => {
-      window.scrollTo({ top: savedPosition, behavior: 'instant' });
-    });
-    
-    // Track scroll for current page
-    const handleScroll = () => {
-      scrollPositions.set(location.pathname, window.scrollY);
-    };
-    
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-    };
+  }, [location.pathname]);
+
+  // Handle scroll tracking for current page
+  const handleScroll = useCallback((event) => {
+    const scrollTop = event.target.scrollTop;
+    scrollPositions.set(location.pathname, scrollTop);
+  }, [location.pathname]);
+
+  // Handle immediate scroll restoration when page mounts
+  const containerRef = useCallback((node) => {
+    if (node) {
+      // Restore scroll position immediately when container is created
+      const savedPosition = scrollPositions.get(location.pathname) || 0;
+      if (savedPosition > 0) {
+        // Set scroll position immediately without animation
+        node.scrollTop = savedPosition;
+      }
+    }
   }, [location.pathname]);
 
   const slideVariants = {
     initial: (direction) => ({
-      x: direction === 'forward' ? '100%' : '-100%', // Forward: right to left, Backward: left to right
-      opacity: 1
+      x: direction === 'forward' ? '100%' : '-100%',
+      opacity: 1,
+      zIndex: 1
     }),
     animate: {
       x: 0,
-      opacity: 1
+      opacity: 1,
+      zIndex: 2
     },
     exit: (direction) => ({
-      x: direction === 'forward' ? '-100%' : '100%', // Forward: exit left, Backward: exit right
-      opacity: 1
+      x: direction === 'forward' ? '-100%' : '100%',
+      opacity: 1,
+      zIndex: 0
     })
   };
 
   return (
     <div style={{ 
       width: '100%', 
+      height: '100vh',
       background: 'white', 
       position: 'relative', 
-      minHeight: '100vh'
+      overflow: 'hidden'
     }}>
       <AnimatePresence initial={false} custom={slideDirection}>
         <motion.div
@@ -140,14 +145,29 @@ export default function AnimatedRoutes() {
           animate="animate"
           exit="exit"
           transition={{
-            duration: 0.2,
-            ease: "easeInOut"
+            duration: 0.25,
+            ease: [0.4, 0.0, 0.2, 1], // Material Design easing curve
+            type: "tween" // Force tween for better WebView performance
           }}
+          data-page-container
+          data-route={location.pathname}
           style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
             width: '100%',
-            minHeight: '100vh',
-            background: 'white'
+            height: '100vh',
+            background: 'white',
+            overflow: 'auto', // Allow individual pages to scroll
+            willChange: 'transform',
+            backfaceVisibility: 'hidden',
+            WebkitBackfaceVisibility: 'hidden',
+            WebkitTransform: 'translate3d(0,0,0)',
+            transform: 'translate3d(0,0,0)',
+            WebkitOverflowScrolling: 'touch'
           }}
+          ref={containerRef}
+          onScroll={handleScroll}
         >
           <Routes location={location}>
             <Route path="/" element={<AuthPage />} />

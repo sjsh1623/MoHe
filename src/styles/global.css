@@ -25,6 +25,7 @@
 
 html {
     height: 100%;
+    background-color: #ffffff; /* Prevent white flashes */
     /* Prevent bounce scrolling on iOS */
     -webkit-overflow-scrolling: touch;
     overflow-scrolling: touch;
@@ -33,17 +34,30 @@ html {
 body {
     margin: 0;
     padding: 0;
-    background: #ffffff;
+    background: #ffffff !important; /* Force white background */
     width: 100%;
+    height: 100%;
     min-height: 100%;
     min-height: 100dvh; /* Dynamic viewport height */
+    overflow: hidden; /* Prevent body scroll - let individual pages handle it */
+    position: fixed; /* Prevent body movement */
+    
+    /* WebView optimizations to prevent white flashes */
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    -webkit-transform: translate3d(0,0,0);
+    transform: translate3d(0,0,0);
     
     /* Improve touch interactions */
     touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
 }
 
 #root {
     width: 100%;
+    height: 100%;
+    background: #ffffff;
+    overflow: hidden;
 }
 
 /* Global container class for consistent padding across all pages */

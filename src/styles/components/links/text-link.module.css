@@ -4,12 +4,19 @@
   text-decoration: underline;
   cursor: pointer;
   transition: color 0.2s ease;
+  border: none;
+  background: transparent;
+  padding: 0;
   
   /* Improve touch target */
   min-height: 44px;
   display: inline-flex;
   align-items: center;
   touch-action: manipulation;
+  
+  /* WebView optimizations */
+  -webkit-tap-highlight-color: transparent;
+  -webkit-appearance: none;
 }
 
 /* Default variant */

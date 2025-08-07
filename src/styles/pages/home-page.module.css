@@ -37,7 +37,8 @@
 
 .locationSection {
   margin-bottom: 24px;
-  margin-top: 88px; /* Fixed top margin = header height (72px) + 16px spacing */
+  margin-top: 72px; /* Match exact header height */
+  padding-top: 16px; /* Add spacing via padding instead */
 }
 
 .contentContainer {

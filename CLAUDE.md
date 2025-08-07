@@ -5,10 +5,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Commands
 
 ### Development
-- `npm run dev` - Start development server on port 3000 with Vite and HMR
+- `npm run dev` - Start development server with Vite and HMR
 - `npm run build` - Build for production
-- `npm run preview` - Preview production build locally  
-- `npm run lint` - Run ESLint with React plugins
+- `npm run preview` - Preview production build locally
+- `npm run lint` - Run ESLint
 
 ### Testing
 No test framework is currently configured.
@@ -17,71 +17,106 @@ No test framework is currently configured.
 
 ### Tech Stack
 - **Frontend**: React 19.1.0 with Vite 7.0.4
-- **Routing**: React Router DOM 7.7.1 with custom animated transitions
-- **Animation**: Framer Motion 12.23.12 + React Transition Group 4.4.5
-- **Styling**: CSS Modules with mobile-first responsive design
-- **State**: React Context with localStorage persistence
-- **Build Tool**: Vite with path aliasing (`@/` → `src/`)
+- **Routing**: React Router DOM 7.7.1 with AnimatedRoutes
+- **Animations**: Framer Motion 12.23.12 + React Transition Group 4.4.5
+- **Styling**: CSS Modules for component-specific styles
+- **State Management**: React Context (UserPreferencesContext)
+- **Build Tool**: Vite with React plugin
 
-### Project Structure
+### Application Architecture
+
+**Entry Point & Navigation**:
+- Application uses `AnimatedRoutes` component instead of traditional App
+- Global `UserPreferencesProvider` context wraps entire app
+- Sophisticated page transition system with directional slide animations
+- Route hierarchy determines animation direction (forward/backward)
+- Scroll position preservation across page transitions
+
+**User Flow**:
+1. **Authentication**: Landing → Login/Signup → Email verification → Preference setup
+2. **Onboarding**: Age selection → MBTI assessment → Space preferences → Transportation method
+3. **Main App**: Home with recommendations → Places list → Place details → Profile
+
+**Component System**:
 ```
-src/
-├── components/         # Component library
-│   ├── ui/            # Reusable UI primitives (buttons, inputs, layout)
-│   │   └── transitions/ # AnimatedRoutes with direction-based slides
-│   └── layout/        # Layout-specific components (headers, nav)
-├── pages/             # Page-level route components
-├── styles/            # CSS modules organized by component/page hierarchy
-│   ├── components/    # Component-specific styles
-│   └── pages/         # Page-specific styles
-├── hooks/             # Custom React hooks (usePageTransition)
-├── contexts/          # React context providers (UserPreferencesContext)
-├── utils/             # Utility functions
-├── assets/            # Static images and resources
-└── main.jsx           # Entry point - renders AnimatedRoutes in BrowserRouter
+src/components/
+├── ui/                    # 50+ reusable primitives
+│   ├── buttons/          # 8 button variants (Primary, Social, Back, Floating, etc.)
+│   ├── cards/            # PlaceCard, ProfileCard, GridPlaceCard
+│   ├── indicators/       # LocationPin, StarRating
+│   ├── inputs/           # FormInput, OTPInput, Checkbox
+│   ├── transitions/      # AnimatedRoutes, PageTransition
+│   └── layout/           # Container, Stack, PagePreloader
+└── layout/               # Page-level templates
+    ├── AuthHeader        # Authentication flow header
+    └── PreferencePageLayout  # Shared preference page template
 ```
 
 ### Key Patterns
 
-**Mobile-Centric Architecture**:
-- **Target Platform**: Optimized for mobile web/WebView with iOS-specific styling
-- **Viewport**: Uses `100dvh` for proper mobile height handling
-- **Touch Optimizations**: `touch-action: manipulation`, prevent zoom on inputs
-- **Responsive**: Mobile-first with 24px→32px container padding scaling
-
-**Advanced Routing System**:
-- **File**: `src/components/ui/transitions/AnimatedRoutes.jsx`
-- **Features**: Hierarchical slide transitions, scroll preservation, direction detection
-- **Entry Pattern**: `main.jsx` renders `AnimatedRoutes` instead of traditional `App`
-- **Animation Logic**: Route hierarchy determines slide direction (forward/backward)
+**Component Architecture**: 
+- **Separation of Concerns**: JSX components in `/components/`, CSS in `/styles/`
+- **CSS Modules**: All styling uses `.module.css` with scoped classes
+- **Barrel Exports**: Clean imports via `index.js` files in directories
+- **PropTypes**: Complex components use PropTypes validation
+- **Shared Layouts**: `PreferencePageLayout` eliminates duplication across onboarding
 
 **State Management**:
-- **Context**: `UserPreferencesContext` with `useUserPreferences()` hook
-- **Persistence**: Automatic localStorage sync for MBTI, space preferences, age range, transportation
-- **Pattern**: Provider/hook pattern with error boundaries
+- **UserPreferencesContext**: Manages MBTI (4-letter breakdown), age range, space preferences, transportation
+- **localStorage Integration**: Automatic persistence of user selections
+- **Context Provider Pattern**: Centralized state with specialized hooks
 
-**Component Architecture**: 
-- **Separation**: JSX logic and CSS styles in separate directory trees
-- **CSS Modules**: All styles use `.module.css` with `styles.className` pattern
-- **Organization**: Styles mirror component structure in `src/styles/`
-- **Exports**: Barrel exports (`index.js`) for clean imports
-- **Variants**: Button components support variant props (`primary`, `secondary`, etc.)
+**Styling Conventions**:
+- **Mobile-First**: Optimized for WebView deployment with touch interactions
+- **CSS Custom Properties**: Global theming via CSS variables
+- **Container Pattern**: `.container-padding` class for consistent spacing
+- **Responsive Design**: Mobile (≤480px) and desktop breakpoints
+- **WebView Optimizations**: `-webkit-tap-highlight-color`, `touch-action`, `user-select`
 
-**Styling Convention**:
-- **Methodology**: CSS Modules with BEM-like class naming
-- **Global**: Base mobile styles in `global.css`
-- **Component Pattern**: 
-  ```javascript
-  import styles from '@/styles/components/buttons/primary-button.module.css';
-  const classes = [styles.button, styles[variant], ...].filter(Boolean).join(' ');
-  ```
+**Animation System**:
+- **Framer Motion**: Page transitions with spring physics
+- **Route Hierarchy**: Smart directional animations based on user flow
+- **Scroll Management**: Advanced scroll position preservation
+- **Exit/Enter States**: Coordinated page transition choreography
 
-**Application Context**: 
-- **Language**: Korean UI ("MOHE 아이디로 로그인", "회원가입", "둘러보기")
-- **Domain**: Appears to be personality/preference-based recommendation app
-- **Features**: MBTI integration, transportation preferences, space preferences
+**File Organization**:
+- **Co-located Styles**: `/styles/` mirrors `/components/` structure
+- **Path Aliases**: `@/` mapped to `src/` directory  
+- **Asset Management**: Images in `/assets/image/`
+- **Korean Language**: Full Korean UI with location "용인시 보정동"
 
-### ESLint Configuration
-- Modern flat config format with browser globals + ES2020
-- Custom rule: `varsIgnorePattern: '^[A-Z_]'` (allows uppercase unused variables)
-- React Hooks and React Refresh plugins for development experience
+### Application Features
+
+**Current Implementation**:
+- Complete authentication flow with email verification
+- MBTI personality assessment (4-dimensional breakdown)
+- User preference collection (age, space type, transportation)
+- Place recommendation system with bookmark functionality
+- Profile management and settings
+- Mobile-optimized place cards with ratings and locations
+
+**UI Component Library**:
+- 8 specialized button variants for different contexts
+- Form inputs with validation and accessibility
+- Card components for places, profiles, and grid layouts
+- Location and rating indicator components
+- Comprehensive transition and animation components
+
+### Development Notes
+
+**Mobile WebView Target**:
+- All components optimized for mobile WebView packaging
+- Touch interaction optimizations throughout
+- Dynamic viewport height (`100dvh`) for mobile browsers
+- Prevented zoom and improved touch response
+
+**ESLint Configuration**:
+- Modern flat config format (ESLint 9.30.1)
+- Custom rule: allows unused variables with uppercase pattern (`varsIgnorePattern: '^[A-Z_]'`)
+- React Hooks and React Refresh plugins enabled
+
+**Current Status**:
+- Production-ready user onboarding flow
+- Sophisticated animation and transition system
+- Complete preference management infrastructure
+- Mobile-first responsive design implemented

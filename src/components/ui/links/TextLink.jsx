@@ -1,12 +1,15 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import styles from '@/styles/components/links/text-link.module.css';
 
 export default function TextLink({ 
   children, 
   href,
+  to,
   onClick,
   variant = 'default',
   className = '',
+  external = false,
   ...props 
 }) {
   const classes = [
@@ -22,14 +25,45 @@ export default function TextLink({
     }
   };
 
+  // If external link or has href, use regular anchor
+  if (external || (href && !to)) {
+    return (
+      <a 
+        href={href}
+        className={classes}
+        onClick={handleClick}
+        target={external ? "_blank" : undefined}
+        rel={external ? "noopener noreferrer" : undefined}
+        {...props}
+      >
+        {children}
+      </a>
+    );
+  }
+
+  // If has 'to' prop or onClick only, use React Router Link or button-like behavior
+  if (to) {
+    return (
+      <Link 
+        to={to}
+        className={classes}
+        onClick={onClick}
+        {...props}
+      >
+        {children}
+      </Link>
+    );
+  }
+
+  // For onClick only (current usage pattern)
   return (
-    <a 
-      href={href}
+    <button 
+      type="button"
       className={classes}
-      onClick={handleClick}
+      onClick={onClick}
       {...props}
     >
       {children}
-    </a>
+    </button>
   );
 }
