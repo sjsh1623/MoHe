@@ -39,12 +39,12 @@ a {
     overflow: hidden;
 }
 
-/* Header - matching PlacesListPage standard */
+/* Header - matching preference pages standard */
 .header {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 25px 5px 10px;
+    padding: 50px 5px 10px;
     position: fixed;
     top: 0;
     left: 0;
@@ -65,7 +65,7 @@ a {
     position: absolute;
     width: 100%;
     height: 120px;
-    top: 160px;
+    top: 185px;
     left: 0;
     display: flex;
     justify-content: center;
@@ -89,7 +89,7 @@ a {
     position: absolute;
     width: 259px;
     height: 42px;
-    top: 320px;
+    top: 345px;
     left: 50%;
     transform: translateX(-50%);
 }
@@ -176,7 +176,7 @@ a {
 /* Save Button */
 .saveButtonContainer {
     position: absolute;
-    top: 380px;
+    top: 405px;
     left: 50%;
     transform: translateX(-50%);
     width: min(320px, 80vw);
