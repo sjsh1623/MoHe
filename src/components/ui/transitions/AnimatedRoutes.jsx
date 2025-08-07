@@ -23,6 +23,7 @@ import MBTISelectionPage from '@/pages/MBTISelectionPage.jsx';
 import SpacePreferenceSelectionPage from '@/pages/SpacePreferenceSelectionPage.jsx';
 import TransportationSelectionPage from '@/pages/TransportationSelectionPage.jsx';
 import HelloPage from '@/pages/HelloPage.jsx';
+import BookmarksPage from '@/pages/BookmarksPage.jsx';
 
 // Navigation flow hierarchy (lower = earlier in flow)
 const ROUTE_HIERARCHY = {
@@ -42,6 +43,7 @@ const ROUTE_HIERARCHY = {
   '/home': 11,
   '/profile-settings': 12,
   '/profile-edit': 13,
+  '/bookmarks': 13,
   '/places': 14,
   '/place': 15
 };
@@ -164,6 +166,7 @@ export default function AnimatedRoutes() {
             <Route path="/hello" element={<HelloPage />} />
             <Route path="/profile-settings" element={<ProfileSettingsPage />} />
             <Route path="/profile-edit" element={<ProfileEditPage />} />
+            <Route path="/bookmarks" element={<BookmarksPage />} />
             <Route path="/places" element={<PlacesListPage />} />
             <Route path="/place/:id" element={<PlaceDetailPage />} />
           </Routes>

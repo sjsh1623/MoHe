@@ -7,7 +7,7 @@ export default function ProfileSettingsPage() {
   const navigate = useNavigate();
 
   const handleBookmarksClick = () => {
-    console.log('Navigate to bookmarks');
+    navigate('/bookmarks');
   };
 
   const handleProfileClick = () => {
