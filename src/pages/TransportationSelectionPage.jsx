@@ -34,12 +34,12 @@ export default function TransportationSelectionPage() {
     const handleNext = () => {
         if (!isReady()) return;
         console.log('Selected transportation:', transportationMethod);
-        navigate('/home');
+        navigate('/hello');
     };
 
     const handleSkip = () => {
         console.log('User skipped transportation selection');
-        navigate('/home');
+        navigate('/hello');
     };
 
     return (
