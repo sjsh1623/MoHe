@@ -70,16 +70,9 @@ export default function GridPlaceCard({
         <h3 className={styles.title}>{title}</h3>
         
         <div className={styles.locationRow}>
-          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-            <g clipPath="url(#clip0_47_277)">
-              <circle cx="8.98539" cy="8.23658" r="2.24635" stroke="#7D848D" strokeWidth="1.1"/>
-              <path d="M15.7244 8.1534C15.7244 11.8293 11.5125 16.4732 8.98538 16.4732C6.45824 16.4732 2.24634 11.8293 2.24634 8.1534C2.24634 4.47748 5.26351 1.49756 8.98538 1.49756C12.7072 1.49756 15.7244 4.47748 15.7244 8.1534Z" stroke="#7D848D" strokeWidth="1.1"/>
-            </g>
-            <defs>
-              <clipPath id="clip0_47_277">
-                <rect width="17.9708" height="17.9708" fill="white"/>
-              </clipPath>
-            </defs>
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="8" cy="7.33325" r="2" stroke="#7D848D" strokeWidth="1.5"/>
+            <path d="M14 7.25918C14 10.532 10.25 14.6666 8 14.6666C5.75 14.6666 2 10.532 2 7.25918C2 3.98638 4.68629 1.33325 8 1.33325C11.3137 1.33325 14 3.98638 14 7.25918Z" stroke="#7D848D" strokeWidth="1.5"/>
           </svg>
           <span className={styles.location}>{location}</span>
         </div>

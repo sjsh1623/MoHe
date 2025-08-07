@@ -90,7 +90,7 @@
   padding: 2.29vh 2.27vw; /* Responsive padding */
   display: flex;
   flex-direction: column;
-  gap: 1.14vh;
+  gap: 0.5vh;
 }
 
 .header {

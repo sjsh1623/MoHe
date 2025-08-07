@@ -292,9 +292,9 @@ export default function PlaceDetailPage({
         <div className={styles.locationSection}>
           <div className={styles.locationRow}>
             <div className={styles.locationInfo}>
-              <svg className={styles.locationIcon} width="16" height="16" viewBox="0 0 16 16" fill="none">
-                <circle cx="8" cy="5.33" r="2" stroke="#7D848D" strokeWidth="1.5"/>
-                <path d="M14 5.26C14 8.53 10.25 12.67 8 12.67S2 8.53 2 5.26C2 1.99 4.69 0 8 0s6 1.99 6 5.26Z" stroke="#7D848D" strokeWidth="1.5"/>
+              <svg className={styles.locationIcon} width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="8" cy="7.33325" r="2" stroke="#7D848D" strokeWidth="1.5"/>
+                <path d="M14 7.25918C14 10.532 10.25 14.6666 8 14.6666C5.75 14.6666 2 10.532 2 7.25918C2 3.98638 4.68629 1.33325 8 1.33325C11.3137 1.33325 14 3.98638 14 7.25918Z" stroke="#7D848D" strokeWidth="1.5"/>
               </svg>
               <span className={styles.locationText}>{placeData.location}</span>
             </div>
