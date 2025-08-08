@@ -214,7 +214,7 @@
 .overlap {
   position: absolute;
   width: min(384px, 90vw);
-  height: min(337px, 40vh);
+  height: min(410px, 45vh);
   top: max(42vh, 390px);
   left: 50%;
   transform: translateX(-50%);
@@ -232,7 +232,7 @@
 
 .group7 {
   position: relative;
-  height: 263px;
+  height: 336px;
   top: 27px;
 }
 
@@ -254,7 +254,7 @@
   cursor: pointer;
 }
 
-.group12 {
+.group11_5 {
   position: absolute;
   width: 100%;
   height: 45px;
@@ -263,11 +263,20 @@
   cursor: pointer;
 }
 
-.group14 {
+.group12 {
   position: absolute;
   width: 100%;
   height: 45px;
   top: 218px;
+  left: 0;
+  cursor: pointer;
+}
+
+.group14 {
+  position: absolute;
+  width: 100%;
+  height: 45px;
+  top: 291px;
   left: 0;
   cursor: pointer;
 }
@@ -473,7 +482,7 @@
 
 .element {
   position: absolute;
-  top: 246px;
+  top: 319px;
   left: 302px;
   font-family: "Inter", Helvetica, sans-serif;
   font-weight: 500;

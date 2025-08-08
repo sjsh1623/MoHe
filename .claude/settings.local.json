@@ -9,7 +9,9 @@
       "Bash(npm run dev:*)",
       "Bash(npm run build:*)",
       "Bash(pkill:*)",
-      "Bash(npm run lint)"
+      "Bash(npm run lint)",
+      "Bash(grep:*)",
+      "Bash(git checkout:*)"
     ],
     "deny": []
   }

@@ -24,6 +24,7 @@ import SpacePreferenceSelectionPage from '@/pages/SpacePreferenceSelectionPage.j
 import TransportationSelectionPage from '@/pages/TransportationSelectionPage.jsx';
 import HelloPage from '@/pages/HelloPage.jsx';
 import BookmarksPage from '@/pages/BookmarksPage.jsx';
+import MyPlacesPage from '@/pages/MyPlacesPage.jsx';
 
 // Navigation flow hierarchy (lower = earlier in flow)
 const ROUTE_HIERARCHY = {
@@ -44,6 +45,7 @@ const ROUTE_HIERARCHY = {
   '/profile-settings': 12,
   '/profile-edit': 13,
   '/bookmarks': 13,
+  '/my-places': 13,
   '/places': 14,
   '/place': 15
 };
@@ -187,6 +189,7 @@ export default function AnimatedRoutes() {
             <Route path="/profile-settings" element={<ProfileSettingsPage />} />
             <Route path="/profile-edit" element={<ProfileEditPage />} />
             <Route path="/bookmarks" element={<BookmarksPage />} />
+            <Route path="/my-places" element={<MyPlacesPage />} />
             <Route path="/places" element={<PlacesListPage />} />
             <Route path="/place/:id" element={<PlaceDetailPage />} />
           </Routes>

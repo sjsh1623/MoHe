@@ -15,6 +15,10 @@ export default function ProfileSettingsPage() {
     navigate('/profile-edit');
   };
 
+  const handleMyPlacesClick = () => {
+    navigate('/my-places');
+  };
+
   const handleRecentPlacesClick = () => {
     console.log('Navigate to recent places');
   };
@@ -96,6 +100,32 @@ export default function ProfileSettingsPage() {
                         </svg>
                       </div>
                       <div className={styles.textWrapper6}>프로필</div>
+                    </div>
+                    <div className={styles.rightArrow}>
+                      <svg width="24" height="24" viewBox="0 0 27 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path fillRule="evenodd" clipRule="evenodd" d="M11.0758 7.48913C10.7263 7.78256 10.6696 8.31775 10.9492 8.68453L14.8666 13.8231L10.9492 18.9617C10.6696 19.3284 10.7263 19.8636 11.0758 20.1571C11.4253 20.4505 11.9353 20.391 12.2149 20.0242L16.5373 14.3544C16.7741 14.0438 16.7741 13.6024 16.5373 13.2918L12.2149 7.62195C11.9353 7.25518 11.4253 7.19571 11.0758 7.48913Z" fill="#7D848D"/>
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className={styles.group11_5} onClick={handleMyPlacesClick}>
+                <img className={styles.vector} src="/vector-2525.svg" alt="" />
+                <div className={styles.group9}>
+                  <div className={styles.backArrow}>
+                    <div className={styles.directionLeft2}></div>
+                  </div>
+                  <div className={styles.group10}>
+                    <div className={styles.leftContent}>
+                      <div className={styles.version}>
+                        <svg width="26" height="26" viewBox="0 0 27 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M13.2567 3.76538C18.8396 3.76538 23.3582 8.28397 23.3582 13.8669C23.3582 19.4498 18.8396 23.9684 13.2567 23.9684C7.67377 23.9684 3.15518 19.4498 3.15518 13.8669C3.15518 8.28397 7.67377 3.76538 13.2567 3.76538Z" stroke="#7D848D" strokeWidth="1.5" strokeLinejoin="round"/>
+                          <path d="M10.1194 10.7231L16.3939 10.7231L16.3939 17.0106" stroke="#7D848D" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                          <path d="M16.3939 10.7231L10.1194 17.0106" stroke="#7D848D" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                      </div>
+                      <div className={styles.textWrapper6}>내 장소</div>
                     </div>
                     <div className={styles.rightArrow}>
                       <svg width="24" height="24" viewBox="0 0 27 28" fill="none" xmlns="http://www.w3.org/2000/svg">
