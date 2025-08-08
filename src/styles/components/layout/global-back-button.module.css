@@ -30,10 +30,7 @@
   /* Touch optimizations */
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
-  
-  /* Backdrop blur for better visibility */
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+
 }
 
 .globalBackButton:hover {

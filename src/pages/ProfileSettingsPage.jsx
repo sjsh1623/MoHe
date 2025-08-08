@@ -53,7 +53,7 @@ const MENU_ITEMS = [
     id: 'recentPlaces',
     icon: <RecentPlacesIcon />,
     text: '최근 본 장소',
-    route: null,
+    route: '/recent-view',
     className: styles.group12,
     vectorSrc: '/vector-2529-2.svg',
     directionLeftClass: styles.directionLeft3,

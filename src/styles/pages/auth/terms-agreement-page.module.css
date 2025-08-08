@@ -3,7 +3,7 @@
   min-height: 100vh;
   min-height: 100dvh;
   background: white;
-  padding: 1.5rem 2rem; /* 24px 32px - LOGIN PAGE STANDARD */
+  padding: 4rem 2rem 1.5rem 2rem; /* Large top padding: 64px top, 32px sides, 24px bottom */
   max-width: 440px;
   margin: 0 auto;
 }
@@ -51,7 +51,7 @@
 /* Mobile WebView optimizations - LOGIN PAGE STANDARD */
 @media (max-width: 480px) {
   .pageContainer {
-    padding: 2rem; /* LOGIN PAGE STANDARD */
+    padding: 3rem 2rem 2rem 2rem;
     max-width: 100%;
   }
   

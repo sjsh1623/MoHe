@@ -88,6 +88,18 @@ export default function TermsAgreementPage() {
           </p>
         </div>
 
+      <Stack spacing="md" className={styles.content}>
+        <div className={styles.titleSection}>
+          <h1 className={styles.title}>
+            모해<br />
+            약관 동의
+          </h1>
+          <p className={styles.description}>
+            모해 서비스 시작 가입을 위해<br />
+            정보 제공에 동의해주세요
+          </p>
+        </div>
+
         <div className={styles.termsSection}>
           <TermsList
             agreements={agreements}
@@ -106,6 +118,7 @@ export default function TermsAgreementPage() {
             다음
           </PrimaryButton>
         </div>
+      </Stack>
       </Stack>
     </Container>
   );

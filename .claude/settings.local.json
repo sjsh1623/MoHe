@@ -11,7 +11,9 @@
       "Bash(pkill:*)",
       "Bash(npm run lint)",
       "Bash(grep:*)",
-      "Bash(git checkout:*)"
+      "Bash(git checkout:*)",
+      "Bash(npm run lint:*)",
+      "Bash(find:*)"
     ],
     "deny": []
   }

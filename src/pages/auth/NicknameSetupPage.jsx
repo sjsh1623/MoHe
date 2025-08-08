@@ -62,6 +62,14 @@ export default function NicknameSetupPage() {
           </h1>
         </div>
 
+      <Stack spacing="md" className={styles.content}>
+        <div className={styles.titleSection}>
+          <h1 className={styles.title}>
+            MOHE에 사용할<br />
+            닉네임을 입력해주세요
+          </h1>
+        </div>
+
         <Stack spacing="sm" className={styles.form}>
           <div className={styles.inputContainer}>
             <FormInput
@@ -101,6 +109,7 @@ export default function NicknameSetupPage() {
             다음
           </PrimaryButton>
         </Stack>
+      </Stack>
       </Stack>
     </Container>
   );

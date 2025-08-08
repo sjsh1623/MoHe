@@ -7,7 +7,6 @@ import PlaceCard from '@/components/ui/cards/PlaceCard';
 import LocationPin from '@/components/ui/indicators/LocationPin';
 import ProfileButton from '@/components/ui/buttons/ProfileButton';
 import OutlineButton from '@/components/ui/buttons/OutlineButton';
-import FloatingButton from '@/components/ui/buttons/FloatingButton';
 import bannerLeft from '@/assets/image/banner_left.png';
 
 // Mock data for the recommendations
@@ -77,10 +76,6 @@ export default function HomePage() {
     navigate(`/place/${placeId}`);
   };
 
-  const handleFloatingButtonClick = () => {
-    console.log('Floating button clicked');
-    // TODO: Open AI assistant or quick actions
-  };
 
   return (
     <div className={styles.pageContainer}>
@@ -211,8 +206,6 @@ export default function HomePage() {
         </div>
       </footer>
 
-      {/* Floating action button */}
-      <FloatingButton onClick={handleFloatingButtonClick} />
     </div>
   );
 }

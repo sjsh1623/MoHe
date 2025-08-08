@@ -42,6 +42,16 @@ export default function ForgotPasswordPage() {
           </p>
         </div>
 
+      <Stack spacing="md" className={styles.content}>
+        <div className={styles.titleSection}>
+          <h1 className={styles.title}>
+            비밀번호를 잊으셨나요?
+          </h1>
+          <p className={styles.description}>
+            재설정하려는 계정의 이메일 주소를 입력해주세요
+          </p>
+        </div>
+
         <Stack spacing="sm" className={styles.form}>
           <FormInput
             label="이메일 주소"
@@ -59,6 +69,7 @@ export default function ForgotPasswordPage() {
             {emailSent ? '이메일 전송됨' : '이메일 전송'}
           </PrimaryButton>
         </Stack>
+      </Stack>
       </Stack>
     </Container>
   );

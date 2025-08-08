@@ -2,7 +2,7 @@
 .pageContainer {
   min-height: 100dvh;
   background: white;
-  padding: 1.5rem 2rem; /* 24px 32px to match other pages */
+  padding: 4rem 2rem 1.5rem 2rem; /* Large top padding: 64px top, 32px sides, 24px bottom */
   max-width: 440px; /* Match Figma design width */
   margin: 0 auto;
 }
@@ -30,7 +30,7 @@
 /* Mobile WebView optimizations */
 @media (max-width: 480px) {
   .pageContainer {
-    padding: 2rem;
+    padding: 3rem 2rem 2rem 2rem;
     max-width: 100%;
   }
   

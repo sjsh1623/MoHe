@@ -13,7 +13,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 24px 20px; /* Fixed padding for consistent height */
+  padding: 24px 32px; /* Match container-padding for consistency */
   position: fixed;
   top: 0;
   left: 0;
@@ -26,13 +26,13 @@
 
 .logo {
   font-family: 'Inter', system-ui, sans-serif;
-  font-size: 1.125rem; /* 18px */
+  font-size: 1.5rem; /* 24px */
   font-weight: 600;
   color: black;
   margin: 0;
   text-align: center;
-  width: 78px;
-  height: 15px;
+  width: auto;
+  height: auto;
 }
 
 .locationSection {
@@ -313,7 +313,7 @@
 /* Mobile responsive adjustments - responsive units scale naturally */
 @media (max-width: 480px) {
   .header {
-    padding: 16px 16px; /* Smaller fixed padding for mobile */
+    padding: 16px 24px; /* Match mobile container-padding for consistency */
     height: 64px; /* Smaller fixed header height for mobile */
   }
   
@@ -322,7 +322,7 @@
   }
   
   .logo {
-    font-size: 16px; /* Fixed logo size for mobile */
+    font-size: 20px; /* Larger logo size for mobile */
   }
   
   .section {

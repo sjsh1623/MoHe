@@ -28,6 +28,7 @@ const ROUTES_WITH_BACK_BUTTON = [
   '/profile-edit',
   '/bookmarks',
   '/my-places',
+  '/recent-view',
   '/places',
   '/place/', // Dynamic route prefix
 ];

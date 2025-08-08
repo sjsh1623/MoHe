@@ -13,7 +13,7 @@
   align-items: center;
   justify-content: center;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
-  z-index: 1000;
+  z-index: 10000;
 }
 
 .floatingButton:hover {
