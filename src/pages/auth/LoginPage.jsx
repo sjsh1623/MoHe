@@ -3,7 +3,6 @@ import {useNavigate} from 'react-router-dom';
 import styles from '@/styles/pages/auth/login-page.module.css';
 
 import {Container, Stack} from '@/components/ui/layout';
-import BackButton from '@/components/ui/buttons/BackButton';
 import FormInput from '@/components/ui/inputs/FormInput';
 import PrimaryButton from '@/components/ui/buttons/PrimaryButton';
 import TextLink from '@/components/ui/links/TextLink';
@@ -22,9 +21,6 @@ export default function LoginPage() {
         }));
     };
 
-    const handleBack = () => {
-        navigate(-1);
-    };
 
     const handleLogin = () => {
         // TODO: Implement login logic
@@ -39,9 +35,6 @@ export default function LoginPage() {
 
     return (
         <Container className={styles.pageContainer}>
-            <div className={styles.header}>
-                <BackButton onClick={handleBack}/>
-            </div>
 
             <Stack spacing="md" className={styles.content}>
                 <h1 className={styles.title}>

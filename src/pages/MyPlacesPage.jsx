@@ -1,5 +1,4 @@
 import React from 'react';
-import BackButton from '@/components/ui/buttons/BackButton';
 import BookmarkPlaceCard from '@/components/ui/cards/BookmarkPlaceCard';
 import styles from '@/styles/pages/my-places-page.module.css';
 
@@ -80,7 +79,6 @@ export default function MyPlacesPage() {
   return (
     <>
       <header className={styles.header}>
-        <BackButton />
         <h1 className={styles.title}>내 장소</h1>
       </header>
 

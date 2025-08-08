@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styles from '@/styles/pages/profile-edit-page.module.css';
-import BackButton from '@/components/ui/buttons/BackButton';
 
 export default function ProfileEditPage() {
   const navigate = useNavigate();
@@ -9,9 +8,6 @@ export default function ProfileEditPage() {
   const [originalNickname] = useState('석현'); // Original nickname
   const hasChanges = nickname.trim() !== originalNickname.trim() && nickname.trim() !== '';
 
-  const handleBack = () => {
-    navigate(-1);
-  };
 
   const handleClose = () => {
     navigate(-1);
@@ -30,9 +26,8 @@ export default function ProfileEditPage() {
   return (
     <div className={styles.iphoneProMax}>
       <div className={styles.div}>
-        {/* Header */}
+        {/* Header - BackButton now handled globally */}
         <header className={styles.header}>
-          <BackButton />
         </header>
         
         {/* Profile Image Section */}

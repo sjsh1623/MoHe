@@ -1,7 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import styles from '@/styles/pages/profile-settings-page.module.css';
-import BackButton from '@/components/ui/buttons/BackButton';
 import ProfileMenuItem from '@/components/ui/items/ProfileMenuItem';
 import ProfileInfoCard from '@/components/ui/cards/ProfileInfoCard';
 import { 
@@ -92,9 +91,8 @@ export default function ProfileSettingsPage() {
   return (
     <div className={styles.iphoneProMax}>
       <div className={styles.div}>
-        {/* Header */}
+        {/* Header - BackButton now handled globally */}
         <header className={styles.header}>
-          <BackButton />
         </header>
         
         {/* Profile Header */}

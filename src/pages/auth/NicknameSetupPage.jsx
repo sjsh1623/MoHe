@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import styles from '@/styles/pages/auth/nickname-setup-page.module.css';
 
 import { Container, Stack } from '@/components/ui/layout';
-import BackButton from '@/components/ui/buttons/BackButton';
 import FormInput from '@/components/ui/inputs/FormInput';
 import PrimaryButton from '@/components/ui/buttons/PrimaryButton';
 
@@ -13,9 +12,6 @@ export default function NicknameSetupPage() {
   const [isCheckingDuplicate, setIsCheckingDuplicate] = useState(false);
   const [duplicateCheckResult, setDuplicateCheckResult] = useState(null); // null, 'available', 'taken'
 
-  const handleBack = () => {
-    navigate(-1);
-  };
 
   const handleNicknameChange = (e) => {
     setNickname(e.target.value);
@@ -57,9 +53,6 @@ export default function NicknameSetupPage() {
 
   return (
     <Container className={styles.pageContainer}>
-      <div className={styles.header}>
-        <BackButton onClick={handleBack} />
-      </div>
 
       <Stack spacing="md" className={styles.content}>
         <div className={styles.titleSection}>

@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import styles from '@/styles/pages/auth/email-verification-page.module.css';
 
 import { Container, Stack } from '@/components/ui/layout';
-import BackButton from '@/components/ui/buttons/BackButton';
 import OTPInput from '@/components/ui/inputs/OTPInput';
 import PrimaryButton from '@/components/ui/buttons/PrimaryButton';
 import TextLink from '@/components/ui/links/TextLink';
@@ -14,9 +13,6 @@ export default function EmailVerificationPage() {
   const [isVerifying, setIsVerifying] = useState(false);
   const [error, setError] = useState('');
 
-  const handleBack = () => {
-    navigate(-1);
-  };
 
   const handleCodeChange = (code) => {
     setVerificationCode(code);
@@ -71,9 +67,6 @@ export default function EmailVerificationPage() {
 
   return (
     <Container className={styles.pageContainer}>
-      <div className={styles.header}>
-        <BackButton onClick={handleBack} />
-      </div>
 
       <Stack spacing="md" className={styles.content}>
         <div className={styles.titleSection}>

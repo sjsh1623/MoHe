@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import styles from '@/styles/pages/auth/terms-agreement-page.module.css';
 
 import { Container, Stack } from '@/components/ui/layout';
-import BackButton from '@/components/ui/buttons/BackButton';
 import TermsList from '@/components/ui/lists/TermsList';
 import PrimaryButton from '@/components/ui/buttons/PrimaryButton';
 
@@ -42,9 +41,6 @@ export default function TermsAgreementPage() {
   const navigate = useNavigate();
   const [agreements, setAgreements] = useState(TERMS_DATA);
 
-  const handleBack = () => {
-    navigate(-1);
-  };
 
   const handleAgreementChange = (id, checked) => {
     setAgreements(prev => 
@@ -79,9 +75,6 @@ export default function TermsAgreementPage() {
 
   return (
     <Container className={styles.pageContainer}>
-      <div className={styles.header}>
-        <BackButton onClick={handleBack} />
-      </div>
 
       <Stack spacing="md" className={styles.content}>
         <div className={styles.titleSection}>

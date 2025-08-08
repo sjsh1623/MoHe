@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import styles from '@/styles/pages/auth/email-signup-page.module.css';
 
 import { Container, Stack } from '@/components/ui/layout';
-import BackButton from '@/components/ui/buttons/BackButton';
 import FormInput from '@/components/ui/inputs/FormInput';
 import PrimaryButton from '@/components/ui/buttons/PrimaryButton';
 
@@ -12,9 +11,6 @@ export default function EmailSignupPage() {
   const [email, setEmail] = useState('');
   const [isVerifying, setIsVerifying] = useState(false);
 
-  const handleBack = () => {
-    navigate(-1);
-  };
 
   const handleEmailChange = (e) => {
     setEmail(e.target.value);
@@ -30,9 +26,6 @@ export default function EmailSignupPage() {
 
   return (
     <Container className={styles.pageContainer}>
-      <div className={styles.header}>
-        <BackButton onClick={handleBack} />
-      </div>
 
       <Stack spacing="md" className={styles.content}>
         <div className={styles.titleSection}>

@@ -1,0 +1,107 @@
+/* Global unified back button positioning */
+.globalBackButton {
+  /* Fixed positioning for consistent placement */
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 9999;
+  
+  /* Safe area and spacing */
+  margin-top: env(safe-area-inset-top, 0px);
+  margin-left: env(safe-area-inset-left, 0px);
+  
+  /* Consistent positioning across all screens */
+  transform: translate(16px, 16px);
+  
+  /* Button styling */
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  background: transparent;
+  border: none;
+  border-radius: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  /* Touch optimizations */
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  
+  /* Backdrop blur for better visibility */
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.globalBackButton:hover {
+  background: rgba(255, 255, 255, 0.95);
+  transform: translate(16px, 16px) scale(1.02);
+}
+
+.globalBackButton:active {
+  transform: translate(16px, 16px) scale(0.98);
+  background: rgba(255, 255, 255, 1);
+}
+
+.icon {
+  color: #1C1B1F;
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+}
+
+/* Focus state for accessibility */
+.globalBackButton:focus-visible {
+  outline: 2px solid #007AFF;
+  outline-offset: 2px;
+}
+
+/* Mobile breakpoints */
+@media (max-width: 480px) {
+  .globalBackButton {
+    /* Slightly closer to edge on mobile */
+    transform: translate(12px, 12px);
+  }
+  
+  .globalBackButton:hover {
+    transform: translate(12px, 12px) scale(1.02);
+  }
+  
+  .globalBackButton:active {
+    transform: translate(12px, 12px) scale(0.98);
+  }
+}
+
+/* Large screen adjustments */
+@media (min-width: 768px) {
+  .globalBackButton {
+    /* More spacing on larger screens */
+    transform: translate(24px, 24px);
+  }
+  
+  .globalBackButton:hover {
+    transform: translate(24px, 24px) scale(1.02);
+  }
+  
+  .globalBackButton:active {
+    transform: translate(24px, 24px) scale(0.98);
+  }
+}
+
+/* Very small screens */
+@media (max-width: 320px) {
+  .globalBackButton {
+    transform: translate(8px, 8px);
+  }
+  
+  .globalBackButton:hover {
+    transform: translate(8px, 8px) scale(1.02);
+  }
+  
+  .globalBackButton:active {
+    transform: translate(8px, 8px) scale(0.98);
+  }
+}

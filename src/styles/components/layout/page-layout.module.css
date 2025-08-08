@@ -1,0 +1,18 @@
+/* Global page layout container */
+.pageLayout {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  min-height: 100dvh; /* Dynamic viewport height for mobile */
+  background: white;
+  overflow-x: hidden;
+}
+
+.pageContent {
+  position: relative;
+  width: 100%;
+  min-height: inherit;
+  
+  /* Ensure content doesn't interfere with global back button */
+  /* The back button is positioned absolutely, so no padding needed */
+}

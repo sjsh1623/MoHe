@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import styles from '@/styles/pages/auth/password-setup-page.module.css';
 
 import { Container, Stack } from '@/components/ui/layout';
-import BackButton from '@/components/ui/buttons/BackButton';
 import FormInput from '@/components/ui/inputs/FormInput';
 import PrimaryButton from '@/components/ui/buttons/PrimaryButton';
 
@@ -14,9 +13,6 @@ export default function PasswordSetupPage() {
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleBack = () => {
-    navigate(-1);
-  };
 
   const handlePasswordChange = (e) => {
     setPassword(e.target.value);
@@ -99,9 +95,6 @@ export default function PasswordSetupPage() {
 
   return (
     <Container className={styles.pageContainer}>
-      <div className={styles.header}>
-        <BackButton onClick={handleBack} />
-      </div>
 
       <Stack spacing="md" className={styles.content}>
         <div className={styles.titleSection}>

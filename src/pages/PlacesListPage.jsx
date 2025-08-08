@@ -4,7 +4,6 @@ import styles from '@/styles/pages/places-list-page.module.css';
 
 import { Container } from '@/components/ui/layout';
 import GridPlaceCard from '@/components/ui/cards/GridPlaceCard';
-import BackButton from '@/components/ui/buttons/BackButton';
 
 // Mock data for the places list
 const PLACES_DATA = [
@@ -75,7 +74,6 @@ export default function PlacesListPage() {
     <div className={styles.pageContainer}>
       {/* Header */}
       <header className={styles.header}>
-        <BackButton />
         <h1 className={styles.pageTitle}>지금 가볼만한 곳</h1>
       </header>
 

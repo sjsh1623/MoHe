@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import styles from '@/styles/pages/place-detail-page.module.css';
-import BackButton from '@/components/ui/buttons/BackButton';
 
 export default function PlaceDetailPage({
   place = null, // Allow prop injection for testing/reusability
@@ -245,10 +244,6 @@ export default function PlaceDetailPage({
           ))}
         </div>
         
-        {/* Back Button */}
-        <div className={styles.backButtonContainer}>
-          <BackButton className={styles.backButton} />
-        </div>
         
         {/* Bottom Handle */}
         <div 

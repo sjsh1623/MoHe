@@ -3,3 +3,4 @@
 // Example: export { ThemeProvider, useTheme } from './ThemeContext';
 
 export { UserPreferencesProvider, useUserPreferences } from './UserPreferencesContext';
+export { BackButtonProvider, useBackButton } from './BackButtonContext';
