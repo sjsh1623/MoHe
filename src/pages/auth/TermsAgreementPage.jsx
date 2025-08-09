@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import styles from '@/styles/pages/auth/terms-agreement-page.module.css';
 
-import { Container, Stack } from '@/components/ui/layout';
+import { AuthContainer, AuthTitle } from '@/components/auth';
+import { useAuthNavigation } from '@/hooks/useAuthNavigation';
 import TermsList from '@/components/ui/lists/TermsList';
 import PrimaryButton from '@/components/ui/buttons/PrimaryButton';
 
@@ -38,7 +38,7 @@ const TERMS_DATA = [
 ];
 
 export default function TermsAgreementPage() {
-  const navigate = useNavigate();
+  const { goToPasswordSetup } = useAuthNavigation();
   const [agreements, setAgreements] = useState(TERMS_DATA);
 
 
@@ -65,7 +65,7 @@ export default function TermsAgreementPage() {
 
   const handleNext = () => {
     console.log('Proceeding with agreements:', agreements);
-    navigate('/password-setup');
+    goToPasswordSetup();
   };
 
   // Check if required terms are agreed
@@ -74,31 +74,27 @@ export default function TermsAgreementPage() {
     .every(term => term.checked);
 
   return (
-    <Container className={styles.pageContainer}>
-
-      <Stack spacing="md" className={styles.content}>
-        <div className={styles.titleSection}>
-          <h1 className={styles.title}>
+    <AuthContainer 
+      pageClassName={styles.pageContainer}
+      contentClassName={styles.content}
+    >
+      <AuthTitle
+        title={
+          <>
             모해<br />
             약관 동의
-          </h1>
-          <p className={styles.description}>
+          </>
+        }
+        subtitle={
+          <>
             모해 서비스 시작 가입을 위해<br />
             정보 제공에 동의해주세요
-          </p>
-        </div>
-
-      <Stack spacing="md" className={styles.content}>
-        <div className={styles.titleSection}>
-          <h1 className={styles.title}>
-            모해<br />
-            약관 동의
-          </h1>
-          <p className={styles.description}>
-            모해 서비스 시작 가입을 위해<br />
-            정보 제공에 동의해주세요
-          </p>
-        </div>
+          </>
+        }
+        titleClassName={styles.title}
+        subtitleClassName={styles.description}
+        wrapperClassName={styles.titleSection}
+      />
 
         <div className={styles.termsSection}>
           <TermsList
@@ -118,8 +114,6 @@ export default function TermsAgreementPage() {
             다음
           </PrimaryButton>
         </div>
-      </Stack>
-      </Stack>
-    </Container>
+    </AuthContainer>
   );
 }

@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import styles from '@/styles/pages/auth/nickname-setup-page.module.css';
 
-import { Container, Stack } from '@/components/ui/layout';
+import { Stack } from '@/components/ui/layout';
+import { AuthContainer, AuthTitle } from '@/components/auth';
+import { useAuthNavigation } from '@/hooks/useAuthNavigation';
 import FormInput from '@/components/ui/inputs/FormInput';
 import PrimaryButton from '@/components/ui/buttons/PrimaryButton';
 
 export default function NicknameSetupPage() {
-  const navigate = useNavigate();
+  const { goToTerms } = useAuthNavigation();
   const [nickname, setNickname] = useState('');
   const [isCheckingDuplicate, setIsCheckingDuplicate] = useState(false);
   const [duplicateCheckResult, setDuplicateCheckResult] = useState(null); // null, 'available', 'taken'
@@ -44,7 +45,7 @@ export default function NicknameSetupPage() {
   const handleNext = () => {
     if (isValidNickname && duplicateCheckResult === 'available') {
       console.log('Proceeding with nickname:', nickname);
-      navigate('/terms');
+      goToTerms();
     }
   };
 
@@ -52,23 +53,20 @@ export default function NicknameSetupPage() {
   const canProceed = isValidNickname && duplicateCheckResult === 'available';
 
   return (
-    <Container className={styles.pageContainer}>
-
-      <Stack spacing="md" className={styles.content}>
-        <div className={styles.titleSection}>
-          <h1 className={styles.title}>
+    <AuthContainer 
+      pageClassName={styles.pageContainer}
+      contentClassName={styles.content}
+    >
+      <AuthTitle
+        title={
+          <>
             MOHE에 사용할<br />
             닉네임을 입력해주세요
-          </h1>
-        </div>
-
-      <Stack spacing="md" className={styles.content}>
-        <div className={styles.titleSection}>
-          <h1 className={styles.title}>
-            MOHE에 사용할<br />
-            닉네임을 입력해주세요
-          </h1>
-        </div>
+          </>
+        }
+        titleClassName={styles.title}
+        wrapperClassName={styles.titleSection}
+      />
 
         <Stack spacing="sm" className={styles.form}>
           <div className={styles.inputContainer}>
@@ -109,8 +107,6 @@ export default function NicknameSetupPage() {
             다음
           </PrimaryButton>
         </Stack>
-      </Stack>
-      </Stack>
-    </Container>
+    </AuthContainer>
   );
 }

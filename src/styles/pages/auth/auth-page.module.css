@@ -3,7 +3,7 @@
     min-height: 100dvh; /* Dynamic viewport height for mobile */
     display: flex;
     align-items: center;
-    padding: 4rem 2rem 1.5rem 2rem; /* Large top padding: 64px top, 32px sides, 24px bottom */
+    padding: var(--auth-padding-desktop);
     max-width: 440px;
     margin: 0 auto;
     background: white;
@@ -61,7 +61,7 @@
 /* Mobile WebView optimizations - LOGIN PAGE STANDARD */
 @media (max-width: 480px) {
   .pageContainer {
-    padding: 3rem 2rem 2rem 2rem;
+    padding: var(--auth-padding-mobile);
     max-width: 100%;
   }
 }

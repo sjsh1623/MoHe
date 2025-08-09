@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import styles from '@/styles/pages/auth/email-signup-page.module.css';
 
-import { Container, Stack } from '@/components/ui/layout';
+import { Stack } from '@/components/ui/layout';
+import { AuthContainer, AuthTitle } from '@/components/auth';
+import { useAuthNavigation } from '@/hooks/useAuthNavigation';
 import FormInput from '@/components/ui/inputs/FormInput';
 import PrimaryButton from '@/components/ui/buttons/PrimaryButton';
 
 export default function EmailSignupPage() {
-  const navigate = useNavigate();
+  const { goToEmailVerification } = useAuthNavigation();
   const [email, setEmail] = useState('');
   const [isVerifying, setIsVerifying] = useState(false);
 
@@ -19,21 +20,26 @@ export default function EmailSignupPage() {
   const handleEmailVerification = () => {
     console.log('Starting email verification for:', email);
     setIsVerifying(true);
-    navigate('/verify-email');
+    goToEmailVerification();
   };
 
   const isValidEmail = email.trim() && email.includes('@') && email.includes('.');
 
   return (
-    <Container className={styles.pageContainer}>
-
-      <Stack spacing="md" className={styles.content}>
-        <div className={styles.titleSection}>
-          <h1 className={styles.title}>
+    <AuthContainer 
+      pageClassName={styles.pageContainer}
+      contentClassName={styles.content}
+    >
+      <AuthTitle
+        title={
+          <>
             MOHE에 사용할<br />
             이메일을 입력해주세요
-          </h1>
-        </div>
+          </>
+        }
+        titleClassName={styles.title}
+        wrapperClassName={styles.titleSection}
+      />
 
         <Stack spacing="sm" className={styles.form}>
           <FormInput
@@ -52,7 +58,6 @@ export default function EmailSignupPage() {
             {isVerifying ? '인증 중...' : '이메일 인증하기'}
           </PrimaryButton>
         </Stack>
-      </Stack>
-    </Container>
+    </AuthContainer>
   );
 }

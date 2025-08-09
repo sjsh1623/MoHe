@@ -1,14 +1,15 @@
 import React, {useState} from 'react';
-import {useNavigate} from 'react-router-dom';
 import styles from '@/styles/pages/auth/login-page.module.css';
 
-import {Container, Stack} from '@/components/ui/layout';
+import {Stack} from '@/components/ui/layout';
 import FormInput from '@/components/ui/inputs/FormInput';
 import PrimaryButton from '@/components/ui/buttons/PrimaryButton';
 import TextLink from '@/components/ui/links/TextLink';
+import {AuthContainer, AuthTitle} from '@/components/auth';
+import {useAuthNavigation} from '@/hooks/useAuthNavigation';
 
 export default function LoginPage() {
-    const navigate = useNavigate();
+    const {goToForgotPassword} = useAuthNavigation();
     const [formData, setFormData] = useState({
         email: '',
         password: ''
@@ -21,26 +22,27 @@ export default function LoginPage() {
         }));
     };
 
-
     const handleLogin = () => {
         // TODO: Implement login logic
         console.log('Login attempt:', formData);
     };
 
-    const handleForgotPassword = () => {
-        navigate('/forgot-password');
-    };
-
     const isFormValid = formData.email.trim() && formData.password.trim();
 
     return (
-        <Container className={styles.pageContainer}>
-
-            <Stack spacing="md" className={styles.content}>
-                <h1 className={styles.title}>
-                    MOHE 계정으로<br/>
-                    로그인
-                </h1>
+        <AuthContainer 
+            pageClassName={styles.pageContainer}
+            contentClassName={styles.content}
+        >
+            <AuthTitle 
+                title={
+                    <>
+                        MOHE 계정으로<br/>
+                        로그인
+                    </>
+                }
+                titleClassName={styles.title}
+            />
 
                 <Stack spacing="sm">
                     <FormInput
@@ -68,11 +70,10 @@ export default function LoginPage() {
                         로그인
                     </PrimaryButton>
 
-                    <TextLink onClick={handleForgotPassword}>
+                    <TextLink onClick={goToForgotPassword}>
                         비밀번호를 잊으셨나요?
                     </TextLink>
                 </Stack>
-            </Stack>
-        </Container>
+        </AuthContainer>
     );
 }

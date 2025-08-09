@@ -1,14 +1,15 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
 import styles from '@/styles/pages/auth/email-verification-page.module.css';
 
-import { Container, Stack } from '@/components/ui/layout';
+import { Stack } from '@/components/ui/layout';
+import { AuthContainer, AuthTitle } from '@/components/auth';
+import { useAuthNavigation } from '@/hooks/useAuthNavigation';
 import OTPInput from '@/components/ui/inputs/OTPInput';
 import PrimaryButton from '@/components/ui/buttons/PrimaryButton';
 import TextLink from '@/components/ui/links/TextLink';
 
 export default function EmailVerificationPage() {
-  const navigate = useNavigate();
+  const { goToNicknameSetup } = useAuthNavigation();
   const [verificationCode, setVerificationCode] = useState('');
   const [isVerifying, setIsVerifying] = useState(false);
   const [error, setError] = useState('');
@@ -46,11 +47,11 @@ export default function EmailVerificationPage() {
       // For demo, accept any 5-digit code
       if (code.length === 5) {
         // Success - navigate to nickname setup
-        navigate('/nickname-setup');
+        goToNicknameSetup();
       } else {
         setError('인증번호가 올바르지 않습니다. 다시 시도해주세요.');
       }
-    } catch (err) {
+    } catch {
       setError('인증에 실패했습니다. 다시 시도해주세요.');
     } finally {
       setIsVerifying(false);
@@ -66,17 +67,17 @@ export default function EmailVerificationPage() {
   const isCodeComplete = verificationCode.length === 5;
 
   return (
-    <Container className={styles.pageContainer}>
-
-      <Stack spacing="md" className={styles.content}>
-        <div className={styles.titleSection}>
-          <h1 className={styles.title}>
-            인증번호를 입력해주세요
-          </h1>
-          <p className={styles.description}>
-            받은 편지함에서 확인 후 아래에 입력해주세요.
-          </p>
-        </div>
+    <AuthContainer 
+      pageClassName={styles.pageContainer}
+      contentClassName={styles.content}
+    >
+      <AuthTitle
+        title="인증번호를 입력해주세요"
+        subtitle="받은 편지함에서 확인 후 아래에 입력해주세요."
+        titleClassName={styles.title}
+        subtitleClassName={styles.description}
+        wrapperClassName={styles.titleSection}
+      />
 
         <div className={styles.otpSection}>
           <OTPInput
@@ -107,7 +108,6 @@ export default function EmailVerificationPage() {
             인증번호 재전송
           </TextLink>
         </div>
-      </Stack>
-    </Container>
+    </AuthContainer>
   );
 }

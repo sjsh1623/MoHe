@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import styles from '@/styles/pages/auth/password-setup-page.module.css';
 
-import { Container, Stack } from '@/components/ui/layout';
+import { Stack } from '@/components/ui/layout';
+import { AuthContainer, AuthTitle } from '@/components/auth';
+import { useAuthNavigation } from '@/hooks/useAuthNavigation';
 import FormInput from '@/components/ui/inputs/FormInput';
 import PrimaryButton from '@/components/ui/buttons/PrimaryButton';
 
 export default function PasswordSetupPage() {
-  const navigate = useNavigate();
+  const { goToHome } = useAuthNavigation();
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [errors, setErrors] = useState({});
@@ -81,8 +82,8 @@ export default function PasswordSetupPage() {
       await new Promise(resolve => setTimeout(resolve, 1500));
       
       // Success - navigate to home page
-      navigate('/home');
-    } catch (error) {
+      goToHome();
+    } catch {
       setErrors({ submit: '비밀번호 설정에 실패했습니다. 다시 시도해주세요.' });
     } finally {
       setIsSubmitting(false);
@@ -94,15 +95,20 @@ export default function PasswordSetupPage() {
                      password === confirmPassword;
 
   return (
-    <Container className={styles.pageContainer}>
-
-      <Stack spacing="md" className={styles.content}>
-        <div className={styles.titleSection}>
-          <h1 className={styles.title}>
+    <AuthContainer 
+      pageClassName={styles.pageContainer}
+      contentClassName={styles.content}
+    >
+      <AuthTitle
+        title={
+          <>
             MOHE에 사용할<br />
             비밀번호를 입력해주세요
-          </h1>
-        </div>
+          </>
+        }
+        titleClassName={styles.title}
+        wrapperClassName={styles.titleSection}
+      />
 
         <Stack spacing="lg" className={styles.form}>
           <FormInput
@@ -137,7 +143,6 @@ export default function PasswordSetupPage() {
             {isSubmitting ? '설정 중...' : '시작하기'}
           </PrimaryButton>
         </Stack>
-      </Stack>
-    </Container>
+    </AuthContainer>
   );
 }

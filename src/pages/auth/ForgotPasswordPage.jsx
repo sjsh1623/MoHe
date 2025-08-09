@@ -1,13 +1,12 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import styles from '@/styles/pages/auth/forgot-password-page.module.css';
 
-import { Container, Stack } from '@/components/ui/layout';
+import { Stack } from '@/components/ui/layout';
+import { AuthContainer, AuthTitle } from '@/components/auth';
 import FormInput from '@/components/ui/inputs/FormInput';
 import PrimaryButton from '@/components/ui/buttons/PrimaryButton';
 
 export default function ForgotPasswordPage() {
-  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [emailSent, setEmailSent] = useState(false);
 
@@ -30,27 +29,17 @@ export default function ForgotPasswordPage() {
   const isValidEmail = email.trim() && email.includes('@');
 
   return (
-    <Container className={styles.pageContainer}>
-
-      <Stack spacing="md" className={styles.content}>
-        <div className={styles.titleSection}>
-          <h1 className={styles.title}>
-            비밀번호를 잊으셨나요?
-          </h1>
-          <p className={styles.description}>
-            재설정하려는 계정의 이메일 주소를 입력해주세요
-          </p>
-        </div>
-
-      <Stack spacing="md" className={styles.content}>
-        <div className={styles.titleSection}>
-          <h1 className={styles.title}>
-            비밀번호를 잊으셨나요?
-          </h1>
-          <p className={styles.description}>
-            재설정하려는 계정의 이메일 주소를 입력해주세요
-          </p>
-        </div>
+    <AuthContainer 
+      pageClassName={styles.pageContainer}
+      contentClassName={styles.content}
+    >
+      <AuthTitle
+        title="비밀번호를 잊으셨나요?"
+        subtitle="재설정하려는 계정의 이메일 주소를 입력해주세요"
+        titleClassName={styles.title}
+        subtitleClassName={styles.description}
+        wrapperClassName={styles.titleSection}
+      />
 
         <Stack spacing="sm" className={styles.form}>
           <FormInput
@@ -69,8 +58,6 @@ export default function ForgotPasswordPage() {
             {emailSent ? '이메일 전송됨' : '이메일 전송'}
           </PrimaryButton>
         </Stack>
-      </Stack>
-      </Stack>
-    </Container>
+    </AuthContainer>
   );
 }
