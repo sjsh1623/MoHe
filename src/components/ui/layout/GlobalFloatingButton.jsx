@@ -1,5 +1,5 @@
 import React from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import FloatingButton from '@/components/ui/buttons/FloatingButton';
 
 // Routes where the floating button should be shown (only home page)
@@ -9,13 +9,14 @@ const VISIBLE_ROUTES = [
 
 export default function GlobalFloatingButton() {
   const location = useLocation();
+  const navigate = useNavigate();
 
   // Show floating button only on home page
   const shouldShow = VISIBLE_ROUTES.includes(location.pathname);
 
   const handleFloatingButtonClick = () => {
-    console.log('Global floating button clicked');
-    // TODO: Open AI assistant or quick actions
+    console.log('Search button clicked - navigating to search results');
+    navigate('/search-results');
   };
 
   if (!shouldShow) {

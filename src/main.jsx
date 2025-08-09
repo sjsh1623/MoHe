@@ -7,6 +7,7 @@ import {UserPreferencesProvider} from '@/contexts';
 import { BackButtonProvider } from '@/contexts/BackButtonContext';
 import GlobalBackButtonWrapper from '@/components/ui/layout/GlobalBackButtonWrapper';
 import GlobalFloatingButton from '@/components/ui/layout/GlobalFloatingButton';
+import GlobalMessageInput from '@/components/ui/layout/GlobalMessageInput';
 import { initializeWebViewOptimizations } from '@/utils/webviewOptimizations';
 import ErrorBoundary from '@/components/ErrorBoundary';
 
@@ -22,6 +23,7 @@ createRoot(document.getElementById('root')).render(
                     {/* Global UI elements - positioned outside transformed container */}
                     <GlobalBackButtonWrapper />
                     <GlobalFloatingButton />
+                    <GlobalMessageInput />
                     
                     <div style={{ 
                         position: 'relative', 

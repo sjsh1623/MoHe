@@ -26,6 +26,7 @@ import HelloPage from '@/pages/HelloPage.jsx';
 import BookmarksPage from '@/pages/BookmarksPage.jsx';
 import MyPlacesPage from '@/pages/MyPlacesPage.jsx';
 import RecentViewPage from '@/pages/RecentViewPage.jsx';
+import SearchResultsPage from '@/pages/SearchResultsPage.jsx';
 
 // Navigation flow hierarchy (lower = earlier in flow)
 const ROUTE_HIERARCHY = {
@@ -49,6 +50,7 @@ const ROUTE_HIERARCHY = {
   '/my-places': 13,
   '/recent-view': 13,
   '/places': 14,
+  '/search-results': 14,
   '/place': 15
 };
 
@@ -194,6 +196,7 @@ export default function AnimatedRoutes() {
             <Route path="/my-places" element={<MyPlacesPage />} />
             <Route path="/recent-view" element={<RecentViewPage />} />
             <Route path="/places" element={<PlacesListPage />} />
+            <Route path="/search-results" element={<SearchResultsPage />} />
             <Route path="/place/:id" element={<PlaceDetailPage />} />
           </Routes>
         </motion.div>
