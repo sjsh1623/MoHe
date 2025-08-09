@@ -1,0 +1,39 @@
+.container {
+  padding-top: 1.5rem;
+}
+
+.gridContainer {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.gridItem {
+  width: 100%;
+}
+
+/* Desktop adjustments */
+@media (min-width: 768px) {
+  .gridContainer {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .gridContainer {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+  }
+}
+
+/* Mobile adjustments */
+@media (max-width: 480px) {
+  .container {
+    padding-top: 1rem;
+  }
+  
+  .gridContainer {
+    gap: 12px;
+  }
+}

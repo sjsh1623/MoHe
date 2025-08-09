@@ -4,6 +4,8 @@ import styles from '@/styles/pages/recent-view-page.module.css';
 
 import { Container } from '@/components/ui/layout';
 import GridPlaceCard from '@/components/ui/cards/GridPlaceCard';
+import PlacesListSkeleton from '@/components/ui/skeletons/PlacesListSkeleton';
+import { useMockLoading } from '@/hooks/useLoadingState';
 
 // Mock data for the recent viewed places
 const RECENT_PLACES_DATA = [
@@ -59,16 +61,26 @@ const RECENT_PLACES_DATA = [
 
 export default function RecentViewPage() {
   const navigate = useNavigate();
+  const isLoading = useMockLoading(1100); // Simulate API loading
 
   const handlePlaceClick = (placeId) => {
     console.log('Recent place clicked:', placeId);
-    navigate(`/place/${placeId}`);
+    // Pass preloaded data to place detail page
+    const selectedPlace = RECENT_PLACES_DATA.find(place => place.id === placeId);
+    navigate(`/place/${placeId}`, { 
+      state: { preloadedImage: selectedPlace?.image, preloadedData: selectedPlace } 
+    });
   };
 
   const handleBookmarkToggle = (placeId, isBookmarked) => {
     console.log(`Recent place ${placeId} bookmark toggled:`, isBookmarked);
     // TODO: Update bookmark state in backend
   };
+
+  // Show skeleton loader while loading
+  if (isLoading) {
+    return <PlacesListSkeleton />;
+  }
 
   return (
     <div className={styles.pageContainer}>

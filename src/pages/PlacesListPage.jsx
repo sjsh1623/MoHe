@@ -4,6 +4,8 @@ import styles from '@/styles/pages/places-list-page.module.css';
 
 import { Container } from '@/components/ui/layout';
 import GridPlaceCard from '@/components/ui/cards/GridPlaceCard';
+import PlacesListSkeleton from '@/components/ui/skeletons/PlacesListSkeleton';
+import { useMockLoading } from '@/hooks/useLoadingState';
 
 // Mock data for the places list
 const PLACES_DATA = [
@@ -59,16 +61,26 @@ const PLACES_DATA = [
 
 export default function PlacesListPage() {
   const navigate = useNavigate();
+  const isLoading = useMockLoading(1200); // Simulate API loading
 
   const handlePlaceClick = (placeId) => {
     console.log('Place clicked:', placeId);
-    navigate(`/place/${placeId}`);
+    // Pass preloaded data to place detail page
+    const selectedPlace = PLACES_DATA.find(place => place.id === placeId);
+    navigate(`/place/${placeId}`, { 
+      state: { preloadedImage: selectedPlace?.image, preloadedData: selectedPlace } 
+    });
   };
 
   const handleBookmarkToggle = (placeId, isBookmarked) => {
     console.log(`Place ${placeId} bookmark toggled:`, isBookmarked);
     // TODO: Update bookmark state in backend
   };
+
+  // Show skeleton loader while loading
+  if (isLoading) {
+    return <PlacesListSkeleton />;
+  }
 
   return (
     <div className={styles.pageContainer}>

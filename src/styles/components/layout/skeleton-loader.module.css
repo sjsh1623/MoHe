@@ -1,0 +1,57 @@
+/* Skeleton Animation Keyframes */
+@keyframes skeletonPulse {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+/* Base skeleton styles */
+.skeleton {
+  background-color: #e5e5e5;
+  animation: skeletonPulse 1.5s ease-in-out infinite;
+  border-radius: 8px;
+}
+
+/* Transparent background support */
+.skeleton.transparent {
+  background-color: rgba(229, 229, 229, 0.6);
+}
+
+/* Keep light gray in all modes */
+@media (prefers-color-scheme: dark) {
+  .skeleton {
+    background-color: #e5e5e5;
+  }
+  
+  .skeleton.transparent {
+    background-color: rgba(229, 229, 229, 0.6);
+  }
+}
+
+/* Skeleton container */
+.skeletonContainer {
+  width: 100%;
+  pointer-events: none;
+}
+
+/* Skeleton card wrapper */
+.skeletonCard {
+  background: transparent;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+  .skeletonCard {
+    padding: 12px;
+    margin-bottom: 12px;
+  }
+}

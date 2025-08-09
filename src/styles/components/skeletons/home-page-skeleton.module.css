@@ -1,0 +1,84 @@
+.container {
+  padding-top: 2rem;
+}
+
+.header {
+  margin-bottom: 2rem;
+}
+
+.greeting {
+  margin-bottom: 0.5rem;
+}
+
+.subtitle {
+  opacity: 0.7;
+}
+
+.contextSection {
+  margin-bottom: 2rem;
+}
+
+.sectionHeader {
+  margin: 2rem 0 1rem 0;
+}
+
+.horizontalScroll {
+  width: calc(100% + 64px);
+  margin: 0 -32px;
+  overflow-x: hidden;
+  margin-bottom: 1rem;
+}
+
+.cardContainer {
+  display: flex;
+  gap: 16px;
+  padding: 0 32px;
+}
+
+.horizontalCard {
+  flex-shrink: 0;
+  width: 320px;
+}
+
+.verticalCards {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Mobile adjustments */
+@media (max-width: 480px) {
+  .container {
+    padding-top: 1.5rem;
+  }
+  
+  .header {
+    margin-bottom: 1.5rem;
+  }
+  
+  .contextSection {
+    margin-bottom: 1.5rem;
+  }
+  
+  .sectionHeader {
+    margin: 1.5rem 0 0.75rem 0;
+  }
+  
+  .horizontalScroll {
+    width: calc(100% + 48px);
+    margin: 0 -24px;
+  }
+  
+  .cardContainer {
+    padding: 0 24px;
+    gap: 12px;
+  }
+  
+  .horizontalCard {
+    width: 280px;
+  }
+  
+  .verticalCards {
+    gap: 12px;
+  }
+}

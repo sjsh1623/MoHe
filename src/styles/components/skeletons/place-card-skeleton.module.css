@@ -1,0 +1,104 @@
+/* Default Place Card Skeleton */
+.card {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.image {
+  flex-shrink: 0;
+}
+
+.content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.title {
+  flex: 1;
+}
+
+.rating {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.locationRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.avatarRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.additionalCount {
+  margin-left: 4px;
+}
+
+/* Grid Place Card Skeleton */
+.gridCard {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.gridImage {
+  width: 100%;
+}
+
+.gridContent {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.gridContent .title {
+  margin-bottom: 4px;
+}
+
+.gridContent .locationRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.ratingRow {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.ratingRow > div:last-child {
+  margin-left: 6px;
+}
+
+/* Mobile adjustments */
+@media (max-width: 480px) {
+  .card {
+    gap: 12px;
+  }
+  
+  .content {
+    gap: 6px;
+  }
+  
+  .avatarRow {
+    gap: 6px;
+  }
+}

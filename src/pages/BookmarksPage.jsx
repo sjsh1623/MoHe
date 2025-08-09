@@ -1,5 +1,7 @@
 import React from 'react';
 import BookmarkPlaceCard from '@/components/ui/cards/BookmarkPlaceCard';
+import BookmarksSkeleton from '@/components/ui/skeletons/BookmarksSkeleton';
+import { useMockLoading } from '@/hooks/useLoadingState';
 import styles from '@/styles/pages/bookmarks-page.module.css';
 
 const mockBookmarkedPlaces = [
@@ -76,6 +78,13 @@ const mockBookmarkedPlaces = [
 ];
 
 export default function BookmarksPage() {
+  const isLoading = useMockLoading(900); // Simulate API loading
+
+  // Show skeleton loader while loading
+  if (isLoading) {
+    return <BookmarksSkeleton />;
+  }
+
   return (
     <>
       <header className={styles.header}>

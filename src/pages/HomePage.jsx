@@ -7,6 +7,8 @@ import PlaceCard from '@/components/ui/cards/PlaceCard';
 import LocationPin from '@/components/ui/indicators/LocationPin';
 import ProfileButton from '@/components/ui/buttons/ProfileButton';
 import OutlineButton from '@/components/ui/buttons/OutlineButton';
+import HomePageSkeleton from '@/components/ui/skeletons/HomePageSkeleton';
+import { useMockLoading } from '@/hooks/useLoadingState';
 import bannerLeft from '@/assets/image/banner_left.png';
 
 // Mock data for the recommendations
@@ -54,6 +56,7 @@ const DESTINATION_DATA = [
 
 export default function HomePage() {
   const navigate = useNavigate();
+  const isLoading = useMockLoading(1500); // Simulate API loading
   console.log('HomePage component loaded');
 
   const handleProfileClick = () => {
@@ -73,9 +76,17 @@ export default function HomePage() {
 
   const handlePlaceClick = (placeId) => {
     console.log('Place clicked:', placeId);
-    navigate(`/place/${placeId}`);
+    // Pass preloaded data to place detail page
+    const selectedPlace = RECOMMENDATION_DATA.find(place => place.id === placeId);
+    navigate(`/place/${placeId}`, { 
+      state: { preloadedImage: selectedPlace?.image, preloadedData: selectedPlace } 
+    });
   };
 
+  // Show skeleton loader while loading
+  if (isLoading) {
+    return <HomePageSkeleton />;
+  }
 
   return (
     <div className={styles.pageContainer}>

@@ -1,12 +1,20 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useLocation } from 'react-router-dom';
 import styles from '@/styles/pages/place-detail-page.module.css';
+import PlaceDetailSkeleton from '@/components/ui/skeletons/PlaceDetailSkeleton';
+import { useMockLoading } from '@/hooks/useLoadingState';
 
 export default function PlaceDetailPage({
   place = null, // Allow prop injection for testing/reusability
   onExperience
 }) {
   const { id } = useParams();
+  const location = useLocation();
+  const isLoading = useMockLoading(1800); // Simulate API loading
+  
+  // Get preloaded data from navigation state
+  const preloadedImage = location.state?.preloadedImage;
+  const preloadedData = location.state?.preloadedData;
   const [sheetState, setSheetState] = useState('half'); // 'half' (50%), 'large' (80%), 'expanded' (100%)
   const [dragOffset, setDragOffset] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
@@ -181,6 +189,11 @@ export default function PlaceDetailPage({
       }
     }
   };
+
+  // Show skeleton loader while loading (with preloaded image if available)
+  if (isLoading) {
+    return <PlaceDetailSkeleton preloadedImage={preloadedImage} />;
+  }
 
   return (
     <div 

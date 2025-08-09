@@ -2,6 +2,8 @@ import React from 'react';
 import styles from '@/styles/pages/search-results-page.module.css';
 
 import { Container } from '@/components/ui/layout';
+import SearchResultsSkeleton from '@/components/ui/skeletons/SearchResultsSkeleton';
+import { useMockLoading } from '@/hooks/useLoadingState';
 
 // Mock data for search results
 const SEARCH_RESULTS = [
@@ -52,10 +54,17 @@ const SEARCH_RESULTS = [
 ];
 
 export default function SearchResultsPage() {
+  const isLoading = useMockLoading(1300); // Simulate API loading
+
   const handleBookmark = (placeId) => {
     console.log('Bookmarking place:', placeId);
     // TODO: Implement bookmark logic
   };
+
+  // Show skeleton loader while loading
+  if (isLoading) {
+    return <SearchResultsSkeleton />;
+  }
 
   return (
     <Container className={styles.pageContainer}>
