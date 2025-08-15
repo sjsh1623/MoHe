@@ -6,45 +6,53 @@ import styles from '@/styles/components/skeletons/home-page-skeleton.module.css'
 
 export default function HomePageSkeleton() {
   return (
-    <Container className={styles.container}>
-      {/* Header Section */}
-      <div className={styles.header}>
-        <SkeletonText width="60%" height="32px" className={styles.greeting} />
-        <SkeletonText width="80%" height="18px" className={styles.subtitle} />
-      </div>
-
-      {/* Weather/Context Section */}
-      <div className={styles.contextSection}>
-        <SkeletonBox width="100%" height="80px" borderRadius="16px" />
-      </div>
-
-      {/* Recommendations Title */}
-      <div className={styles.sectionHeader}>
-        <SkeletonText width="40%" height="24px" />
-      </div>
-
-      {/* Horizontal Scrollable Place Cards */}
-      <div className={styles.horizontalScroll}>
-        <div className={styles.cardContainer}>
-          {[...Array(3)].map((_, index) => (
-            <div key={index} className={styles.horizontalCard}>
-              <PlaceCardSkeleton />
+    <div className={styles.contentContainer}>
+      <div className={styles.contentWrapper}>
+        {/* Personalized recommendations section */}
+        <section className={styles.section}>
+          <SkeletonText width="60%" height="24px" className={`${styles.sectionTitle} container-padding`} />
+          <div className={styles.horizontalScroll}>
+            <div className={styles.cardsContainer}>
+              {[...Array(2)].map((_, index) => (
+                <div key={index} className={styles.cardWrapper}>
+                  <PlaceCardSkeleton />
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-      </div>
+          </div>
+        </section>
 
-      {/* Another Section */}
-      <div className={styles.sectionHeader}>
-        <SkeletonText width="50%" height="24px" />
-      </div>
+        {/* Mood-based section */}
+        <section className={`${styles.moodSection} container-padding`}>
+          <SkeletonBox width="100%" height="120px" borderRadius="16px" className={styles.moodCard} />
+        </section>
 
-      {/* Vertical Place Cards */}
-      <div className={styles.verticalCards}>
-        {[...Array(4)].map((_, index) => (
-          <PlaceCardSkeleton key={index} />
-        ))}
+        {/* Popular destinations section */}
+        <section className={styles.section}>
+          <SkeletonText width="40%" height="24px" className={`${styles.sectionTitle} container-padding`} />
+          <div className={styles.horizontalScroll}>
+            <div className={styles.destinationsContainer}>
+              {[...Array(2)].map((_, index) => (
+                <div key={index} className={styles.destinationWrapper}>
+                  <div className={styles.destinationCard}>
+                    <SkeletonBox width="270px" height="177px" borderRadius="12px" />
+                    <div className={styles.destinationInfo}>
+                      <SkeletonText width="70%" height="18px" />
+                      <div className={styles.destinationLocation}>
+                        <SkeletonBox width="12px" height="12px" borderRadius="50%" />
+                        <SkeletonText width="50%" height="14px" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className={`${styles.seeMoreContainer} container-padding`}>
+            <SkeletonBox width="140px" height="44px" borderRadius="22px" />
+          </div>
+        </section>
       </div>
-    </Container>
+    </div>
   );
 }

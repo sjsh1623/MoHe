@@ -80,11 +80,6 @@ const mockMyPlaces = [
 export default function MyPlacesPage() {
   const isLoading = useMockLoading(950); // Simulate API loading
 
-  // Show skeleton loader while loading
-  if (isLoading) {
-    return <BookmarksSkeleton />;
-  }
-
   return (
     <>
       <header className={styles.header}>
@@ -92,7 +87,10 @@ export default function MyPlacesPage() {
       </header>
 
       <main className={styles.main}>
-        <div className={styles.placesList}>
+        {isLoading ? (
+          <BookmarksSkeleton />
+        ) : (
+          <div className={styles.placesList}>
           {mockMyPlaces.map((place) => (
             <BookmarkPlaceCard
               key={place.id}
@@ -102,7 +100,8 @@ export default function MyPlacesPage() {
               rating={place.rating}
             />
           ))}
-        </div>
+          </div>
+        )}
       </main>
     </>
   );

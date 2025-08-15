@@ -89,14 +89,14 @@
   margin-top: 2rem;
 }
 
-/* Dark mode support */
+/* Keep light backgrounds in all modes */
 @media (prefers-color-scheme: dark) {
   .statsSection {
-    background: #2a2a2a;
+    background: #f8f9fa;
   }
   
   .menuItem {
-    border-bottom-color: #3a3a3a;
+    border-bottom-color: #f0f0f0;
   }
 }
 

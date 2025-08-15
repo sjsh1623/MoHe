@@ -77,14 +77,9 @@ export default function PlacesListPage() {
     // TODO: Update bookmark state in backend
   };
 
-  // Show skeleton loader while loading
-  if (isLoading) {
-    return <PlacesListSkeleton />;
-  }
-
   return (
     <div className={styles.pageContainer}>
-      {/* Header */}
+      {/* Header - Always shown immediately */}
       <header className={styles.header}>
         <h1 className={styles.pageTitle}>지금 가볼만한 곳</h1>
       </header>
@@ -94,8 +89,12 @@ export default function PlacesListPage() {
         <div className={styles.contentWrapper}>
           <h2 className={styles.sectionTitle}>오늘, 이런 곳은 어때요?</h2>
           
-          <div className={styles.placesGrid}>
-            {PLACES_DATA.map((place) => (
+          {/* Places Grid - Show skeleton while loading */}
+          {isLoading ? (
+            <PlacesListSkeleton />
+          ) : (
+            <div className={styles.placesGrid}>
+              {PLACES_DATA.map((place) => (
               <GridPlaceCard
                 key={place.id}
                 title={place.title}
@@ -105,9 +104,10 @@ export default function PlacesListPage() {
                 isBookmarked={place.isBookmarked}
                 onClick={() => handlePlaceClick(place.id)}
                 onBookmarkToggle={(isBookmarked) => handleBookmarkToggle(place.id, isBookmarked)}
-              />
-            ))}
-          </div>
+                />
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -61,14 +61,9 @@ export default function SearchResultsPage() {
     // TODO: Implement bookmark logic
   };
 
-  // Show skeleton loader while loading
-  if (isLoading) {
-    return <SearchResultsSkeleton />;
-  }
-
   return (
     <Container className={styles.pageContainer}>
-        {/* Header */}
+        {/* Header - Always shown immediately */}
         <div className={styles.header}>
           <button className={styles.mapButton}>
             <svg width="30" height="30" viewBox="0 0 30 30" fill="none">
@@ -79,7 +74,7 @@ export default function SearchResultsPage() {
           </button>
         </div>
 
-        {/* Title Section */}
+        {/* Title Section - Always shown immediately */}
         <div className={styles.titleSection}>
           <h1 className={styles.title}>
             석현님만을 위한<br />장소들을 찾아봤어요!
@@ -90,9 +85,12 @@ export default function SearchResultsPage() {
           </p>
         </div>
 
-        {/* Search Results */}
-        <div className={styles.resultsContainer}>
-          {SEARCH_RESULTS.map((place) => (
+        {/* Search Results - Show skeleton while loading */}
+        {isLoading ? (
+          <SearchResultsSkeleton />
+        ) : (
+          <div className={styles.resultsContainer}>
+            {SEARCH_RESULTS.map((place) => (
             <div key={place.id} className={styles.placeCard}>
               <div className={styles.horizontalScroll}>
                 <div className={styles.imagesContainer}>
@@ -194,8 +192,9 @@ export default function SearchResultsPage() {
                 </div>
               </div>
             </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
     </Container>
   );
 }

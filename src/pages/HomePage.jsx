@@ -83,14 +83,9 @@ export default function HomePage() {
     });
   };
 
-  // Show skeleton loader while loading
-  if (isLoading) {
-    return <HomePageSkeleton />;
-  }
-
   return (
     <div className={styles.pageContainer}>
-      {/* Header */}
+      {/* Header - Always shown immediately */}
       <header className={styles.header}>
         <h1 className={styles.logo}>MOHE</h1>
         <ProfileButton onClick={handleProfileClick} />
@@ -101,9 +96,12 @@ export default function HomePage() {
         <LocationPin location="용인시 보정동" size="medium" />
       </div>
 
-      {/* Main content */}
-      <div className={styles.contentContainer}>
-        <div className={styles.contentWrapper}>
+      {/* Main content - Show skeleton while loading */}
+      {isLoading ? (
+        <HomePageSkeleton />
+      ) : (
+        <div className={styles.contentContainer}>
+          <div className={styles.contentWrapper}>
           {/* Personalized recommendations section */}
           <section className={styles.section}>
             <h2 className={`${styles.sectionTitle} container-padding`}>내 취향에 맞는 추천 플레이스</h2>
@@ -203,8 +201,9 @@ export default function HomePage() {
             </div>
           </section>
 
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Footer moved outside contentWrapper */}
       <footer className={styles.footer}>

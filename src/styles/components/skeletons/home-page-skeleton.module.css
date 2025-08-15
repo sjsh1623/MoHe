@@ -1,84 +1,120 @@
-.container {
-  padding-top: 2rem;
+.contentContainer {
+  padding: 0 !important;
+  max-width: none !important;
+  width: 100%;
+  height: auto;
+  overflow: visible;
 }
 
-.header {
-  margin-bottom: 2rem;
+.contentWrapper {
+  padding-bottom: 0;
 }
 
-.greeting {
-  margin-bottom: 0.5rem;
+.section {
+  margin-bottom: 32px;
 }
 
-.subtitle {
-  opacity: 0.7;
-}
-
-.contextSection {
-  margin-bottom: 2rem;
-}
-
-.sectionHeader {
-  margin: 2rem 0 1rem 0;
+.sectionTitle {
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 1.375rem;
+  font-weight: 600;
+  color: black;
+  margin: 0 0 1.5rem 0;
+  text-align: left;
 }
 
 .horizontalScroll {
-  width: calc(100% + 64px);
-  margin: 0 -32px;
-  overflow-x: hidden;
-  margin-bottom: 1rem;
+  width: calc(100% + 20px);
+  margin: 0 -10px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
-.cardContainer {
+.horizontalScroll::-webkit-scrollbar {
+  display: none;
+}
+
+.cardsContainer {
   display: flex;
   gap: 16px;
-  padding: 0 32px;
+  padding: 0 10px;
+  padding-left: 42px;
 }
 
-.horizontalCard {
+.cardWrapper {
   flex-shrink: 0;
   width: 320px;
 }
 
-.verticalCards {
+.moodSection {
+  margin-bottom: 32px;
+}
+
+.moodCard {
+  width: 100%;
+  height: 120px;
+  border-radius: 16px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+}
+
+.destinationsContainer {
+  display: flex;
+  gap: 16px;
+  padding: 0 10px;
+  padding-left: 42px;
+}
+
+.destinationWrapper {
+  flex-shrink: 0;
+  width: 277px;
+}
+
+.destinationCard {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
+}
+
+.destinationInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.destinationLocation {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.seeMoreContainer {
+  display: flex;
+  justify-content: center;
+  margin-top: 24px;
 }
 
 /* Mobile adjustments */
 @media (max-width: 480px) {
-  .container {
-    padding-top: 1.5rem;
+  .cardsContainer {
+    padding-left: 32px;
   }
   
-  .header {
-    margin-bottom: 1.5rem;
+  .destinationsContainer {
+    padding-left: 32px;
   }
   
-  .contextSection {
-    margin-bottom: 1.5rem;
-  }
-  
-  .sectionHeader {
-    margin: 1.5rem 0 0.75rem 0;
-  }
-  
-  .horizontalScroll {
-    width: calc(100% + 48px);
-    margin: 0 -24px;
-  }
-  
-  .cardContainer {
-    padding: 0 24px;
-    gap: 12px;
-  }
-  
-  .horizontalCard {
+  .cardWrapper {
     width: 280px;
   }
   
-  .verticalCards {
-    gap: 12px;
+  .destinationWrapper {
+    width: 240px;
   }
 }

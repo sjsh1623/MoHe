@@ -3,8 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import styles from '@/styles/pages/profile-settings-page.module.css';
 import ProfileMenuItem from '@/components/ui/items/ProfileMenuItem';
 import ProfileInfoCard from '@/components/ui/cards/ProfileInfoCard';
-import ProfileSkeleton from '@/components/ui/skeletons/ProfileSkeleton';
-import { useMockLoading } from '@/hooks/useLoadingState';
 import { 
   BookmarkIcon, 
   ProfileIcon, 
@@ -81,7 +79,6 @@ const MENU_ITEMS = [
 
 export default function ProfileSettingsPage() {
   const navigate = useNavigate();
-  const isLoading = useMockLoading(1000); // Simulate API loading
 
   const handleMenuItemClick = (item) => {
     if (item.route) {
@@ -90,11 +87,6 @@ export default function ProfileSettingsPage() {
       console.log(`Navigate to ${item.text}`);
     }
   };
-
-  // Show skeleton loader while loading
-  if (isLoading) {
-    return <ProfileSkeleton />;
-  }
 
   return (
     <div className={styles.iphoneProMax}>

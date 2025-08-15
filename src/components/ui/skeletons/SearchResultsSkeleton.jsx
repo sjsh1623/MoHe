@@ -5,21 +5,8 @@ import styles from '@/styles/components/skeletons/search-results-skeleton.module
 
 export default function SearchResultsSkeleton() {
   return (
-    <Container className={styles.container}>
-      {/* Header */}
-      <div className={styles.header}>
-        <SkeletonCircle size="30px" />
-      </div>
-
-      {/* Title Section */}
-      <div className={styles.titleSection}>
-        <SkeletonText width="80%" height="28px" className={styles.title} />
-        <SkeletonText width="90%" height="16px" className={styles.subtitle} />
-      </div>
-
-      {/* Search Results */}
-      <div className={styles.resultsContainer}>
-        {[...Array(3)].map((_, index) => (
+    <div className={styles.resultsContainer}>
+        {[...Array(2)].map((_, index) => (
           <div key={index} className={styles.placeCard}>
             {/* Horizontal Images */}
             <div className={styles.horizontalScroll}>
@@ -46,7 +33,7 @@ export default function SearchResultsSkeleton() {
               <div className={styles.locationInfo}>
                 <SkeletonText width="40%" height="16px" />
                 <div className={styles.locationIcon}>
-                  <SkeletonCircle size="15px" />
+                  <SkeletonCircle size="16px" />
                 </div>
                 <div className={styles.transportInfo}>
                   <div className={styles.transport}>
@@ -71,7 +58,6 @@ export default function SearchResultsSkeleton() {
             </div>
           </div>
         ))}
-      </div>
-    </Container>
+    </div>
   );
 }
