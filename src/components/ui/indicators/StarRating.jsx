@@ -2,6 +2,12 @@ import React from 'react';
 import styles from '@/styles/components/indicators/star-rating.module.css';
 
 export default function StarRating({ rating, maxStars = 5, size = 'medium' }) {
+  // Hide rating section if no valid rating
+  const numericRating = parseFloat(rating);
+  if (!rating || numericRating === 0) {
+    return null;
+  }
+
   const stars = [];
   
   for (let i = 0; i < maxStars; i++) {
@@ -21,12 +27,15 @@ export default function StarRating({ rating, maxStars = 5, size = 'medium' }) {
     );
   }
 
+  // Format rating to 1 decimal place (4.0, 4.5, etc.)
+  const formattedRating = numericRating.toFixed(1);
+
   return (
     <div className={styles.starRating}>
       <div className={styles.stars}>
         {stars}
       </div>
-      <span className={`${styles.rating} ${styles[size]}`}>{rating}</span>
+      <span className={`${styles.rating} ${styles[size]}`}>{formattedRating}</span>
     </div>
   );
 }

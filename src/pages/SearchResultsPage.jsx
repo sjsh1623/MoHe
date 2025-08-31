@@ -8,11 +8,13 @@ import ErrorMessage from '@/components/ui/alerts/ErrorMessage';
 import { placeService, bookmarkService, contextualRecommendationService } from '@/services/apiService';
 import { authService } from '@/services/authService';
 import { useGeolocation } from '@/hooks/useGeolocation';
+import { useDebounce } from '@/hooks/useDebounce';
 
 export default function SearchResultsPage() {
   const [searchParams] = useSearchParams();
   const locationState = useLocation().state;
   const query = searchParams.get('q') || locationState?.query || '';
+  const debouncedQuery = useDebounce(query, 300);
   
   const [searchResults, setSearchResults] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -55,10 +57,10 @@ export default function SearchResultsPage() {
 
         // Get contextual recommendations or search results
         let response;
-        if (query) {
+        if (debouncedQuery) {
           // Use contextual search for queries
           response = await contextualRecommendationService.getContextualRecommendations(
-            query,
+            debouncedQuery,
             lat,
             lon,
             { limit: 20 }
@@ -85,7 +87,7 @@ export default function SearchResultsPage() {
     };
 
     searchPlaces();
-  }, [query, location]);
+  }, [debouncedQuery, location]);
 
   const handleBookmark = async (placeId) => {
     try {

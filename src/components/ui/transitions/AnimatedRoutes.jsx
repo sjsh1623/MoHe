@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 // Global scroll position store
 const scrollPositions = new Map();
 
+import { ProtectedRoute } from '@/components/auth';
 import AuthPage from '@/pages/auth/index.jsx';
 import LoginPage from '@/pages/auth/LoginPage.jsx';
 import ForgotPasswordPage from '@/pages/auth/ForgotPasswordPage.jsx';
@@ -190,11 +191,11 @@ export default function AnimatedRoutes() {
             <Route path="/space-preference" element={<SpacePreferenceSelectionPage />} />
             <Route path="/transportation-selection" element={<TransportationSelectionPage />} />
             <Route path="/hello" element={<HelloPage />} />
-            <Route path="/profile-settings" element={<ProfileSettingsPage />} />
-            <Route path="/profile-edit" element={<ProfileEditPage />} />
-            <Route path="/bookmarks" element={<BookmarksPage />} />
-            <Route path="/my-places" element={<MyPlacesPage />} />
-            <Route path="/recent-view" element={<RecentViewPage />} />
+            <Route path="/profile-settings" element={<ProtectedRoute><ProfileSettingsPage /></ProtectedRoute>} />
+            <Route path="/profile-edit" element={<ProtectedRoute><ProfileEditPage /></ProtectedRoute>} />
+            <Route path="/bookmarks" element={<ProtectedRoute><BookmarksPage /></ProtectedRoute>} />
+            <Route path="/my-places" element={<ProtectedRoute><MyPlacesPage /></ProtectedRoute>} />
+            <Route path="/recent-view" element={<ProtectedRoute><RecentViewPage /></ProtectedRoute>} />
             <Route path="/places" element={<PlacesListPage />} />
             <Route path="/search-results" element={<SearchResultsPage />} />
             <Route path="/place/:id" element={<PlaceDetailPage />} />

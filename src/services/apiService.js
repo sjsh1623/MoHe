@@ -6,8 +6,9 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080
 class ApiService {
   constructor() {
     this.baseURL = API_BASE_URL;
-    this.requestCache = new Map(); // Simple request deduplication
-    this.requestTimestamps = new Map(); // Rate limiting
+    // Completely remove caching to prevent refresh issues
+    // this.requestCache = new Map(); // Simple request deduplication
+    // this.requestTimestamps = new Map(); // Rate limiting
   }
 
   /**
@@ -58,16 +59,7 @@ class ApiService {
    * Check if request should be rate limited
    */
   isRateLimited(endpoint, method = 'GET') {
-    const key = `${method}:${endpoint}`;
-    const now = Date.now();
-    const lastRequest = this.requestTimestamps.get(key);
-    
-    // Rate limit: max 1 request per 100ms for same endpoint (much more lenient)
-    if (lastRequest && (now - lastRequest) < 100) {
-      return true;
-    }
-    
-    this.requestTimestamps.set(key, now);
+    // Disable ALL rate limiting for now to prevent 429 errors
     return false;
   }
 
@@ -83,20 +75,26 @@ class ApiService {
    */
   async request(endpoint, options = {}) {
     const method = options.method || 'GET';
+    console.log(`🚀 REFRESH-SAFE VERSION: Making request: ${method} ${endpoint} - Rate limiting DISABLED`); // Add this line
     
-    // Rate limiting check
-    if (this.isRateLimited(endpoint, method)) {
-      console.warn(`Rate limited: ${method} ${endpoint}`);
-      throw new ApiError(429, 'Too many requests, please wait a moment');
+    // Add small delay to prevent rapid successive calls on refresh
+    if (options.preventRapidRefresh !== false) {
+      await new Promise(resolve => setTimeout(resolve, 50));
     }
+    
+    // Rate limiting COMPLETELY DISABLED
+    // if (this.isRateLimited(endpoint, method)) {
+    //   console.warn(`Rate limited: ${method} ${endpoint}`);
+    //   throw new ApiError(429, 'Too many requests, please wait a moment');
+    // }
 
-    // Request deduplication for GET requests
-    const cacheKey = this.createCacheKey(endpoint, method, options.body);
-    if (method === 'GET' && this.requestCache.has(cacheKey)) {
-      const cachedPromise = this.requestCache.get(cacheKey);
-      console.log(`Using cached request: ${endpoint}`);
-      return cachedPromise;
-    }
+    // Request deduplication DISABLED
+    // const cacheKey = this.createCacheKey(endpoint, method, options.body);
+    // if (method === 'GET' && this.requestCache.has(cacheKey)) {
+    //   const cachedPromise = this.requestCache.get(cacheKey);
+    //   console.log(`Using cached request: ${endpoint}`);
+    //   return cachedPromise;
+    // }
 
     const url = `${this.baseURL}${endpoint}`;
     const config = {
@@ -108,14 +106,14 @@ class ApiService {
       },
     };
 
-    // Create and cache the promise for GET requests
+    // Execute request directly without caching
     const requestPromise = this.executeRequest(url, config);
     
-    if (method === 'GET') {
-      this.requestCache.set(cacheKey, requestPromise);
-      // Clean up cache after 5 seconds
-      setTimeout(() => this.requestCache.delete(cacheKey), 5000);
-    }
+    // if (method === 'GET') {
+    //   this.requestCache.set(cacheKey, requestPromise);
+    //   // Clean up cache after 5 seconds
+    //   setTimeout(() => this.requestCache.delete(cacheKey), 5000);
+    // }
     
     return requestPromise;
   }
@@ -272,15 +270,17 @@ export class ContextualRecommendationService extends ApiService {
    * Get contextual recommendations based on query and location
    */
   async getContextualRecommendations(query, latitude, longitude, options = {}) {
-    const requestData = {
-      query,
-      lat: latitude,
-      lon: longitude,
-      limit: options.limit || 10,
-      maxDistanceKm: options.maxDistanceKm || 5.0
-    };
+    const params = new URLSearchParams({
+      lat: latitude.toString(),
+      lon: longitude.toString(),
+      limit: (options.limit || 10).toString()
+    });
 
-    return this.post('/api/recommendations/query', requestData, {
+    if (query) {
+      params.append('query', query);
+    }
+
+    return this.get(`/api/recommendations/contextual?${params.toString()}`, {
       requireAuth: false
     });
   }
@@ -312,13 +312,28 @@ export class RecommendationService extends ApiService {
   async getPersonalizedRecommendations(options = {}) {
     const params = new URLSearchParams({
       limit: (options.limit || 10).toString(),
-      includeBookmarked: (options.includeBookmarked || false).toString(),
-      ...options.filters
+      excludeBookmarked: (!options.includeBookmarked).toString()
     });
 
-    return this.get(`/api/places/recommendations?${params}`, {
-      requireAuth: true
-    });
+    try {
+      // Try enhanced recommendations for authenticated users
+      return await this.get(`/api/recommendations/enhanced?${params}`, {
+        requireAuth: true
+      });
+    } catch (error) {
+      // Fallback to contextual recommendations for guest users
+      console.log('Enhanced recommendations failed, falling back to contextual recommendations');
+      const contextualParams = new URLSearchParams({
+        lat: '37.5665', // Default Seoul coordinates
+        lon: '126.9780',
+        limit: (options.limit || 10).toString(),
+        query: '좋은 장소'
+      });
+      
+      return await this.get(`/api/recommendations/contextual?${contextualParams}`, {
+        requireAuth: false
+      });
+    }
   }
 
   /**
@@ -393,9 +408,24 @@ export class PlaceService extends ApiService {
       limit: (options.limit || 10).toString(),
     });
 
-    return this.get(`/api/places/popular?${params}`, {
-      requireAuth: false
-    });
+    try {
+      // Try the popular places endpoint first
+      return await this.get(`/api/places/popular?${params}`, {
+        requireAuth: false
+      });
+    } catch (error) {
+      console.warn('Popular places API failed, falling back to general places list:', error);
+      // Fallback to general places list (which works)
+      const fallbackParams = new URLSearchParams({
+        page: '1',
+        limit: (options.limit || 10).toString(),
+        sort: 'popularity'
+      });
+      
+      return await this.get(`/api/places?${fallbackParams}`, {
+        requireAuth: false
+      });
+    }
   }
 }
 
@@ -490,11 +520,17 @@ class GuestRecommendationService extends ApiService {
       console.log('GuestRecommendationService: Using query:', query);
 
       // Use contextual recommendations API (now public)
+      console.log('GuestRecommendationService: Making API call with query:', query);
       const response = await contextualRecommendationService.getContextualRecommendations(query, latitude, longitude, options);
       
+      console.log('GuestRecommendationService: API response success:', response.success);
+      console.log('GuestRecommendationService: API response data type:', typeof response.data);
       console.log('GuestRecommendationService: API response:', response);
       
       if (response.success && response.data.places && response.data.places.length > 0) {
+        console.log('GuestRecommendationService: Processing places data, count:', response.data.places.length);
+        console.log('GuestRecommendationService: Sample place:', response.data.places[0]);
+        
         const mappedPlaces = response.data.places.map(place => ({
           id: place.id,
           name: place.name,
@@ -509,11 +545,18 @@ class GuestRecommendationService extends ApiService {
           reasonWhy: place.reasonWhy
         }));
         
+        console.log('GuestRecommendationService: Mapped places count:', mappedPlaces.length);
+        console.log('GuestRecommendationService: Sample mapped place:', mappedPlaces[0]);
+        
         return {
           success: true,
           data: mappedPlaces, // Return array directly for HomePage compatibility
           message: `${mappedPlaces.length}개의 추천 장소를 찾았습니다`
         };
+      } else {
+        console.log('GuestRecommendationService: No places in response or invalid response');
+        console.log('GuestRecommendationService: Response success:', response.success);
+        console.log('GuestRecommendationService: Response data structure:', response.data);
       }
       
       return {

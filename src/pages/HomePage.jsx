@@ -20,7 +20,7 @@ export default function HomePage() {
   console.log('HomePage component loaded');
 
   // Location and weather state
-  const { location, requestLocation, loading: locationLoading, error: locationError } = useGeolocation();
+  const { requestLocation, loading: locationLoading } = useGeolocation();
   const { saveLocation, getStoredLocation } = useLocationStorage();
   const [weather, setWeather] = useState(null);
   const [recommendations, setRecommendations] = useState([]);
@@ -30,6 +30,7 @@ export default function HomePage() {
   const [error, setError] = useState(null);
   const [user, setUser] = useState(null);
   const [popularPlaces, setPopularPlaces] = useState([]);
+  const [isLoadingRecommendations, setIsLoadingRecommendations] = useState(false);
 
   // Initialize app only once on mount
   useEffect(() => {
@@ -39,6 +40,10 @@ export default function HomePage() {
       if (!isMounted) return;
       
       try {
+        // Reset state on each initialization
+        setError(null);
+        setRecommendations([]);
+        setPopularPlaces([]);
         setIsLoading(true);
         
         // Initialize user (authenticated or guest)
@@ -78,6 +83,7 @@ export default function HomePage() {
       const storedLocation = getStoredLocation();
       if (storedLocation) {
         if (isMounted) {
+          console.log('📍 Setting location from storage:', storedLocation);
           setCurrentLocation(storedLocation);
           // If stored location doesn't have address, resolve it
           if (!storedLocation.address && storedLocation.latitude && storedLocation.longitude) {
@@ -94,7 +100,9 @@ export default function HomePage() {
         try {
           const locationData = await requestLocation();
           if (locationData && isMounted) {
+            console.log('📍 Setting location from geolocation:', locationData);
             setCurrentLocation(locationData);
+            console.log('🏠 Geolocation set, should trigger popular places loading');
             // Resolve address for the location
             await resolveAddress(locationData.latitude, locationData.longitude);
             saveLocation(locationData);
@@ -109,7 +117,9 @@ export default function HomePage() {
             address: null // Will be resolved by address API
           };
           if (isMounted) {
+            console.log('📍 Setting default location (Seoul):', defaultLocation);
             setCurrentLocation(defaultLocation);
+            console.log('🏠 Default location set, should trigger popular places loading');
             // Resolve address for default location
             await resolveAddress(defaultLocation.latitude, defaultLocation.longitude);
             await loadWeatherData(defaultLocation.latitude, defaultLocation.longitude);
@@ -169,12 +179,9 @@ export default function HomePage() {
     const loadRecommendations = async () => {
       if (!currentLocation || !user || !isMounted) return;
 
-      console.log('Loading recommendations...', { hasWeather: !!weather, userType: user.isGuest ? 'guest' : 'authenticated' });
-
       try {
         let recommendationsData = [];
 
-        // For guest users, use guest recommendation service
         if (user.isGuest && isMounted) {
           try {
             const guestResponse = await guestRecommendationService.getGuestRecommendations(
@@ -183,7 +190,13 @@ export default function HomePage() {
               { limit: 10 }
             );
             
+            console.log('HomePage: Guest response received:', guestResponse);
+            console.log('HomePage: Guest response success:', guestResponse.success);
+            console.log('HomePage: Guest response data length:', guestResponse.data?.length);
+            
             if (guestResponse.success && guestResponse.data.length > 0) {
+              console.log('HomePage: Processing guest recommendations, count:', guestResponse.data.length);
+              
               recommendationsData = guestResponse.data.map(place => ({
                 id: place.id,
                 title: place.name,
@@ -195,12 +208,15 @@ export default function HomePage() {
                 weatherSuitability: place.weatherSuitability,
                 reasonWhy: place.description
               }));
+              
+              console.log('HomePage: Mapped recommendations data:', recommendationsData);
+            } else {
+              console.log('HomePage: Guest recommendations failed or empty');
             }
           } catch (error) {
             console.warn('Guest recommendations failed:', error);
           }
         } else {
-          // For authenticated users, try contextual recommendations first if weather is available
           if (weather && isMounted) {
             try {
               const contextualData = await loadContextualRecommendations();
@@ -212,7 +228,6 @@ export default function HomePage() {
             }
           }
 
-          // Fallback to personalized recommendations for authenticated users
           if (recommendationsData.length === 0 && !user.isGuest && isMounted) {
             try {
               const personalizedData = await loadPersonalizedRecommendations();
@@ -227,14 +242,16 @@ export default function HomePage() {
 
         if (!isMounted) return;
 
-        // Load bookmark status for all places (only for authenticated users)
         if (!user.isGuest && recommendationsData.length > 0) {
           await loadBookmarkStatus(recommendationsData);
         }
         
         if (isMounted) {
+          console.log('HomePage: About to set recommendations with data:', recommendationsData);
+          console.log('HomePage: Recommendations data length:', recommendationsData.length);
           setRecommendations(recommendationsData);
           setIsLoading(false);
+          console.log('HomePage: Successfully set recommendations and loading to false');
         }
 
       } catch (error) {
@@ -242,7 +259,6 @@ export default function HomePage() {
           console.error('Failed to load recommendations:', error);
           setRecommendations([]);
           
-          // Only show error for authenticated users or non-auth related errors
           if (!user.isGuest) {
             if (error.message?.includes('403') || error.message?.includes('Forbidden')) {
               setError('인증이 필요합니다. 다시 로그인해주세요.');
@@ -250,7 +266,6 @@ export default function HomePage() {
               setError('추천 장소를 불러오는데 실패했습니다.');
             }
           }
-          // For guest users, silently fail and show empty state instead of error
           
           setIsLoading(false);
         }
@@ -327,9 +342,15 @@ export default function HomePage() {
     };
 
     const loadBookmarkStatus = async (places) => {
-      if (user.isGuest || !places.length) return;
+      // Skip bookmark status loading for guest users and when no authentication
+      if (user.isGuest || !places.length || !authService.isAuthenticated()) {
+        console.log('Skipping bookmark status checks for guest user or unauthenticated state');
+        places.forEach(place => place.isBookmarked = false);
+        return;
+      }
 
       try {
+        console.log('Loading bookmark status for', places.length, 'places');
         const bookmarkPromises = places.map(async (place) => {
           try {
             const response = await bookmarkService.isBookmarked(place.id);
@@ -353,7 +374,7 @@ export default function HomePage() {
     return () => {
       isMounted = false;
     };
-  }, [currentLocation, user, weather]);
+  }, [currentLocation, user]);
 
   useEffect(() => {
     let isMounted = true;
@@ -362,16 +383,24 @@ export default function HomePage() {
       if (!currentLocation || !isMounted) return;
 
       try {
+        console.log('Loading popular places for location:', currentLocation);
         const response = await placeService.getPopularPlaces(
           currentLocation.latitude,
           currentLocation.longitude
         );
 
         if (response.success && isMounted) {
+          console.log('✅ Popular places loaded:', response.data.places.length);
           setPopularPlaces(response.data.places);
+        } else if (isMounted) {
+          console.warn('⚠️ Popular places API returned no success:', response);
+          setPopularPlaces([]);
         }
       } catch (error) {
-        console.error('Failed to load popular places:', error);
+        console.warn('⚠️ Popular places failed, continuing without them:', error);
+        if (isMounted) {
+          setPopularPlaces([]);
+        }
       }
     };
 
@@ -553,7 +582,7 @@ export default function HomePage() {
 
           {/* Popular places section - Load from backend */}
           <section className={styles.section}>
-            <h2 className={`${styles.sectionTitle} container-padding`}>인기 장소</h2>
+            <h2 className={`${styles.sectionTitle} container-padding`}>Hot 플레이스</h2>
             {popularPlaces.length > 0 ? (
               <div className={styles.horizontalScroll}>
                 <div className={styles.cardsContainer}>

@@ -16,12 +16,7 @@ import ErrorBoundary from '@/components/ErrorBoundary';
 initializeWebViewOptimizations();
 
 // Load API test utilities in development
-if (import.meta.env.DEV) {
-  import('@/utils/apiTest.js').then(() => {
-    console.log('🧪 API test utilities loaded in development mode');
-    console.log('Use window.apiTest.runAllTests() to test backend integration');
-  });
-}
+
 
 createRoot(document.getElementById('root')).render(
     <ErrorBoundary>
