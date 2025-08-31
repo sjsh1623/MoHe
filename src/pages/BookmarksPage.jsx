@@ -1,84 +1,48 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import BookmarkPlaceCard from '@/components/ui/cards/BookmarkPlaceCard';
 import BookmarksSkeleton from '@/components/ui/skeletons/BookmarksSkeleton';
-import { useMockLoading } from '@/hooks/useLoadingState';
+import ErrorMessage from '@/components/ui/alerts/ErrorMessage';
+import { bookmarkService } from '@/services/apiService';
+import { authService } from '@/services/authService';
 import styles from '@/styles/pages/bookmarks-page.module.css';
+import useAuthGuard from '@/hooks/useAuthGuard';
 
-const mockBookmarkedPlaces = [
-  {
-    id: 1,
-    name: '카페 무브먼트랩',
-    location: '서울 성수동',
-    image: 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=240&h=240&fit=crop&crop=center',
-    rating: 4.8
-  },
-  {
-    id: 2,
-    name: '카페 무브먼트랩',
-    location: '서울 성수동',
-    image: 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=240&h=240&fit=crop&crop=center',
-    rating: 4.8
-  },
-  {
-    id: 3,
-    name: '카페 무브먼트랩',
-    location: '서울 성수동',
-    image: 'https://images.unsplash.com/photo-1521017432531-fbd92d768814?w=240&h=240&fit=crop&crop=center',
-    rating: 4.8
-  },
-  {
-    id: 4,
-    name: '카페 무브먼트랩',
-    location: '서울 성수동',
-    image: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=240&h=240&fit=crop&crop=center',
-    rating: 4.8
-  },
-  {
-    id: 5,
-    name: '카페 무브먼트랩',
-    location: '서울 성수동',
-    image: 'https://images.unsplash.com/photo-1559925393-8be0ec4767c8?w=240&h=240&fit=crop&crop=center',
-    rating: 4.8
-  },
-  {
-    id: 6,
-    name: '카페 무브먼트랩',
-    location: '서울 성수동',
-    image: 'https://images.unsplash.com/photo-1442975631115-c4f7b5d6b907?w=240&h=240&fit=crop&crop=center',
-    rating: 4.8
-  },
-  {
-    id: 7,
-    name: '스타벅스 강남점',
-    location: '서울 강남구',
-    image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=240&h=240&fit=crop&crop=center',
-    rating: 4.5
-  },
-  {
-    id: 8,
-    name: '블루보틀 성수점',
-    location: '서울 성동구',
-    image: 'https://images.unsplash.com/photo-1447933601403-0c6688de566e?w=240&h=240&fit=crop&crop=center',
-    rating: 4.7
-  },
-  {
-    id: 9,
-    name: '카페 온누리',
-    location: '서울 홍대입구',
-    image: 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=240&h=240&fit=crop&crop=center',
-    rating: 4.6
-  },
-  {
-    id: 10,
-    name: '투썸플레이스',
-    location: '서울 신촌',
-    image: 'https://images.unsplash.com/photo-1461023058943-07fcbe16d735?w=240&h=240&fit=crop&crop=center',
-    rating: 4.3
-  }
-];
+function BookmarksPage() {
+  useAuthGuard(true); // Protect this page
+  const [bookmarkedPlaces, setBookmarkedPlaces] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-export default function BookmarksPage() {
-  const isLoading = useMockLoading(900); // Simulate API loading
+  useEffect(() => {
+    const loadBookmarks = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        
+        const user = authService.getCurrentUser();
+        if (!user || user.isGuest) {
+          // No bookmarks for guest users
+          setBookmarkedPlaces([]);
+          return;
+        }
+
+        // Load user's bookmarks from backend
+        const response = await bookmarkService.getUserBookmarks();
+        if (response.success) {
+          setBookmarkedPlaces(response.data || []);
+        } else {
+          setError('북마크를 불러오는데 실패했습니다.');
+        }
+      } catch (err) {
+        console.error('Failed to load bookmarks:', err);
+        setError('북마크를 불러오는 중 오류가 발생했습니다.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadBookmarks();
+  }, []);
 
   return (
     <>
@@ -87,22 +51,33 @@ export default function BookmarksPage() {
       </header>
 
       <main className={styles.main}>
+        {error && (
+          <ErrorMessage message={error} />
+        )}
+        
         {isLoading ? (
           <BookmarksSkeleton />
+        ) : bookmarkedPlaces.length === 0 ? (
+          <div className={styles.emptyState}>
+            <p>아직 북마크한 장소가 없습니다.</p>
+            <p>마음에 드는 장소를 북마크해보세요!</p>
+          </div>
         ) : (
           <div className={styles.placesList}>
-          {mockBookmarkedPlaces.map((place) => (
-            <BookmarkPlaceCard
-              key={place.id}
-              name={place.name}
-              location={place.location}
-              image={place.image}
-              rating={place.rating}
-            />
-          ))}
+            {bookmarkedPlaces.map((place) => (
+              <BookmarkPlaceCard
+                key={place.id}
+                name={place.name || place.title}
+                location={place.location}
+                image={place.image || place.imageUrl}
+                rating={place.rating}
+              />
+            ))}
           </div>
         )}
       </main>
     </>
   );
 }
+
+export default BookmarksPage;

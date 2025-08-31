@@ -1,64 +1,111 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSearchParams, useLocation } from 'react-router-dom';
 import styles from '@/styles/pages/search-results-page.module.css';
 
 import { Container } from '@/components/ui/layout';
 import SearchResultsSkeleton from '@/components/ui/skeletons/SearchResultsSkeleton';
-import { useMockLoading } from '@/hooks/useLoadingState';
-
-// Mock data for search results
-const SEARCH_RESULTS = [
-  {
-    id: 1,
-    name: '카페 무브먼트랩',
-    hours: '09:00 ~ 19:00',
-    location: '서울 성수동',
-    rating: 4.7,
-    carTime: '5분',
-    busTime: '10분',
-    tags: ['#조용한', '#카페', '#시원한'],
-    image: 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=270&h=270&fit=crop&crop=center',
-    isBookmarked: false,
-    weatherTag: {
-      text: '더운 날씨에 가기 좋은 카페',
-      color: 'red',
-      icon: 'thermometer'
-    },
-    noiseTag: {
-      text: '시끄럽지 않은 카페',
-      color: 'blue',
-      icon: 'speaker'
-    }
-  },
-  {
-    id: 2,
-    name: '카페 무브먼트랩',
-    hours: '09:00 ~ 19:00',
-    location: '서울 성수동',
-    rating: 4.7,
-    carTime: '5분',
-    busTime: '10분',
-    tags: ['#조용한', '#카페', '#시원한'],
-    image: 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=270&h=270&fit=crop&crop=center',
-    isBookmarked: false,
-    weatherTag: {
-      text: '더운 날씨에 가기 좋은 카페',
-      color: 'red',
-      icon: 'thermometer'
-    },
-    noiseTag: {
-      text: '시끄럽지 않은 카페',
-      color: 'blue',
-      icon: 'speaker'
-    }
-  }
-];
+import ErrorMessage from '@/components/ui/alerts/ErrorMessage';
+import { placeService, bookmarkService, contextualRecommendationService } from '@/services/apiService';
+import { authService } from '@/services/authService';
+import { useGeolocation } from '@/hooks/useGeolocation';
 
 export default function SearchResultsPage() {
-  const isLoading = useMockLoading(1300); // Simulate API loading
+  const [searchParams] = useSearchParams();
+  const locationState = useLocation().state;
+  const query = searchParams.get('q') || locationState?.query || '';
+  
+  const [searchResults, setSearchResults] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const { location } = useGeolocation();
+  const [userName, setUserName] = useState('');
 
-  const handleBookmark = (placeId) => {
-    console.log('Bookmarking place:', placeId);
-    // TODO: Implement bookmark logic
+  useEffect(() => {
+    const user = authService.getCurrentUser();
+    if (user && !user.isGuest) {
+      setUserName(user.nickname || '사용자');
+    } else {
+      setUserName('고객');
+    }
+  }, []);
+
+  useEffect(() => {
+    const searchPlaces = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+
+        // Check if we have pre-loaded results from navigation state
+        if (locationState?.results) {
+          setSearchResults(locationState.results);
+          if (locationState.error) {
+            setError(locationState.error);
+          }
+          setIsLoading(false);
+          return;
+        }
+
+        let lat = 37.5665; // Default Seoul coordinates
+        let lon = 126.9780;
+        
+        if (location) {
+          lat = location.latitude;
+          lon = location.longitude;
+        }
+
+        // Get contextual recommendations or search results
+        let response;
+        if (query) {
+          // Use contextual search for queries
+          response = await contextualRecommendationService.getContextualRecommendations(
+            query,
+            lat,
+            lon,
+            { limit: 20 }
+          );
+        } else {
+          // Use general place search for no query
+          response = await placeService.getNearbyPlaces(lat, lon, {
+            radius: 3000, // 3km radius
+            limit: 20
+          });
+        }
+
+        if (response.success) {
+          setSearchResults(response.data?.places || response.data || []);
+        } else {
+          setError('검색 결과를 불러오는데 실패했습니다.');
+        }
+      } catch (err) {
+        console.error('Failed to search places:', err);
+        setError('검색 중 오류가 발생했습니다.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    searchPlaces();
+  }, [query, location]);
+
+  const handleBookmark = async (placeId) => {
+    try {
+      const user = authService.getCurrentUser();
+      if (!user || user.isGuest) {
+        console.log('Guest user cannot bookmark places');
+        return;
+      }
+
+      await bookmarkService.addBookmark(placeId);
+      
+      // Update local state
+      setSearchResults(prevResults => 
+        prevResults.map(place => 
+          place.id === placeId ? { ...place, isBookmarked: true } : place
+        )
+      );
+    } catch (err) {
+      console.error('Failed to bookmark place:', err);
+    }
   };
 
   return (
@@ -77,25 +124,37 @@ export default function SearchResultsPage() {
         {/* Title Section - Always shown immediately */}
         <div className={styles.titleSection}>
           <h1 className={styles.title}>
-            석현님만을 위한<br />장소들을 찾아봤어요!
+            {query ? `"${query}" 검색 결과` : `${userName}님만을 위한 장소들을 찾아봤어요!`}
           </h1>
           <p className={styles.subtitle}>
-            지금은 오후 2시, 아주 덥고 습한날씨네요.<br />
-            지금은 멀지 않고 실내 장소들을 추천드릴께요.
+            현재 위치 기반으로 추천 장소를 찾았습니다.
           </p>
         </div>
+
+        {error && (
+          <ErrorMessage message={error} />
+        )}
 
         {/* Search Results - Show skeleton while loading */}
         {isLoading ? (
           <SearchResultsSkeleton />
+        ) : searchResults.length === 0 ? (
+          <div className={styles.emptyState}>
+            <p>{query ? '검색 결과가 없습니다.' : '추천할 장소가 없습니다.'}</p>
+            <p>다른 키워드로 검색해보세요.</p>
+          </div>
         ) : (
           <div className={styles.resultsContainer}>
-            {SEARCH_RESULTS.map((place) => (
+            {searchResults.map((place) => (
             <div key={place.id} className={styles.placeCard}>
               <div className={styles.horizontalScroll}>
                 <div className={styles.imagesContainer}>
                   <div className={styles.imageWrapper}>
-                    <img src={place.image} alt={place.name} className={styles.placeImage} />
+                    <img 
+                      src={place.image || place.imageUrl || 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=270&h=270&fit=crop&crop=center'} 
+                      alt={place.name || place.title} 
+                      className={styles.placeImage} 
+                    />
                     <button 
                       className={styles.bookmarkButton}
                       onClick={() => handleBookmark(place.id)}
@@ -105,25 +164,26 @@ export default function SearchResultsPage() {
                       </svg>
                     </button>
                   </div>
-                  {/* Add a second image for horizontal scrolling demonstration */}
-                  <div className={styles.imageWrapper}>
-                    <img src={place.image.replace('crop=center', 'crop=faces')} alt={place.name} className={styles.placeImage} />
-                    <button 
-                      className={styles.bookmarkButton}
-                      onClick={() => handleBookmark(place.id)}
-                    >
-                      <svg width="14" height="17" viewBox="0 0 14 17" fill="none">
-                        <path d="M1.00009 4C1.00009 2.34315 2.34324 1 4.00009 1H10.0001C11.6569 1 13.0001 2.34315 13.0001 4V14.3358C13.0001 15.2267 11.9229 15.6729 11.293 15.0429L8.41431 12.1642C7.63326 11.3832 6.36693 11.3832 5.58588 12.1642L2.7072 15.0429C2.07723 15.6729 1.00009 15.2267 1.00009 14.3358V4Z" stroke="white" strokeWidth="1.5" strokeLinejoin="round"/>
-                      </svg>
-                    </button>
-                  </div>
+                  {place.images && place.images.length > 1 && place.images.slice(1, 3).map((imageUrl, index) => (
+                    <div key={index} className={styles.imageWrapper}>
+                      <img src={imageUrl} alt={place.name || place.title} className={styles.placeImage} />
+                      <button 
+                        className={styles.bookmarkButton}
+                        onClick={() => handleBookmark(place.id)}
+                      >
+                        <svg width="14" height="17" viewBox="0 0 14 17" fill="none">
+                          <path d="M1.00009 4C1.00009 2.34315 2.34324 1 4.00009 1H10.0001C11.6569 1 13.0001 2.34315 13.0001 4V14.3358C13.0001 15.2267 11.9229 15.6729 11.293 15.0429L8.41431 12.1642C7.63326 11.3832 6.36693 11.3832 5.58588 12.1642L2.7072 15.0429C2.07723 15.6729 1.00009 15.2267 1.00009 14.3358V4Z" stroke="white" strokeWidth="1.5" strokeLinejoin="round"/>
+                        </svg>
+                      </button>
+                    </div>
+                  ))}
                 </div>
               </div>
               
               <div className={styles.placeInfo}>
                 <div className={styles.placeHeader}>
-                  <h3 className={styles.placeName}>{place.name}</h3>
-                  <span className={styles.placeHours}>({place.hours})</span>
+                  <h3 className={styles.placeName}>{place.name || place.title}</h3>
+                  <span className={styles.placeHours}>({place.operatingHours || '영업시간 정보 없음'})</span>
                   <div className={styles.rating}>
                     <svg width="13" height="12" viewBox="0 0 13 12" fill="none">
                       <path d="M6.5 0L8.5 4L13 4L9.5 7L11 11L6.5 8.5L2 11L3.5 7L0 4L4.5 4L6.5 0Z" fill="#FFC107"/>
@@ -133,7 +193,7 @@ export default function SearchResultsPage() {
                 </div>
                 
                 <div className={styles.locationInfo}>
-                  <span className={styles.location}>{place.location}</span>
+                  <span className={styles.location}>{place.location || place.address}</span>
                   <div className={styles.locationIcon}>
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <circle cx="8" cy="7.33325" r="2" stroke="#7D848D" strokeWidth="1.5"/>
@@ -149,7 +209,7 @@ export default function SearchResultsPage() {
                         <circle cx="12" cy="10.5" r="1" fill="white"/>
                         <rect x="7" y="2" width="2" height="1" fill="white"/>
                       </svg>
-                      <span>{place.carTime}</span>
+                      <span>{place.transportationCarTime || '정보 없음'}</span>
                     </div>
                     <div className={styles.transport}>
                       <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -159,37 +219,32 @@ export default function SearchResultsPage() {
                         <circle cx="11" cy="11.5" r="1" fill="white"/>
                         <rect x="6" y="2.5" width="4" height="1" fill="white"/>
                       </svg>
-                      <span>{place.busTime}</span>
+                      <span>{place.transportationBusTime || '정보 없음'}</span>
                     </div>
                   </div>
                 </div>
                 
-                <div className={styles.tags}>
-                  {place.tags.join(', ')}
-                </div>
+                {place.tags && place.tags.length > 0 && (
+                  <div className={styles.tags}>
+                    {place.tags.join(', ')}
+                  </div>
+                )}
                 
-                <div className={styles.badges}>
-                  <div className={styles.badge} data-color={place.weatherTag.color}>
-                    <div className={styles.badgeIcon}>
-                      <svg width="15" height="15" viewBox="0 0 15 15">
-                        <circle cx="7.5" cy="7.5" r="3" stroke="currentColor" strokeWidth="1.5"/>
-                        <circle cx="7.5" cy="7.5" r="6" stroke="currentColor" strokeWidth="1.5"/>
-                      </svg>
-                    </div>
-                    {place.weatherTag.text}
+                {place.weatherTags && place.weatherTags.length > 0 && (
+                  <div className={styles.badges}>
+                    {place.weatherTags.slice(0, 2).map((tag, index) => (
+                      <div key={index} className={styles.badge} data-color="blue">
+                        <div className={styles.badgeIcon}>
+                          <svg width="15" height="15" viewBox="0 0 15 15">
+                            <circle cx="7.5" cy="7.5" r="3" stroke="currentColor" strokeWidth="1.5"/>
+                            <circle cx="7.5" cy="7.5" r="6" stroke="currentColor" strokeWidth="1.5"/>
+                          </svg>
+                        </div>
+                        {tag}
+                      </div>
+                    ))}
                   </div>
-                  
-                  <div className={styles.badge} data-color={place.noiseTag.color}>
-                    <div className={styles.badgeIcon}>
-                      <svg width="15" height="15" viewBox="0 0 15 15">
-                        <path d="M3.12 1.25L11.87 1.25" stroke="currentColor" strokeWidth="1"/>
-                        <path d="M5.62 7.5L9.37 7.5" stroke="currentColor" strokeWidth="1.5"/>
-                        <path d="M6.56 3.75L8.44 3.75" stroke="currentColor" strokeWidth="1.5"/>
-                      </svg>
-                    </div>
-                    {place.noiseTag.text}
-                  </div>
-                </div>
+                )}
               </div>
             </div>
             ))}

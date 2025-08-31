@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import styles from '@/styles/pages/auth/email-verification-page.module.css';
 
 import { Stack } from '@/components/ui/layout';
@@ -7,13 +8,26 @@ import { useAuthNavigation } from '@/hooks/useAuthNavigation';
 import OTPInput from '@/components/ui/inputs/OTPInput';
 import PrimaryButton from '@/components/ui/buttons/PrimaryButton';
 import TextLink from '@/components/ui/links/TextLink';
+import { authService } from '@/services/authService';
 
 export default function EmailVerificationPage() {
   const { goToNicknameSetup } = useAuthNavigation();
+  const navigate = useNavigate();
   const [verificationCode, setVerificationCode] = useState('');
   const [isVerifying, setIsVerifying] = useState(false);
   const [error, setError] = useState('');
+  const [email, setEmail] = useState('');
 
+  useEffect(() => {
+    // Get email from session storage
+    const signupEmail = sessionStorage.getItem('signup_email');
+    if (signupEmail) {
+      setEmail(signupEmail);
+    } else {
+      // If no email, redirect back to signup
+      navigate('/signup');
+    }
+  }, [navigate]);
 
   const handleCodeChange = (code) => {
     setVerificationCode(code);
@@ -34,34 +48,46 @@ export default function EmailVerificationPage() {
       return;
     }
 
+    if (!email) {
+      setError('이메일 정보가 없습니다. 다시 회원가입을 시도해주세요.');
+      return;
+    }
+
     setIsVerifying(true);
     setError('');
 
     try {
-      // TODO: Implement actual verification API call
-      console.log('Verifying code:', code);
+      const result = await authService.verifyEmail(email, code);
+      console.log('Verification successful:', result);
       
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // For demo, accept any 5-digit code
-      if (code.length === 5) {
-        // Success - navigate to nickname setup
-        goToNicknameSetup();
-      } else {
-        setError('인증번호가 올바르지 않습니다. 다시 시도해주세요.');
+      // Store temp user ID for next step
+      if (result.tempUserId) {
+        sessionStorage.setItem('temp_user_id', result.tempUserId);
       }
-    } catch {
-      setError('인증에 실패했습니다. 다시 시도해주세요.');
+      
+      // Success - navigate to nickname setup
+      navigate('/nickname-setup');
+    } catch (error) {
+      console.error('Verification failed:', error);
+      setError(error.message || '인증번호가 올바르지 않습니다. 다시 시도해주세요.');
     } finally {
       setIsVerifying(false);
     }
   };
 
-  const handleResendCode = () => {
-    // TODO: Implement resend verification code
-    console.log('Resending verification code...');
-    alert('인증번호가 재전송되었습니다.');
+  const handleResendCode = async () => {
+    if (!email) {
+      setError('이메일 정보가 없습니다.');
+      return;
+    }
+
+    try {
+      await authService.signup(email);
+      alert('인증번호가 재전송되었습니다.');
+    } catch (error) {
+      console.error('Resend failed:', error);
+      setError('인증번호 재전송에 실패했습니다. 다시 시도해주세요.');
+    }
   };
 
   const isCodeComplete = verificationCode.length === 5;

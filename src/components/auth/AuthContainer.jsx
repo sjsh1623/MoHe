@@ -9,6 +9,7 @@ import { Container, Stack } from '@/components/ui/layout';
 export default function AuthContainer({ 
   children, 
   pageClassName,
+
   contentClassName = '',
   spacing = "md"
 }) {

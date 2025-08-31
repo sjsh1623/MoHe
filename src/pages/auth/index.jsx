@@ -6,6 +6,7 @@ import {Container, Stack} from '@/components/ui/layout';
 import {StandardButton, SocialButtons} from '@/components/ui/buttons';
 import AuthHeader from '@/components/layout/AuthHeader';
 import loginImage from '@/assets/image/login_image.png';
+import { authService } from '@/services/authService';
 
 export default function AuthPage() {
     const navigate = useNavigate();
@@ -18,6 +19,13 @@ export default function AuthPage() {
     const handleSignup = (e) => {
         e.preventDefault();
         navigate('/signup');
+    };
+
+    const handleGuestBrowse = (e) => {
+        e.preventDefault();
+        // Create guest session and navigate to home
+        authService.createGuestSession();
+        navigate('/home');
     };
 
     return (
@@ -35,6 +43,13 @@ export default function AuthPage() {
                     type="button"
                 >
                     회원가입
+                </button>
+                <button
+                    className={styles.guestBrowseLink}
+                    onClick={handleGuestBrowse}
+                    type="button"
+                >
+                    로그인 없이 둘러보기
                 </button>
             </Stack>
         </Container>

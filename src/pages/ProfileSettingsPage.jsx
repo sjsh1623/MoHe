@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import styles from '@/styles/pages/profile-settings-page.module.css';
 import ProfileMenuItem from '@/components/ui/items/ProfileMenuItem';
 import ProfileInfoCard from '@/components/ui/cards/ProfileInfoCard';
+import { useAuthGuard } from '@/hooks/useAuthGuard';
 import { 
   BookmarkIcon, 
   ProfileIcon, 
@@ -79,6 +80,7 @@ const MENU_ITEMS = [
 
 export default function ProfileSettingsPage() {
   const navigate = useNavigate();
+  const { isGuest } = useAuthGuard(true); // This page requires authentication
 
   const handleMenuItemClick = (item) => {
     if (item.route) {

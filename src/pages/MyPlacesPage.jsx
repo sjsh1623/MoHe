@@ -1,84 +1,42 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import BookmarkPlaceCard from '@/components/ui/cards/BookmarkPlaceCard';
 import BookmarksSkeleton from '@/components/ui/skeletons/BookmarksSkeleton';
-import { useMockLoading } from '@/hooks/useLoadingState';
+import ErrorMessage from '@/components/ui/alerts/ErrorMessage';
+// TODO: Import recentViewService when backend API is available
+import { authService } from '@/services/authService';
 import styles from '@/styles/pages/my-places-page.module.css';
 
-const mockMyPlaces = [
-  {
-    id: 1,
-    name: '카페 무브먼트랩',
-    location: '서울 성수동',
-    image: 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=240&h=240&fit=crop&crop=center',
-    rating: 4.8
-  },
-  {
-    id: 2,
-    name: '카페 무브먼트랩',
-    location: '서울 성수동',
-    image: 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=240&h=240&fit=crop&crop=center',
-    rating: 4.8
-  },
-  {
-    id: 3,
-    name: '카페 무브먼트랩',
-    location: '서울 성수동',
-    image: 'https://images.unsplash.com/photo-1521017432531-fbd92d768814?w=240&h=240&fit=crop&crop=center',
-    rating: 4.8
-  },
-  {
-    id: 4,
-    name: '카페 무브먼트랩',
-    location: '서울 성수동',
-    image: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=240&h=240&fit=crop&crop=center',
-    rating: 4.8
-  },
-  {
-    id: 5,
-    name: '카페 무브먼트랩',
-    location: '서울 성수동',
-    image: 'https://images.unsplash.com/photo-1559925393-8be0ec4767c8?w=240&h=240&fit=crop&crop=center',
-    rating: 4.8
-  },
-  {
-    id: 6,
-    name: '카페 무브먼트랩',
-    location: '서울 성수동',
-    image: 'https://images.unsplash.com/photo-1442975631115-c4f7b5d6b907?w=240&h=240&fit=crop&crop=center',
-    rating: 4.8
-  },
-  {
-    id: 7,
-    name: '스타벅스 강남점',
-    location: '서울 강남구',
-    image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=240&h=240&fit=crop&crop=center',
-    rating: 4.5
-  },
-  {
-    id: 8,
-    name: '블루보틀 성수점',
-    location: '서울 성동구',
-    image: 'https://images.unsplash.com/photo-1447933601403-0c6688de566e?w=240&h=240&fit=crop&crop=center',
-    rating: 4.7
-  },
-  {
-    id: 9,
-    name: '카페 온누리',
-    location: '서울 홍대입구',
-    image: 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=240&h=240&fit=crop&crop=center',
-    rating: 4.6
-  },
-  {
-    id: 10,
-    name: '투썸플레이스',
-    location: '서울 신촌',
-    image: 'https://images.unsplash.com/photo-1461023058943-07fcbe16d735?w=240&h=240&fit=crop&crop=center',
-    rating: 4.3
-  }
-];
-
 export default function MyPlacesPage() {
-  const isLoading = useMockLoading(950); // Simulate API loading
+  const [myPlaces, setMyPlaces] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const loadMyPlaces = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        
+        const user = authService.getCurrentUser();
+        if (!user || user.isGuest) {
+          setMyPlaces([]);
+          return;
+        }
+
+        // TODO: Load user's recent views when backend API is available
+        // For now, show empty state
+        console.log('MyPlacesPage: Recent view service not implemented yet');
+        setMyPlaces([]);
+      } catch (err) {
+        console.error('Failed to load my places:', err);
+        setError('내 장소를 불러오는 중 오류가 발생했습니다.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadMyPlaces();
+  }, []);
 
   return (
     <>
@@ -87,19 +45,28 @@ export default function MyPlacesPage() {
       </header>
 
       <main className={styles.main}>
+        {error && (
+          <ErrorMessage message={error} />
+        )}
+        
         {isLoading ? (
           <BookmarksSkeleton />
+        ) : myPlaces.length === 0 ? (
+          <div className={styles.emptyState}>
+            <p>아직 방문한 장소가 없습니다.</p>
+            <p>장소를 둘러보고 나만의 리스트를 만들어보세요!</p>
+          </div>
         ) : (
           <div className={styles.placesList}>
-          {mockMyPlaces.map((place) => (
-            <BookmarkPlaceCard
-              key={place.id}
-              name={place.name}
-              location={place.location}
-              image={place.image}
-              rating={place.rating}
-            />
-          ))}
+            {myPlaces.map((place) => (
+              <BookmarkPlaceCard
+                key={place.id}
+                name={place.name || place.title}
+                location={place.location}
+                image={place.image || place.imageUrl}
+                rating={place.rating}
+              />
+            ))}
           </div>
         )}
       </main>

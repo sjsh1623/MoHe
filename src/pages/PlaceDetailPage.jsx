@@ -2,7 +2,9 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useParams, useLocation } from 'react-router-dom';
 import styles from '@/styles/pages/place-detail-page.module.css';
 import PlaceDetailSkeleton from '@/components/ui/skeletons/PlaceDetailSkeleton';
-import { useMockLoading } from '@/hooks/useLoadingState';
+import ErrorMessage from '@/components/ui/alerts/ErrorMessage';
+import { placeService } from '@/services/apiService';
+import { authService } from '@/services/authService';
 
 export default function PlaceDetailPage({
   place = null, // Allow prop injection for testing/reusability
@@ -10,11 +12,55 @@ export default function PlaceDetailPage({
 }) {
   const { id } = useParams();
   const location = useLocation();
-  const isLoading = useMockLoading(1800); // Simulate API loading
+  const [placeData, setPlaceData] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
   
   // Get preloaded data from navigation state
   const preloadedImage = location.state?.preloadedImage;
   const preloadedData = location.state?.preloadedData;
+  
+  useEffect(() => {
+    const loadPlaceDetail = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+
+        // Use prop data if available, or load from backend
+        if (place) {
+          setPlaceData(place);
+          setIsLoading(false);
+          return;
+        }
+
+        if (!id) {
+          setError('장소 ID가 필요합니다.');
+          setIsLoading(false);
+          return;
+        }
+
+        // Load place details from backend
+        const response = await placeService.getPlaceById(id);
+        if (response.success) {
+          setPlaceData(response.data);
+          
+          // TODO: Implement recent view tracking when backend API is available
+          // For now, just log the view
+          console.log(`Place ${id} viewed by user`);
+        } else {
+          setError('장소 정보를 불러오는데 실패했습니다.');
+        }
+      } catch (err) {
+        console.error('Failed to load place details:', err);
+        setError('장소 정보를 불러오는 중 오류가 발생했습니다.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadPlaceDetail();
+  }, [id, place]);
+
   const [sheetState, setSheetState] = useState('half'); // 'half' (50%), 'large' (80%), 'expanded' (100%)
   const [dragOffset, setDragOffset] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
@@ -42,42 +88,31 @@ export default function PlaceDetailPage({
     return getSheetHeight(sheetState) + dragOffset;
   };
   
-  // Mock data - in real app, this would come from API or props
-  const mockPlace = {
-    id: id || 1,
-    title: '카페 무브먼트랩',
-    tags: ['#성수동', '#카페', '#인기 플레이스'],
-    location: '서울 성수동',
-    rating: 4.7,
-    reviewCount: 2498,
-    description: '가벼운 이야기를 나누기 좋은 조용한 골목의 카페,\n따뜻한 조명과 나지막한 음악이 흐르는 이 공간은\n소란스럽지 않은 만남이 필요한 날에 잘 어울려요.\n오늘은 의미 있는 대화를 나눌 수 있는 이곳에서 시간을 보내보세요.',
-    images: [
-      'https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=440&h=563&fit=crop&crop=center',
-      'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=440&h=563&fit=crop&crop=center',
-      'https://images.unsplash.com/photo-1442975631115-c4f7b05b8a2c?w=440&h=563&fit=crop&crop=center',
-      'https://images.unsplash.com/photo-1559056199-641a0ac8b55e?w=440&h=563&fit=crop&crop=center',
-      'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=440&h=563&fit=crop&crop=center'
-    ],
-    gallery: [
-      'https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=42&h=42&fit=crop&crop=center',
-      'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=42&h=42&fit=crop&crop=center',
-      'https://images.unsplash.com/photo-1442975631115-c4f7b05b8a2c?w=42&h=42&fit=crop&crop=center',
-      'https://images.unsplash.com/photo-1559056199-641a0ac8b55e?w=42&h=42&fit=crop&crop=center'
-    ],
-    additionalImageCount: 16,
-    transportation: {
-      car: '5분',
-      bus: '10분'
-    }
-  };
+  // Show loading or error state
+  if (isLoading) {
+    return <PlaceDetailSkeleton />;
+  }
 
-  const placeData = place || mockPlace;
+  if (error || !placeData) {
+    return (
+      <div className={styles.errorContainer}>
+        <ErrorMessage message={error || '장소 정보를 찾을 수 없습니다.'} />
+      </div>
+    );
+  }
+
+  // Get images from the place data
+  const images = placeData.images?.length ? placeData.images : 
+                 placeData.gallery?.length ? placeData.gallery : 
+                 placeData.image ? [placeData.image] :
+                 placeData.imageUrl ? [placeData.imageUrl] :
+                 ['https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=440&h=563&fit=crop&crop=center'];
 
   const handleExperienceClick = () => {
     if (onExperience) {
       onExperience(placeData);
     } else {
-      console.log('Experience clicked for:', placeData.title);
+      console.log('Experience clicked for:', placeData.name || placeData.title);
       // Default behavior - could navigate to booking page
     }
   };
@@ -139,7 +174,7 @@ export default function PlaceDetailPage({
 
   // Simple image navigation functions
   const nextImage = () => {
-    if (currentImageIndex < placeData.images.length - 1) {
+    if (currentImageIndex < images.length - 1) {
       setCurrentImageIndex(prev => prev + 1);
     }
   };
@@ -234,11 +269,11 @@ export default function PlaceDetailPage({
           onMouseDown={handleImageStart}
           onTouchStart={handleImageStart}
         >
-          {placeData.images.map((image, index) => (
+          {images.map((image, index) => (
             <img 
               key={index}
               src={image} 
-              alt={`${placeData.title} ${index + 1}`}
+              alt={`${placeData.name || placeData.title} ${index + 1}`}
               className={styles.heroImage}
               draggable={false}
             />
@@ -249,7 +284,7 @@ export default function PlaceDetailPage({
 
         {/* Image Indicators */}
         <div className={styles.imageIndicators}>
-          {placeData.images.map((_, index) => (
+          {images.map((_, index) => (
             <div 
               key={index}
               className={`${styles.indicator} ${index === currentImageIndex ? styles.active : ''}`}
@@ -281,20 +316,22 @@ export default function PlaceDetailPage({
         
         {/* Title and Rating */}
         <div className={styles.header}>
-          <h1 className={styles.title}>{placeData.title}</h1>
+          <h1 className={styles.title}>{placeData.name || placeData.title}</h1>
           <div className={styles.ratingContainer}>
             <svg className={styles.starIcon} width="12.94" height="11.64" viewBox="0 0 13 12" fill="none">
               <path d="M5.59149 0.345492C5.74042 -0.115164 6.38888 -0.115164 6.53781 0.345491L7.62841 3.71885C7.69501 3.92486 7.88603 4.06434 8.10157 4.06434H11.6308C12.1128 4.06434 12.3132 4.68415 11.9233 4.96885L9.06803 7.0537C8.89366 7.18102 8.82069 7.4067 8.8873 7.61271L9.9779 10.9861C10.1268 11.4467 9.60222 11.8298 9.21232 11.5451L6.35708 9.46024C6.18271 9.33291 5.94659 9.33291 5.77222 9.46024L2.91698 11.5451C2.52708 11.8298 2.00247 11.4467 2.1514 10.9861L3.242 7.61271C3.30861 7.4067 3.23564 7.18102 3.06127 7.0537L0.206033 4.96885C-0.183869 4.68415 0.0165137 4.06434 0.49846 4.06434H4.02773C4.24326 4.06434 4.43428 3.92486 4.50089 3.71885L5.59149 0.345492Z" fill="#FFD336"/>
             </svg>
             <span className={styles.ratingText}>{placeData.rating}</span>
-            <span className={styles.reviewCount}>({placeData.reviewCount})</span>
+            <span className={styles.reviewCount}>({placeData.reviewCount || placeData.userRatingsTotal || 0})</span>
           </div>
         </div>
 
         {/* Tags */}
-        <div className={styles.tags}>
-          {placeData.tags.join(', ')}
-        </div>
+        {placeData.tags && placeData.tags.length > 0 && (
+          <div className={styles.tags}>
+            {placeData.tags.join(', ')}
+          </div>
+        )}
 
         {/* Location and Transportation */}
         <div className={styles.locationSection}>
@@ -304,28 +341,38 @@ export default function PlaceDetailPage({
                 <circle cx="8" cy="7.33325" r="2" stroke="#7D848D" strokeWidth="1.5"/>
                 <path d="M14 7.25918C14 10.532 10.25 14.6666 8 14.6666C5.75 14.6666 2 10.532 2 7.25918C2 3.98638 4.68629 1.33325 8 1.33325C11.3137 1.33325 14 3.98638 14 7.25918Z" stroke="#7D848D" strokeWidth="1.5"/>
               </svg>
-              <span className={styles.locationText}>{placeData.location}</span>
+              <span className={styles.locationText}>{placeData.location || placeData.address}</span>
             </div>
             
+            {(placeData.transportationCarTime || placeData.transportationBusTime) && (
             <div className={styles.transportationRow}>
-              <svg className={styles.carIcon} width="16" height="16" viewBox="0 0 16 16" fill="none">
-                <path d="M11.67 1.39C12.67 1.39 13.84 2.56 13.84 3.56V7.84H2.17V3.56C2.17 2.56 3.34 1.39 4.34 1.39H11.67Z" fill="#7D848D"/>
-                <path d="M0.83 6.83H15.17V11.16C15.17 12.16 14 13.33 13 13.33H3C2 13.33 0.83 12.16 0.83 11.16V6.83Z" fill="#7D848D"/>
-                <circle cx="4" cy="10.5" r="1" fill="white"/>
-                <circle cx="12" cy="10.5" r="1" fill="white"/>
-                <rect x="7" y="2" width="2" height="1" fill="white"/>
-              </svg>
-              <span className={styles.transportTime}>{placeData.transportation.car}</span>
+              {placeData.transportationCarTime && (
+                <>
+                  <svg className={styles.carIcon} width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <path d="M11.67 1.39C12.67 1.39 13.84 2.56 13.84 3.56V7.84H2.17V3.56C2.17 2.56 3.34 1.39 4.34 1.39H11.67Z" fill="#7D848D"/>
+                    <path d="M0.83 6.83H15.17V11.16C15.17 12.16 14 13.33 13 13.33H3C2 13.33 0.83 12.16 0.83 11.16V6.83Z" fill="#7D848D"/>
+                    <circle cx="4" cy="10.5" r="1" fill="white"/>
+                    <circle cx="12" cy="10.5" r="1" fill="white"/>
+                    <rect x="7" y="2" width="2" height="1" fill="white"/>
+                  </svg>
+                  <span className={styles.transportTime}>{placeData.transportationCarTime}</span>
+                </>
+              )}
               
-              <svg className={styles.busIcon} width="16" height="16" viewBox="0 0 16 16" fill="none">
-                <rect x="2" y="1" width="12" height="13" rx="1.5" fill="#7D848D"/>
-                <rect x="2.5" y="4.5" width="11" height="4" fill="white"/>
-                <circle cx="5" cy="11.5" r="1" fill="white"/>
-                <circle cx="11" cy="11.5" r="1" fill="white"/>
-                <rect x="6" y="2.5" width="4" height="1" fill="white"/>
-              </svg>
-              <span className={styles.transportTime}>{placeData.transportation.bus}</span>
+              {placeData.transportationBusTime && (
+                <>
+                  <svg className={styles.busIcon} width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <rect x="2" y="1" width="12" height="13" rx="1.5" fill="#7D848D"/>
+                    <rect x="2.5" y="4.5" width="11" height="4" fill="white"/>
+                    <circle cx="5" cy="11.5" r="1" fill="white"/>
+                    <circle cx="11" cy="11.5" r="1" fill="white"/>
+                    <rect x="6" y="2.5" width="4" height="1" fill="white"/>
+                  </svg>
+                  <span className={styles.transportTime}>{placeData.transportationBusTime}</span>
+                </>
+              )}
             </div>
+            )}
           </div>
         </div>
 
@@ -344,20 +391,22 @@ export default function PlaceDetailPage({
         </div>
 
         {/* Description */}
-        <div className={styles.descriptionSection}>
-          <h2 className={styles.descriptionTitle}>이런 오늘 어때요?</h2>
-          <div className={styles.description}>
-            {placeData.description.split('\n').map((line, index) => (
-              <span key={index}>
-                {line}
-                {index < placeData.description.split('\n').length - 1 && <br />}
-              </span>
-            ))}
-            <button className={styles.readMore} onClick={handleReadMore}>
-              Read More
-            </button>
+        {placeData.description && (
+          <div className={styles.descriptionSection}>
+            <h2 className={styles.descriptionTitle}>이런 오늘 어때요?</h2>
+            <div className={styles.description}>
+              {placeData.description.split('\n').map((line, index) => (
+                <span key={index}>
+                  {line}
+                  {index < placeData.description.split('\n').length - 1 && <br />}
+                </span>
+              ))}
+              <button className={styles.readMore} onClick={handleReadMore}>
+                Read More
+              </button>
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Experience Button */}
         <button className={styles.experienceButton} onClick={handleExperienceClick}>

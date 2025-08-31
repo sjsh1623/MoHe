@@ -10,6 +10,8 @@
   pointer-events: all;
   /* Ensure it's truly fixed to viewport */
   will-change: transform;
+  /* Ensure centering within constrained page width */
+  max-width: 400px;
 }
 
 .messageInputWrapper {

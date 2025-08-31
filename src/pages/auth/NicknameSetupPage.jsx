@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import styles from '@/styles/pages/auth/nickname-setup-page.module.css';
 
 import { Stack } from '@/components/ui/layout';
@@ -9,10 +10,22 @@ import PrimaryButton from '@/components/ui/buttons/PrimaryButton';
 
 export default function NicknameSetupPage() {
   const { goToTerms } = useAuthNavigation();
+  const navigate = useNavigate();
   const [nickname, setNickname] = useState('');
   const [isCheckingDuplicate, setIsCheckingDuplicate] = useState(false);
   const [duplicateCheckResult, setDuplicateCheckResult] = useState(null); // null, 'available', 'taken'
+  const [tempUserId, setTempUserId] = useState('');
 
+  useEffect(() => {
+    // Get temp user ID from session storage
+    const tempId = sessionStorage.getItem('temp_user_id');
+    if (tempId) {
+      setTempUserId(tempId);
+    } else {
+      // If no temp user ID, redirect back to signup
+      navigate('/signup');
+    }
+  }, [navigate]);
 
   const handleNicknameChange = (e) => {
     setNickname(e.target.value);
@@ -29,14 +42,16 @@ export default function NicknameSetupPage() {
     setIsCheckingDuplicate(true);
     
     try {
-      // Simulate API call
+      // TODO: Implement real nickname duplicate check API
+      // For now, just simulate the check
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // Mock logic - for demo purposes
+      // Mock logic - for demo purposes (these would be real API calls)
       const isTaken = nickname.toLowerCase() === 'admin' || nickname.toLowerCase() === 'test';
       setDuplicateCheckResult(isTaken ? 'taken' : 'available');
     } catch (error) {
       console.error('Duplicate check failed:', error);
+      setDuplicateCheckResult('error');
     } finally {
       setIsCheckingDuplicate(false);
     }
@@ -45,7 +60,15 @@ export default function NicknameSetupPage() {
   const handleNext = () => {
     if (isValidNickname && duplicateCheckResult === 'available') {
       console.log('Proceeding with nickname:', nickname);
-      goToTerms();
+      // Store nickname for later use
+      sessionStorage.setItem('setup_nickname', nickname);
+      navigate('/terms');
+    }
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter' && isValidNickname && duplicateCheckResult === 'available') {
+      handleNext();
     }
   };
 
@@ -76,6 +99,7 @@ export default function NicknameSetupPage() {
               placeholder="닉네임을 입력하세요"
               value={nickname}
               onChange={handleNicknameChange}
+              onKeyPress={handleKeyPress}
               className={styles.nicknameInput}
             />
             <button 

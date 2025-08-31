@@ -1,0 +1,96 @@
+.errorContainer {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  color: #dc2626;
+}
+
+.errorContainer.banner {
+  border-radius: 0;
+  border-left: none;
+  border-right: none;
+  margin: 0 -20px;
+}
+
+.errorContainer.inline {
+  padding: 8px 12px;
+  font-size: 14px;
+}
+
+.errorContent {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  gap: 12px;
+}
+
+.iconContainer {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  color: #dc2626;
+}
+
+.messageContainer {
+  flex: 1;
+  min-width: 0;
+}
+
+.message {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.4;
+  color: #7f1d1d;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.retryButton {
+  background: #dc2626;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.retryButton:hover {
+  background: #b91c1c;
+}
+
+.retryButton:active {
+  background: #991b1b;
+}
+
+.dismissButton {
+  background: none;
+  border: none;
+  color: #dc2626;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dismissButton:hover {
+  background: #fee2e2;
+}
+
+.dismissButton:active {
+  background: #fecaca;
+}

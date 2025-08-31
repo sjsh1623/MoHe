@@ -58,6 +58,30 @@
     color: #555;
 }
 
+.guestBrowseLink {
+    font-size: 0.8125rem; /* 13px */
+    color: #3b82f6;
+    text-decoration: underline;
+    display: block;
+    text-align: center;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    padding: 0.5rem;
+    min-height: 44px;
+    touch-action: manipulation;
+    font-weight: 500;
+}
+
+.guestBrowseLink:hover {
+    color: #2563eb;
+}
+
+.guestBrowseLink:active {
+    color: #1d4ed8;
+}
+
 /* Mobile WebView optimizations - LOGIN PAGE STANDARD */
 @media (max-width: 480px) {
   .pageContainer {

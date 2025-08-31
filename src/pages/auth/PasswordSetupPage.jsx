@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import styles from '@/styles/pages/auth/password-setup-page.module.css';
 
 import { Stack } from '@/components/ui/layout';
@@ -6,13 +7,31 @@ import { AuthContainer, AuthTitle } from '@/components/auth';
 import { useAuthNavigation } from '@/hooks/useAuthNavigation';
 import FormInput from '@/components/ui/inputs/FormInput';
 import PrimaryButton from '@/components/ui/buttons/PrimaryButton';
+import { authService } from '@/services/authService';
 
 export default function PasswordSetupPage() {
   const { goToHome } = useAuthNavigation();
+  const navigate = useNavigate();
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [tempUserId, setTempUserId] = useState('');
+  const [nickname, setNickname] = useState('');
+
+  useEffect(() => {
+    // Get temp user ID and nickname from session storage
+    const tempId = sessionStorage.getItem('temp_user_id');
+    const setupNickname = sessionStorage.getItem('setup_nickname');
+    
+    if (tempId && setupNickname) {
+      setTempUserId(tempId);
+      setNickname(setupNickname);
+    } else {
+      // If missing data, redirect back to signup
+      navigate('/signup');
+    }
+  }, [navigate]);
 
 
   const handlePasswordChange = (e) => {
@@ -71,22 +90,41 @@ export default function PasswordSetupPage() {
       setErrors(newErrors);
       return;
     }
+
+    if (!tempUserId || !nickname) {
+      setErrors({ submit: '사용자 정보가 부족합니다. 다시 회원가입을 진행해주세요.' });
+      return;
+    }
     
     setIsSubmitting(true);
     
     try {
-      // TODO: Implement password setup API call
-      console.log('Setting up password:', { password });
+      const result = await authService.setupProfile(tempUserId, nickname, password);
+      console.log('Profile setup successful:', result);
       
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Clean up session storage
+      sessionStorage.removeItem('signup_email');
+      sessionStorage.removeItem('temp_user_id');
+      sessionStorage.removeItem('setup_nickname');
       
-      // Success - navigate to home page
-      goToHome();
-    } catch {
-      setErrors({ submit: '비밀번호 설정에 실패했습니다. 다시 시도해주세요.' });
+      // Check if user needs to complete preferences or can go straight to home
+      if (result.user && result.user.isProfileComplete) {
+        navigate('/home');
+      } else {
+        // User needs to complete profile setup (MBTI, preferences, etc.)
+        navigate('/age-range');
+      }
+    } catch (error) {
+      console.error('Profile setup failed:', error);
+      setErrors({ submit: error.message || '프로필 설정에 실패했습니다. 다시 시도해주세요.' });
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter' && isFormValid) {
+      handleSubmit();
     }
   };
 
@@ -117,6 +155,7 @@ export default function PasswordSetupPage() {
             placeholder="영문, 숫자, 특수문자"
             value={password}
             onChange={handlePasswordChange}
+            onKeyPress={handleKeyPress}
             error={errors.password}
           />
 
@@ -126,6 +165,7 @@ export default function PasswordSetupPage() {
             placeholder="비밀번호를 한번 더 입력해주세요"
             value={confirmPassword}
             onChange={handleConfirmPasswordChange}
+            onKeyPress={handleKeyPress}
             error={errors.confirmPassword}
           />
 

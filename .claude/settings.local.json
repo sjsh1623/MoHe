@@ -14,7 +14,20 @@
       "Bash(git checkout:*)",
       "Bash(npm run lint:*)",
       "Bash(find:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Read(/Users/andrewlim/Desktop/Developer/Mohe/MoheSpring/**)",
+      "Read(/Users/andrewlim/Desktop/Developer/Mohe/MoheSpring/**)",
+      "Bash(curl:*)",
+      "Bash(docker exec:*)",
+      "Read(/Users/andrewlim/Desktop/Developer/Mohe/MoheSpring/src/main/kotlin/com/mohe/spring/config/**)",
+      "Read(/Users/andrewlim/Desktop/Developer/Mohe/MoheSpring/src/main/kotlin/com/mohe/spring/controller/**)",
+      "Read(/Users/andrewlim/Desktop/Developer/Mohe/MoheSpring/**)",
+      "Read(/Users/andrewlim/Desktop/Developer/Mohe/MoheSpring/**)",
+      "Read(/Users/andrewlim/Desktop/Developer/Mohe/MoheSpring/**)",
+      "Bash(lsof:*)",
+      "Bash(open:*)",
+      "Bash(docker stop:*)",
+      "Bash(docker rm:*)"
     ],
     "deny": []
   }
