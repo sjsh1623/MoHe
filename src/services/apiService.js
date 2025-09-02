@@ -427,6 +427,39 @@ export class PlaceService extends ApiService {
       });
     }
   }
+  
+  /**
+   * Get paginated places list
+   */
+  async getPlacesList(options = {}) {
+    const params = new URLSearchParams({
+      page: (options.page || 0).toString(),
+      limit: (options.limit || 10).toString(),
+      sort: options.sort || 'popularity'
+    });
+    
+    return this.get(`/api/places/list?${params}`, {
+      requireAuth: false
+    });
+  }
+  
+  /**
+   * Get current time recommendations
+   */
+  async getCurrentTimeRecommendations(latitude, longitude, options = {}) {
+    const params = new URLSearchParams({
+      limit: (options.limit || 10).toString()
+    });
+    
+    if (latitude && longitude) {
+      params.append('latitude', latitude.toString());
+      params.append('longitude', longitude.toString());
+    }
+    
+    return this.get(`/api/places/current-time?${params}`, {
+      requireAuth: false
+    });
+  }
 }
 
 /**

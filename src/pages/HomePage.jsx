@@ -452,6 +452,23 @@ export default function HomePage() {
     console.log('See more places clicked');
     navigate('/places');
   };
+  
+  const handleBannerClick = () => {
+    console.log('Banner clicked');
+    // Check if user is logged in and has completed survey
+    if (user && !user.isGuest) {
+      // Check if user has completed preference survey
+      const hasCompletedSurvey = user.mbti && user.ageRange && user.spacePreferences;
+      if (hasCompletedSurvey) {
+        navigate('/search-results');
+      } else {
+        navigate('/age-range');
+      }
+    } else {
+      // Guest user - start survey
+      navigate('/age-range');
+    }
+  };
 
   const handlePlaceClick = (placeId) => {
     console.log('Place clicked:', placeId);
@@ -515,9 +532,11 @@ export default function HomePage() {
       ) : (
         <div className={styles.contentContainer}>
           <div className={styles.contentWrapper}>
-          {/* Personalized recommendations section */}
+          {/* Recommendations section - different for logged in vs guest users */}
           <section className={styles.section}>
-            <h2 className={`${styles.sectionTitle} container-padding`}>내 취향에 맞는 추천 플레이스</h2>
+            <h2 className={`${styles.sectionTitle} container-padding`}>
+              {user && !user.isGuest ? '내 취향에 맞는 추천 장소' : '인기 장소'}
+            </h2>
             {recommendations.length > 0 ? (
               <div className={styles.horizontalScroll}>
                 <div className={styles.cardsContainer}>
@@ -554,10 +573,10 @@ export default function HomePage() {
                   margin: '20px 0'
                 }}>
                   <p style={{ margin: '0 0 10px 0', fontSize: '16px' }}>
-                    {user.isGuest ? '장소 데이터를 불러오는 중입니다' : '추천 장소가 없습니다'}
+                    {user && user.isGuest ? '인기 장소를 불러오는 중입니다...' : '추천 장소가 없습니다'}
                   </p>
                   <p style={{ margin: '0', fontSize: '14px' }}>
-                    {user.isGuest ? '잠시만 기다려주세요' : '백엔드 서버가 실행 중인지 확인해주세요'}
+                    {user && user.isGuest ? '로그인하면 더 많은 추천을 받아볼 수 있어요' : '백엔드 서버가 실행 중인지 확인해주세요'}
                   </p>
                 </div>
               </div>
@@ -566,7 +585,7 @@ export default function HomePage() {
 
           {/* Mood-based section */}
           <section className={`${styles.moodSection} container-padding`}>
-            <div className={styles.moodCard} onClick={() => navigate('/age-range')} style={{ cursor: 'pointer' }}>
+            <div className={styles.moodCard} onClick={handleBannerClick} style={{ cursor: 'pointer' }}>
               <div className={styles.moodContent}>
                 <h3 className={styles.moodTitle}>지금 뭐하지?</h3>
                 <p className={styles.moodDescription}>
@@ -580,6 +599,21 @@ export default function HomePage() {
             </div>
           </section>
 
+          {/* Current Time Places section - Only for guests */}
+          {user && user.isGuest && (
+            <section className={styles.section}>
+              <h2 className={`${styles.sectionTitle} container-padding`}>지금 이 시간의 장소</h2>
+              <div className={styles.horizontalScroll}>
+                <div className={styles.cardsContainer}>
+                  {/* Current time places will be loaded via new API */}
+                  <div className="container-padding">
+                    <p>현재 시간에 어울리는 장소를 찾고 있어요...</p>
+                  </div>
+                </div>
+              </div>
+            </section>
+          )}
+          
           {/* Popular places section - Load from backend */}
           <section className={styles.section}>
             <h2 className={`${styles.sectionTitle} container-padding`}>Hot 플레이스</h2>

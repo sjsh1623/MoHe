@@ -55,6 +55,17 @@
     line-height: 28px;
     color: #1B1E28;
     text-align: left;
+    margin-bottom: 8px;
+}
+
+.sectionSubtitle {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 20px;
+    color: #6B7280;
+    margin-bottom: 20px;
+    margin-top: 0;
 }
 
 .placesGrid {
@@ -62,6 +73,42 @@
     grid-template-columns: 1fr 1fr;
     gap: 16px;
     width: 100%;
+    margin-bottom: 24px;
+}
+
+.emptyState {
+    text-align: center;
+    padding: 60px 20px;
+    color: #6B7280;
+}
+
+.emptyState p {
+    margin: 8px 0;
+    font-size: 16px;
+    line-height: 24px;
+}
+
+.loadMoreContainer {
+    display: flex;
+    justify-content: center;
+    margin: 32px 0;
+}
+
+.loadMoreButton {
+    min-width: 200px;
+    padding: 12px 24px;
+}
+
+.loadMoreButton:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.paginationInfo {
+    text-align: center;
+    margin: 16px 0;
+    color: #6B7280;
+    font-size: 14px;
 }
 
 /* Mobile responsive */
@@ -78,6 +125,13 @@
     .placesGrid {
         gap: 12px;
     }
+}
+
+/* Loading states */
+.loadMoreButton:disabled {
+    background-color: #F3F4F6 !important;
+    color: #9CA3AF !important;
+    border-color: #E5E7EB !important;
 }
 
 /* Touch interactions */

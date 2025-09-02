@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styles from '@/styles/pages/places-list-page.module.css';
 
@@ -6,7 +6,8 @@ import { Container } from '@/components/ui/layout';
 import GridPlaceCard from '@/components/ui/cards/GridPlaceCard';
 import PlacesListSkeleton from '@/components/ui/skeletons/PlacesListSkeleton';
 import ErrorMessage from '@/components/ui/alerts/ErrorMessage';
-import { placeService, bookmarkService, contextualRecommendationService } from '@/services/apiService';
+import PrimaryButton from '@/components/ui/buttons/PrimaryButton';
+import { placeService, bookmarkService } from '@/services/apiService';
 import { authService } from '@/services/authService';
 import { useGeolocation } from '@/hooks/useGeolocation';
 
@@ -14,56 +15,70 @@ export default function PlacesListPage() {
   const navigate = useNavigate();
   const [places, setPlaces] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [error, setError] = useState(null);
+  const [hasMorePlaces, setHasMorePlaces] = useState(true);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const [user, setUser] = useState(null);
   const { location, error: locationError } = useGeolocation();
+  
+  const PLACES_PER_PAGE = 20;
 
+  // Initialize user state
   useEffect(() => {
-    const loadPlaces = async () => {
-      try {
+    const currentUser = authService.getCurrentUser();
+    setUser(currentUser);
+  }, []);
+
+  // Load places function
+  const loadPlaces = useCallback(async (page = 0, append = false) => {
+    try {
+      if (!append) {
         setIsLoading(true);
-        setError(null);
-
-        let lat = 37.5665; // Default Seoul coordinates
-        let lon = 126.9780;
-        
-        if (location) {
-          lat = location.latitude;
-          lon = location.longitude;
-        }
-
-        // Try to get nearby places first, fallback to general search
-        let response;
-        try {
-          response = await placeService.getNearbyPlaces(lat, lon, {
-            radius: 5000, // 5km radius
-            limit: 20
-          });
-        } catch (nearbyError) {
-          console.warn('Nearby places failed, trying general search:', nearbyError);
-          // Fallback to contextual recommendations
-          response = await contextualRecommendationService.getContextualRecommendations(
-            '인기 장소', // Default query
-            lat,
-            lon,
-            { limit: 20 }
-          );
-        }
-
-        if (response.success) {
-          setPlaces(response.data?.places || []);
-        } else {
-          setError('장소를 불러오는데 실패했습니다.');
-        }
-      } catch (err) {
-        console.error('Failed to load places:', err);
-        setError('장소를 불러오는 중 오류가 발생했습니다.');
-      } finally {
-        setIsLoading(false);
+      } else {
+        setIsLoadingMore(true);
       }
-    };
+      setError(null);
 
-    loadPlaces();
-  }, [location]);
+      // Use the general places list endpoint with pagination
+      const response = await placeService.getPlacesList({
+        page: page,
+        limit: PLACES_PER_PAGE,
+        sort: 'popularity' // Default sort by popularity
+      });
+
+      if (response.success) {
+        const { places: newPlaces, pagination } = response.data;
+        
+        if (append) {
+          setPlaces(prev => [...prev, ...newPlaces]);
+        } else {
+          setPlaces(newPlaces);
+        }
+        
+        if (pagination) {
+          setTotalPages(pagination.totalPages);
+          setHasMorePlaces(pagination.currentPage < pagination.totalPages);
+        }
+        
+        setCurrentPage(page);
+      } else {
+        setError('장소를 불러오는데 실패했습니다.');
+      }
+    } catch (err) {
+      console.error('Failed to load places:', err);
+      setError('장소를 불러오는 중 오류가 발생했습니다.');
+    } finally {
+      setIsLoading(false);
+      setIsLoadingMore(false);
+    }
+  }, []);
+
+  // Initial load
+  useEffect(() => {
+    loadPlaces(0, false);
+  }, [loadPlaces]);
 
   const handlePlaceClick = (placeId) => {
     console.log('Place clicked:', placeId);
@@ -75,26 +90,37 @@ export default function PlacesListPage() {
 
   const handleBookmarkToggle = async (placeId, isBookmarked) => {
     try {
-      const user = authService.getCurrentUser();
       if (!user || user.isGuest) {
-        console.log('Guest user cannot bookmark places');
+        console.log('Guest user redirected to login for bookmarking');
+        navigate('/login', {
+          state: { 
+            from: '/places',
+            message: '북마크 기능을 사용하려면 로그인이 필요합니다.'
+          }
+        });
         return;
       }
 
-      if (isBookmarked) {
-        await bookmarkService.addBookmark(placeId);
-      } else {
-        await bookmarkService.removeBookmark(placeId);
-      }
+      const response = await bookmarkService.toggleBookmark(placeId);
       
-      // Update local state
-      setPlaces(prevPlaces => 
-        prevPlaces.map(place => 
-          place.id === placeId ? { ...place, isBookmarked } : place
-        )
-      );
+      if (response.success) {
+        // Update local state
+        setPlaces(prevPlaces => 
+          prevPlaces.map(place => 
+            place.id === placeId ? { ...place, isBookmarked: response.data.isBookmarked } : place
+          )
+        );
+      } else {
+        console.error('Failed to toggle bookmark:', response.message);
+      }
     } catch (err) {
       console.error('Failed to toggle bookmark:', err);
+    }
+  };
+
+  const handleLoadMore = () => {
+    if (hasMorePlaces && !isLoadingMore) {
+      loadPlaces(currentPage + 1, true);
     }
   };
 
@@ -108,7 +134,8 @@ export default function PlacesListPage() {
       {/* Main content */}
       <div className={styles.contentContainer}>
         <div className={styles.contentWrapper}>
-          <h2 className={styles.sectionTitle}>오늘, 이런 곳은 어때요?</h2>
+          <h2 className={styles.sectionTitle}>모든 장소</h2>
+          <p className={styles.sectionSubtitle}>평점과 인기도를 기준으로 정렬된 장소들입니다</p>
           
           {error && (
             <ErrorMessage message={error} />
@@ -120,23 +147,45 @@ export default function PlacesListPage() {
           ) : places.length === 0 ? (
             <div className={styles.emptyState}>
               <p>추천할 장소가 없습니다.</p>
-              <p>위치 설정을 확인해보세요.</p>
+              <p>잠시 후 다시 시도해주세요.</p>
             </div>
           ) : (
-            <div className={styles.placesGrid}>
-              {places.map((place) => (
-              <GridPlaceCard
-                key={place.id}
-                title={place.name || place.title}
-                rating={place.rating}
-                location={place.location}
-                image={place.image || place.imageUrl}
-                isBookmarked={place.isBookmarked}
-                onClick={() => handlePlaceClick(place.id)}
-                onBookmarkToggle={(isBookmarked) => handleBookmarkToggle(place.id, isBookmarked)}
-                />
-              ))}
-            </div>
+            <>
+              <div className={styles.placesGrid}>
+                {places.map((place) => (
+                  <GridPlaceCard
+                    key={place.id}
+                    title={place.title}
+                    rating={place.rating}
+                    location={place.location}
+                    image={place.image}
+                    isBookmarked={place.isBookmarked || false}
+                    onClick={() => handlePlaceClick(place.id)}
+                    onBookmarkToggle={(isBookmarked) => handleBookmarkToggle(place.id, isBookmarked)}
+                  />
+                ))}
+              </div>
+              
+              {/* Load More Button */}
+              {hasMorePlaces && (
+                <div className={styles.loadMoreContainer}>
+                  <PrimaryButton 
+                    onClick={handleLoadMore}
+                    disabled={isLoadingMore}
+                    className={styles.loadMoreButton}
+                  >
+                    {isLoadingMore ? '더 많은 장소를 불러오는 중...' : '더 많은 장소 보기'}
+                  </PrimaryButton>
+                </div>
+              )}
+              
+              {/* Show current progress */}
+              {totalPages > 1 && (
+                <div className={styles.paginationInfo}>
+                  <p>{currentPage + 1} / {totalPages} 페이지</p>
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>
