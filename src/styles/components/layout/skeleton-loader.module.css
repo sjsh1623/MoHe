@@ -11,11 +11,11 @@
   }
 }
 
-/* Base skeleton styles */
+/* Base skeleton styles - Made thinner */
 .skeleton {
   background-color: #e5e5e5;
   animation: skeletonPulse 1.5s ease-in-out infinite;
-  border-radius: 8px;
+  border-radius: 4px;
 }
 
 /* Transparent background support */
@@ -40,18 +40,18 @@
   pointer-events: none;
 }
 
-/* Skeleton card wrapper */
+/* Skeleton card wrapper - Made thinner */
 .skeletonCard {
   background: transparent;
-  border-radius: 12px;
-  padding: 16px;
-  margin-bottom: 16px;
+  border-radius: 6px;
+  padding: 8px;
+  margin-bottom: 8px;
 }
 
 /* Responsive adjustments */
 @media (max-width: 480px) {
   .skeletonCard {
-    padding: 12px;
-    margin-bottom: 12px;
+    padding: 6px;
+    margin-bottom: 6px;
   }
 }

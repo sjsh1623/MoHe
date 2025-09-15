@@ -27,7 +27,8 @@
       "Bash(lsof:*)",
       "Bash(open:*)",
       "Bash(docker stop:*)",
-      "Bash(docker rm:*)"
+      "Bash(docker rm:*)",
+      "Bash(git commit:*)"
     ],
     "deny": []
   }

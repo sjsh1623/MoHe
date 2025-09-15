@@ -6,6 +6,7 @@ export default function PlaceCard({
   rating,
   location,
   image,
+  images = [], // Array of images for carousel
   isBookmarked = false,
   onBookmarkToggle,
   avatars = [],
@@ -14,6 +15,7 @@ export default function PlaceCard({
 }) {
   const [bookmarked, setBookmarked] = useState(isBookmarked);
   const [imageError, setImageError] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   const handleBookmarkClick = (e) => {
     e.stopPropagation();
@@ -28,6 +30,21 @@ export default function PlaceCard({
     setImageError(true);
   };
 
+  // Determine which images to use - prioritize images array if available
+  const displayImages = images.length > 0 ? images : (image ? [image] : []);
+  const hasMultipleImages = displayImages.length > 1;
+  
+  // Handle image carousel navigation
+  const nextImage = (e) => {
+    e.stopPropagation();
+    setCurrentImageIndex((prev) => (prev + 1) % displayImages.length);
+  };
+
+  const prevImage = (e) => {
+    e.stopPropagation();
+    setCurrentImageIndex((prev) => (prev - 1 + displayImages.length) % displayImages.length);
+  };
+
   return (
     <div className={`${styles.card} ${styles[variant]}`}>
       <div className={styles.imageContainer}>
@@ -36,12 +53,50 @@ export default function PlaceCard({
             <div className={styles.placeholderText}>이미지를 불러올 수 없습니다</div>
           </div>
         ) : (
-          <img 
-            src={image || 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=240&h=240&fit=crop&crop=center'} 
-            alt={title}
-            className={styles.image}
-            onError={handleImageError}
-          />
+          <>
+            <img 
+              src={displayImages[currentImageIndex] || 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=240&h=240&fit=crop&crop=center'} 
+              alt={`${title} ${currentImageIndex + 1}`}
+              className={styles.image}
+              onError={handleImageError}
+            />
+            {hasMultipleImages && (
+              <>
+                {/* Image navigation buttons */}
+                <button 
+                  className={`${styles.navButton} ${styles.prevButton}`}
+                  onClick={prevImage}
+                  aria-label="이전 이미지"
+                >
+                  <svg width="8" height="12" viewBox="0 0 8 12" fill="none">
+                    <path d="M6.5 1L1.5 6L6.5 11" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </button>
+                <button 
+                  className={`${styles.navButton} ${styles.nextButton}`}
+                  onClick={nextImage}
+                  aria-label="다음 이미지"
+                >
+                  <svg width="8" height="12" viewBox="0 0 8 12" fill="none">
+                    <path d="M1.5 1L6.5 6L1.5 11" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </button>
+                {/* Image indicators */}
+                <div className={styles.imageIndicators}>
+                  {displayImages.map((_, index) => (
+                    <div
+                      key={index}
+                      className={`${styles.indicator} ${index === currentImageIndex ? styles.active : ''}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setCurrentImageIndex(index);
+                      }}
+                    />
+                  ))}
+                </div>
+              </>
+            )}
+          </>
         )}
         <button 
           className={styles.bookmarkButton}

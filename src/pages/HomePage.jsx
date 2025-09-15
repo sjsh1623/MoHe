@@ -10,7 +10,7 @@ import OutlineButton from '@/components/ui/buttons/OutlineButton';
 import HomePageSkeleton from '@/components/ui/skeletons/HomePageSkeleton';
 import ErrorMessage from '@/components/ui/alerts/ErrorMessage';
 import { useGeolocation, useLocationStorage } from '@/hooks/useGeolocation';
-import { weatherService, contextualRecommendationService, recommendationService, bookmarkService, addressService, guestRecommendationService, placeService } from '@/services/apiService';
+import { weatherService, contextualRecommendationService, recommendationService, bookmarkService, addressService, guestRecommendationService, placeService, homeService } from '@/services/apiService';
 import { authService } from '@/services/authService';
 import { withAuthCheck } from '@/hooks/useAuthGuard';
 import bannerLeft from '@/assets/image/banner_left.png';
@@ -30,7 +30,7 @@ export default function HomePage() {
   const [error, setError] = useState(null);
   const [user, setUser] = useState(null);
   const [popularPlaces, setPopularPlaces] = useState([]);
-  const [isLoadingRecommendations, setIsLoadingRecommendations] = useState(false);
+  const [homeImages, setHomeImages] = useState([]);
 
   // Initialize app only once on mount
   useEffect(() => {
@@ -187,7 +187,7 @@ export default function HomePage() {
             const guestResponse = await guestRecommendationService.getGuestRecommendations(
               currentLocation.latitude,
               currentLocation.longitude,
-              { limit: 10 }
+              { limit: 10, maxDistance: 55000 } // 15km in meters
             );
             
             console.log('HomePage: Guest response received:', guestResponse);
@@ -204,7 +204,7 @@ export default function HomePage() {
                 location: place.location,
                 image: place.image,
                 isBookmarked: place.isBookmarked,
-                distance: null,
+                distance: 0,
                 weatherSuitability: place.weatherSuitability,
                 reasonWhy: place.description
               }));
@@ -228,14 +228,15 @@ export default function HomePage() {
             }
           }
 
-          if (recommendationsData.length === 0 && !user.isGuest && isMounted) {
+          // Load general recommendations for all users (guest and authenticated)
+          if (recommendationsData.length === 0 && isMounted) {
             try {
-              const personalizedData = await loadPersonalizedRecommendations();
-              if (personalizedData.length > 0 && isMounted) {
-                recommendationsData = personalizedData;
+              const generalData = await loadGeneralRecommendations();
+              if (generalData.length > 0 && isMounted) {
+                recommendationsData = generalData;
               }
             } catch (error) {
-              console.warn('Personalized recommendations failed:', error);
+              console.warn('General recommendations failed:', error);
             }
           }
         }
@@ -299,7 +300,7 @@ export default function HomePage() {
         contextQuery,
         currentLocation.latitude,
         currentLocation.longitude,
-        { limit: 10 }
+        { limit: 10, maxDistance: 55000 } // 15km in meters
       );
 
       if (response.success && response.data.places.length > 0) {
@@ -310,7 +311,7 @@ export default function HomePage() {
           location: place.category || '알 수 없음',
           image: place.imageUrl || place.images?.[0],
           isBookmarked: false,
-          distance: place.distanceM,
+          distance: 0, // Distance disabled as per requirements
           weatherSuitability: place.weatherSuitability,
           reasonWhy: place.reasonWhy
         }));
@@ -318,24 +319,21 @@ export default function HomePage() {
       return [];
     };
 
-    const loadPersonalizedRecommendations = async () => {
-      if (!user || user.isGuest) return [];
-      
-      const response = await recommendationService.getPersonalizedRecommendations(
-        { limit: 10, includeBookmarked: false }
-      );
+    const loadGeneralRecommendations = async () => {
+      // Use general recommendations API that works for both guest and authenticated users
+      const response = await placeService.getRecommendations();
 
-      if (response.success && response.data.recommendations.length > 0) {
+      if (response.success && response.data.recommendations && response.data.recommendations.length > 0) {
         return response.data.recommendations.map(place => ({
           id: place.id,
           title: place.name,
           rating: place.rating,
           location: place.category || '알 수 없음',
-          image: place.imageUrl,
+          image: place.imageUrl || place.image,
           isBookmarked: false,
           distance: null,
-          score: place.similarityScore,
-          reasonWhy: place.explanation
+          score: place.score || null,
+          reasonWhy: place.reasonWhy || null
         }));
       }
       return [];
@@ -379,25 +377,37 @@ export default function HomePage() {
   useEffect(() => {
     let isMounted = true;
 
-    const loadPopularPlaces = async () => {
+    const loadBookmarkBasedPlaces = async () => {
       if (!currentLocation || !isMounted) return;
 
       try {
-        console.log('Loading popular places for location:', currentLocation);
-        const response = await placeService.getPopularPlaces(
+        console.log('Loading bookmark-based places for location:', currentLocation);
+        const response = await placeService.getBookmarkBasedRecommendations(
           currentLocation.latitude,
-          currentLocation.longitude
+          currentLocation.longitude,
+          { limit: 15, distance: 50.0 } // 15 items, 20km radius
         );
 
         if (response.success && isMounted) {
-          console.log('✅ Popular places loaded:', response.data.places.length);
-          setPopularPlaces(response.data.places);
+          console.log('✅ Bookmark-based places loaded:', response.data.length);
+          // Transform the data to match the expected format
+          const transformedPlaces = response.data.map(place => ({
+            id: place.id,
+            name: place.name || place.title,
+            title: place.title || place.name,
+            rating: place.rating,
+            location: place.location || place.address,
+            image: place.imageUrl || place.image,
+            images: place.images || [],
+            isBookmarked: place.isBookmarked || false
+          }));
+          setPopularPlaces(transformedPlaces);
         } else if (isMounted) {
-          console.warn('⚠️ Popular places API returned no success:', response);
+          console.warn('⚠️ Bookmark-based places API returned no success:', response);
           setPopularPlaces([]);
         }
       } catch (error) {
-        console.warn('⚠️ Popular places failed, continuing without them:', error);
+        console.warn('⚠️ Bookmark-based places failed, continuing without them:', error);
         if (isMounted) {
           setPopularPlaces([]);
         }
@@ -405,13 +415,88 @@ export default function HomePage() {
     };
 
     if (currentLocation) {
-      loadPopularPlaces();
+      loadBookmarkBasedPlaces();
     }
 
     return () => {
       isMounted = false;
     };
   }, [currentLocation]);
+
+  // Load recommendations based on login status
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadRecommendations = async () => {
+      try {
+        console.log('Loading recommendations based on user status...');
+        
+        // Check if user is logged in
+        const isLoggedIn = user && user.id && user.id !== 'guest';
+        
+        if (isLoggedIn) {
+          console.log('👤 User is logged in, loading MBTI-based recommendations');
+          // MBTI-based recommendations for logged-in users
+          await loadMBTIRecommendations(isMounted);
+        } else {
+          console.log('🌍 Guest user, loading weather/time-based recommendations');
+          // Weather/time-based recommendations for guests
+          await loadWeatherTimeRecommendations(isMounted);
+        }
+        
+      } catch (error) {
+        console.warn('⚠️ Failed to load recommendations:', error);
+        if (isMounted) {
+          // No fallback - keep empty array to show only real database data
+          setHomeImages([]);
+        }
+      }
+    };
+
+    loadRecommendations();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [user]); // Reload when user changes
+
+  const loadMBTIRecommendations = async (isMounted) => {
+    try {
+      // Try backend MBTI recommendations first
+      const response = await homeService.getHomeImages();
+      
+      if (response.success && response.data.length > 0 && isMounted) {
+        console.log('✅ MBTI recommendations loaded from database:', response.data.length);
+        setHomeImages(response.data);
+      } else if (isMounted) {
+        // No fallback - keep empty array to show only real database data
+        console.log('🎯 No backend data available, showing empty state');
+        setHomeImages([]);
+      }
+    } catch {
+      if (isMounted) {
+        console.log('🎯 Backend unavailable, showing empty state');
+        setHomeImages([]);
+      }
+    }
+  };
+
+  const loadWeatherTimeRecommendations = async (isMounted) => {
+    try {
+      // Weather/time recommendations should come from backend API
+      console.log('🌤️ Weather recommendations unavailable, showing empty state');
+      if (isMounted) {
+        setHomeImages([]);
+      }
+    } catch {
+      if (isMounted) {
+        console.log('🌤️ Weather recommendations unavailable, showing empty state');
+        setHomeImages([]);
+      }
+    }
+  };
+
+
 
   const handleProfileClick = () => {
     console.log('Profile clicked');
@@ -472,10 +557,24 @@ export default function HomePage() {
 
   const handlePlaceClick = (placeId) => {
     console.log('Place clicked:', placeId);
-    // Pass preloaded data to place detail page
-    const selectedPlace = recommendations.find(place => place.id === placeId);
+    
+    // Find place in database arrays only - no fallback data
+    let selectedPlace = recommendations.find(place => place.id === placeId) ||
+                       homeImages.find(place => place.id === placeId) ||
+                       popularPlaces.find(place => place.id === placeId);
+    
+    // If not found in any array, navigate without preloaded data
+    if (!selectedPlace) {
+      navigate(`/place/${placeId}`);
+      return;
+    }
+    
+    console.log('Selected place data:', selectedPlace);
     navigate(`/place/${placeId}`, { 
-      state: { preloadedImage: selectedPlace?.image, preloadedData: selectedPlace } 
+      state: { 
+        preloadedImage: selectedPlace.imageUrl || selectedPlace.image, 
+        preloadedData: selectedPlace 
+      } 
     });
   };
 
@@ -535,52 +634,50 @@ export default function HomePage() {
           {/* Recommendations section - different for logged in vs guest users */}
           <section className={styles.section}>
             <h2 className={`${styles.sectionTitle} container-padding`}>
-              {user && !user.isGuest ? '내 취향에 맞는 추천 장소' : '인기 장소'}
+              지금 가기 좋은 플레이스
             </h2>
-            {recommendations.length > 0 ? (
-              <div className={styles.horizontalScroll}>
-                <div className={styles.cardsContainer}>
-                  {recommendations.map((place) => (
-                    <div key={place.id} className={styles.cardWrapper}>
-                      <div onClick={() => handlePlaceClick(place.id)} style={{ cursor: 'pointer' }}>
-                        <PlaceCard
-                          title={place.title}
-                          rating={place.rating}
-                          location={place.location}
-                          image={place.image}
-                          isBookmarked={place.isBookmarked}
-                          avatars={place.avatars}
-                          additionalCount={place.additionalCount}
-                          onBookmarkToggle={(isBookmarked) => handleBookmarkToggle(place.id, isBookmarked)}
-                          variant={place.id === 2 ? 'compact' : 'default'}
-                          weatherSuitability={place.weatherSuitability}
-                          reasonWhy={place.reasonWhy}
-                          distance={place.distance}
-                        />
+            {(() => {
+              // Only show recommendations from backend - no fallback data
+              const displayData = recommendations;
+              
+              if (displayData.length === 0) {
+                return (
+                  <div className="container-padding">
+                    <p style={{ textAlign: 'center', color: '#666', padding: '20px 0' }}>
+                      현재 추천 장소를 불러오고 있습니다.
+                    </p>
+                  </div>
+                );
+              }
+              
+              return (
+                <div className={styles.horizontalScroll}>
+                  <div className={styles.cardsContainer}>
+                    {displayData.map((place) => (
+                      <div key={place.id} className={styles.cardWrapper}>
+                        <div onClick={() => handlePlaceClick(place.id)} style={{ cursor: 'pointer' }}>
+                          <PlaceCard
+                            title={place.title || place.name}
+                            rating={place.rating}
+                            location={place.location}
+                            image={place.image || place.imageUrl}
+                            images={place.images || []} // Pass the 5 images array
+                            isBookmarked={place.isBookmarked || false}
+                            avatars={place.avatars}
+                            additionalCount={place.additionalCount}
+                            onBookmarkToggle={(isBookmarked) => handleBookmarkToggle(place.id, isBookmarked)}
+                            variant={place.id === 2 ? 'compact' : 'default'}
+                            weatherSuitability={place.weatherSuitability}
+                            reasonWhy={place.reasonWhy}
+                            distance={place.distance}
+                          />
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
-              </div>
-            ) : (
-              <div className="container-padding">
-                <div style={{ 
-                  textAlign: 'center', 
-                  padding: '40px 20px',
-                  color: '#666',
-                  border: '1px dashed #ddd',
-                  borderRadius: '8px',
-                  margin: '20px 0'
-                }}>
-                  <p style={{ margin: '0 0 10px 0', fontSize: '16px' }}>
-                    {user && user.isGuest ? '인기 장소를 불러오는 중입니다...' : '추천 장소가 없습니다'}
-                  </p>
-                  <p style={{ margin: '0', fontSize: '14px' }}>
-                    {user && user.isGuest ? '로그인하면 더 많은 추천을 받아볼 수 있어요' : '백엔드 서버가 실행 중인지 확인해주세요'}
-                  </p>
-                </div>
-              </div>
-            )}
+              );
+            })()}
           </section>
 
           {/* Mood-based section */}
@@ -599,36 +696,26 @@ export default function HomePage() {
             </div>
           </section>
 
-          {/* Current Time Places section - Only for guests */}
-          {user && user.isGuest && (
-            <section className={styles.section}>
-              <h2 className={`${styles.sectionTitle} container-padding`}>지금 이 시간의 장소</h2>
-              <div className={styles.horizontalScroll}>
-                <div className={styles.cardsContainer}>
-                  {/* Current time places will be loaded via new API */}
-                  <div className="container-padding">
-                    <p>현재 시간에 어울리는 장소를 찾고 있어요...</p>
-                  </div>
-                </div>
-              </div>
-            </section>
-          )}
           
-          {/* Popular places section - Load from backend */}
-          <section className={styles.section}>
-            <h2 className={`${styles.sectionTitle} container-padding`}>Hot 플레이스</h2>
-            {popularPlaces.length > 0 ? (
+          {/* Recommendations section - Based on login status */}
+          {homeImages.length > 0 && (
+            <section className={styles.section}>
+              <h2 className={`${styles.sectionTitle} container-padding`}>
+                {user && user.id && user.id !== 'guest' ? '당신을 위한 추천' : '지금 이 시간 추천'}
+              </h2>
               <div className={styles.horizontalScroll}>
                 <div className={styles.cardsContainer}>
-                  {popularPlaces.map((place) => (
+                  {homeImages.map((place) => (
                     <div key={place.id} className={styles.cardWrapper}>
                       <div onClick={() => handlePlaceClick(place.id)} style={{ cursor: 'pointer' }}>
                         <PlaceCard
-                          title={place.title}
+                          title={place.title || place.name}
                           rating={place.rating}
-                          location={place.location}
-                          image={place.image}
-                          isBookmarked={place.isBookmarked}
+                          location={place.location || place.category}
+                          image={place.imageUrl || place.image}
+                          images={place.images || []} // Pass the 5 images array
+                          isBookmarked={false}
+                          distance={place.distance || 0}
                           onBookmarkToggle={(isBookmarked) => handleBookmarkToggle(place.id, isBookmarked)}
                         />
                       </div>
@@ -636,11 +723,48 @@ export default function HomePage() {
                   ))}
                 </div>
               </div>
-            ) : (
-              <div className="container-padding">
-                <p>인기 장소가 없습니다.</p>
-              </div>
-            )}
+            </section>
+          )}
+
+          {/* Popular places section - Load from backend */}
+          <section className={styles.section}>
+            <h2 className={`${styles.sectionTitle} container-padding`}>오늘은 이런 곳 어떠세요?</h2>
+            {(() => {
+              // Only show popular places from backend - no fallback data
+              const displayData = popularPlaces;
+              
+              if (displayData.length === 0) {
+                return (
+                  <div className="container-padding">
+                    <p style={{ textAlign: 'center', color: '#666', padding: '20px 0' }}>
+                      현재 인기 장소를 불러오고 있습니다.
+                    </p>
+                  </div>
+                );
+              }
+              
+              return (
+                <div className={styles.horizontalScroll}>
+                  <div className={styles.cardsContainer}>
+                    {displayData.map((place) => (
+                      <div key={place.id} className={styles.cardWrapper}>
+                        <div onClick={() => handlePlaceClick(place.id)} style={{ cursor: 'pointer' }}>
+                          <PlaceCard
+                            title={place.title || place.name}
+                            rating={place.rating}
+                            location={place.location}
+                            image={place.image || place.imageUrl}
+                            images={place.images || []} // Pass the 5 images array
+                            isBookmarked={place.isBookmarked || false}
+                            onBookmarkToggle={(isBookmarked) => handleBookmarkToggle(place.id, isBookmarked)}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })()}
             <div className={`${styles.seeMoreContainer} container-padding`}>
               <OutlineButton onClick={handleSeeMore}>
                 더 많은 장소 보기

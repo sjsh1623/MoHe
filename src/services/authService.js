@@ -69,28 +69,33 @@ class AuthService {
   }
 
   /**
-   * Login with email and password
+   * Login with email or id and password
    */
-  async login(email, password) {
-    const response = await fetch(`${this.baseURL}/api/auth/login`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ email, password }),
-    });
+  async login(id, password) {
 
-    const data = await response.json();
+    try {
+      const response = await fetch(`${this.baseURL}/api/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email: id, password }),
+      });
 
-    if (!response.ok) {
-      throw new Error(data.message || 'Login failed');
-    }
+      const data = await response.json();
 
-    if (data.success) {
-      this.setAuthData(data.data);
-      return data.data;
-    } else {
-      throw new Error(data.message || 'Login failed');
+      if (!response.ok) {
+        throw new Error(data.message || 'Login failed');
+      }
+
+      if (data.success) {
+        this.setAuthData(data.data);
+        return data.data;
+      } else {
+        throw new Error(data.message || 'Login failed');
+      }
+    } catch (error) {
+      throw error;
     }
   }
 
@@ -122,13 +127,13 @@ class AuthService {
   /**
    * Verify email with OTP
    */
-  async verifyEmail(email, verificationCode) {
+  async verifyEmail(tempUserId, otpCode) {
     const response = await fetch(`${this.baseURL}/api/auth/verify-email`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ email, verificationCode }),
+      body: JSON.stringify({ tempUserId, otpCode }),
     });
 
     const data = await response.json();
@@ -147,13 +152,13 @@ class AuthService {
   /**
    * Set up nickname and password
    */
-  async setupProfile(tempUserId, nickname, password) {
-    const response = await fetch(`${this.baseURL}/api/auth/setup-profile`, {
+  async setupProfile(tempUserId, nickname, password, termsAgreed = true) {
+    const response = await fetch(`${this.baseURL}/api/auth/setup-password`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ tempUserId, nickname, password }),
+      body: JSON.stringify({ tempUserId, nickname, password, termsAgreed }),
     });
 
     const data = await response.json();
@@ -253,7 +258,7 @@ class AuthService {
       throw new Error('No authentication token');
     }
 
-    const response = await fetch(`${this.baseURL}/api/users/profile`, {
+    const response = await fetch(`${this.baseURL}/api/user/profile`, {
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json',
@@ -313,22 +318,11 @@ class AuthService {
       }
     } catch (error) {
       console.warn('Failed to create backend guest session:', error);
+      throw error;
     }
-
-    // Fallback to local guest session
-    const guestUser = {
-      id: 'guest',
-      nickname: 'Guest',
-      isGuest: true,
-      mbti: null,
-      preferences: {},
-      // No tokens for guest users - they'll get limited functionality
-      accessToken: null,
-      refreshToken: null
-    };
     
-    localStorage.setItem(this.userKey, JSON.stringify(guestUser));
-    return guestUser;
+    // If we reach here, backend didn't provide proper guest session
+    throw new Error('Guest session creation failed');
   }
 
   /**

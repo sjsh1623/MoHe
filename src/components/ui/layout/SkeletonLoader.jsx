@@ -1,8 +1,8 @@
 import React from 'react';
 import styles from '@/styles/components/layout/skeleton-loader.module.css';
 
-// Basic skeleton box component
-export function SkeletonBox({ width, height, className = '', borderRadius = '8px', transparent = false }) {
+// Basic skeleton box component - Made thinner
+export function SkeletonBox({ width, height, className = '', borderRadius = '4px', transparent = false }) {
   return (
     <div 
       className={`${styles.skeleton} ${transparent ? styles.transparent : ''} ${className}`}
@@ -15,13 +15,13 @@ export function SkeletonBox({ width, height, className = '', borderRadius = '8px
   );
 }
 
-// Text line skeleton
-export function SkeletonText({ width = '100%', height = '16px', className = '', transparent = false }) {
+// Text line skeleton - Made thinner
+export function SkeletonText({ width = '100%', height = '12px', className = '', transparent = false }) {
   return (
     <SkeletonBox 
       width={width}
       height={height}
-      borderRadius="4px"
+      borderRadius="2px"
       className={className}
       transparent={transparent}
     />
@@ -41,12 +41,12 @@ export function SkeletonCircle({ size = '40px', className = '', transparent = fa
   );
 }
 
-// Image placeholder skeleton
+// Image placeholder skeleton - Made thinner
 export function SkeletonImage({ width, height, className = '', aspectRatio, transparent = false }) {
   const style = {
     width,
     height,
-    borderRadius: '8px'
+    borderRadius: '4px'
   };
   
   if (aspectRatio && !height) {

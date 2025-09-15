@@ -153,9 +153,29 @@ class ApiService {
         }
 
         const errorData = await response.json().catch(() => ({}));
+        
+        // Handle common backend issues with friendly messages
+        let errorMessage = errorData.message || `HTTP Error ${response.status}`;
+        
+        if (response.status === 500) {
+          if (errorData.message?.includes('not yet implemented') || errorData.message?.includes('Implementation needed')) {
+            errorMessage = '이 기능은 현재 개발 중입니다. 곧 사용할 수 있습니다.';
+          } else if (errorData.message?.includes('column') && errorData.message?.includes('does not exist')) {
+            errorMessage = '데이터베이스 스키마 업데이트가 필요합니다.';
+          } else {
+            errorMessage = '서버에 일시적인 문제가 발생했습니다. 잠시 후 다시 시도해주세요.';
+          }
+        } else if (response.status === 404) {
+          errorMessage = '요청한 데이터를 찾을 수 없습니다.';
+        } else if (response.status === 401) {
+          errorMessage = '로그인이 필요합니다.';
+        } else if (response.status === 403) {
+          errorMessage = '접근 권한이 없습니다.';
+        }
+        
         throw new ApiError(
           response.status,
-          errorData.message || `HTTP Error ${response.status}`,
+          errorMessage,
           errorData.code,
           errorData.path
         );
@@ -255,11 +275,7 @@ export class WeatherService extends ApiService {
   /**
    * Get weather context for recommendations
    */
-  async getWeatherContext(latitude, longitude) {
-    return this.get(`/api/weather/context?lat=${latitude}&lon=${longitude}`, {
-      requireAuth: false
-    });
-  }
+  
 }
 
 /**
@@ -285,21 +301,7 @@ export class ContextualRecommendationService extends ApiService {
     });
   }
 
-  /**
-   * Search places by keywords
-   */
-  async searchPlaces(keywords, latitude, longitude, options = {}) {
-    const requestData = {
-      keywords: Array.isArray(keywords) ? keywords : [keywords],
-      lat: latitude,
-      lon: longitude,
-      limit: options.limit || 10
-    };
-
-    return this.post('/api/recommendations/search', requestData, {
-      requireAuth: true
-    });
-  }
+  
 }
 
 /**
@@ -315,25 +317,9 @@ export class RecommendationService extends ApiService {
       excludeBookmarked: (!options.includeBookmarked).toString()
     });
 
-    try {
-      // Try enhanced recommendations for authenticated users
-      return await this.get(`/api/recommendations/enhanced?${params}`, {
-        requireAuth: true
-      });
-    } catch (error) {
-      // Fallback to contextual recommendations for guest users
-      console.log('Enhanced recommendations failed, falling back to contextual recommendations');
-      const contextualParams = new URLSearchParams({
-        lat: '37.5665', // Default Seoul coordinates
-        lon: '126.9780',
-        limit: (options.limit || 10).toString(),
-        query: '좋은 장소'
-      });
-      
-      return await this.get(`/api/recommendations/contextual?${contextualParams}`, {
-        requireAuth: false
-      });
-    }
+    return await this.get(`/api/recommendations/enhanced?${params}`, {
+      requireAuth: true
+    });
   }
 
   /**
@@ -381,19 +367,29 @@ export class PlaceService extends ApiService {
     });
   }
 
+  
+
   /**
-   * Get nearby places
+   * Get general recommendations (guest-friendly)
    */
-  async getNearbyPlaces(latitude, longitude, options = {}) {
+  async getRecommendations() {
+    return await this.get(`/api/places/recommendations`, {
+      requireAuth: false
+    });
+  }
+
+  /**
+   * Get bookmark-based recommendations
+   */
+  async getBookmarkBasedRecommendations(latitude, longitude, options = {}) {
     const params = new URLSearchParams({
-      lat: latitude.toString(),
-      lon: longitude.toString(),
-      radius: (options.radius || 1000).toString(),
-      limit: (options.limit || 10).toString(),
-      ...(options.category && { category: options.category })
+      latitude: latitude.toString(),
+      longitude: longitude.toString(),
+      distance: (options.distance || 20.0).toString(),
+      limit: (options.limit || 15).toString()
     });
 
-    return this.get(`/api/places/nearby?${params}`, {
+    return await this.get(`/api/recommendations/bookmark-based?${params}`, {
       requireAuth: false
     });
   }
@@ -406,26 +402,12 @@ export class PlaceService extends ApiService {
       latitude: latitude.toString(),
       longitude: longitude.toString(),
       limit: (options.limit || 10).toString(),
+      maxDistance: (options.maxDistance || 55000).toString(), // Default 15km
     });
 
-    try {
-      // Try the popular places endpoint first
-      return await this.get(`/api/places/popular?${params}`, {
-        requireAuth: false
-      });
-    } catch (error) {
-      console.warn('Popular places API failed, falling back to general places list:', error);
-      // Fallback to general places list (which works)
-      const fallbackParams = new URLSearchParams({
-        page: '1',
-        limit: (options.limit || 10).toString(),
-        sort: 'popularity'
-      });
-      
-      return await this.get(`/api/places?${fallbackParams}`, {
-        requireAuth: false
-      });
-    }
+    return await this.get(`/api/places/popular?${params}`, {
+      requireAuth: false
+    });
   }
   
   /**
@@ -470,7 +452,7 @@ export class BookmarkService extends ApiService {
    * Toggle bookmark for a place
    */
   async toggleBookmark(placeId) {
-    return this.post(`/api/bookmarks/toggle/${placeId}`, null, {
+    return this.post(`/api/bookmarks/toggle`, { placeId }, {
       requireAuth: true
     });
   }
@@ -489,14 +471,7 @@ export class BookmarkService extends ApiService {
     });
   }
 
-  /**
-   * Check if place is bookmarked
-   */
-  async isBookmarked(placeId) {
-    return this.get(`/api/bookmarks/check/${placeId}`, {
-      requireAuth: true
-    });
-  }
+  
 }
 
 // Export service instances
@@ -573,7 +548,7 @@ class GuestRecommendationService extends ApiService {
           isBookmarked: false,
           category: place.category,
           description: place.reasonWhy || `${place.category}`,
-          distance: place.distanceM,
+          distance: 0, // Distance disabled as per requirements
           weatherSuitability: place.weatherSuitability,
           reasonWhy: place.reasonWhy
         }));
@@ -601,13 +576,22 @@ class GuestRecommendationService extends ApiService {
     } catch (error) {
       console.error('Guest recommendations failed:', error);
       console.error('Error details:', error.message, error.status);
-      
-      return {
-        success: false,
-        data: [],
-        message: `API 오류: ${error.message || 'Unknown error'}`
-      };
+      throw error;
     }
+  }
+}
+
+/**
+ * Home API service for home page data
+ */
+export class HomeService extends ApiService {
+  /**
+   * Get home page images from real database
+   */
+  async getHomeImages() {
+    return this.get('/api/home/images', {
+      requireAuth: false
+    });
   }
 }
 
@@ -615,5 +599,6 @@ class GuestRecommendationService extends ApiService {
 export const addressService = new AddressService();
 export const bookmarkService = new BookmarkService();
 export const guestRecommendationService = new GuestRecommendationService();
+export const homeService = new HomeService();
 
 export default ApiService;

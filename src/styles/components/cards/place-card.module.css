@@ -1,7 +1,7 @@
 /* Mobile-optimized place card component */
 .card {
   background: white;
-  border-radius: 5.45vw; /* Responsive border radius */
+  border-radius: 20px; /* More rounded corners */
   overflow: hidden;
   position: relative;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
@@ -22,7 +22,7 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  border-radius: 4.55vw; /* Responsive border radius */
+  border-radius: 16px; /* More rounded image corners */
 }
 
 .imagePlaceholder {
@@ -32,7 +32,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 4.55vw;
+  border-radius: 16px; /* More rounded placeholder corners */
 }
 
 .placeholderText {
@@ -225,6 +225,73 @@
   .location {
     font-size: 0.875rem;
   }
+}
+
+/* Image Navigation Styles */
+.navButton {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0, 0, 0, 0.5);
+  border: none;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  z-index: 2;
+  opacity: 0;
+  visibility: hidden;
+}
+
+.imageContainer:hover .navButton {
+  opacity: 1;
+  visibility: visible;
+}
+
+.navButton:hover {
+  background: rgba(0, 0, 0, 0.7);
+  transform: translateY(-50%) scale(1.1);
+}
+
+.prevButton {
+  left: 8px;
+}
+
+.nextButton {
+  right: 8px;
+}
+
+/* Image Indicators */
+.imageIndicators {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 4px;
+  z-index: 2;
+}
+
+.indicator {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.indicator.active {
+  background: rgba(255, 255, 255, 1);
+  transform: scale(1.2);
+}
+
+.indicator:hover {
+  background: rgba(255, 255, 255, 0.9);
 }
 
 /* Touch interactions */

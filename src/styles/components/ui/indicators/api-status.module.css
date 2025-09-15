@@ -1,0 +1,33 @@
+.apiStatus {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+  font-size: 12px;
+  margin: 8px 0;
+}
+
+.statusItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.icon {
+  font-size: 14px;
+  min-width: 16px;
+}
+
+.label {
+  flex: 1;
+  font-weight: 500;
+  color: #495057;
+}
+
+.status {
+  color: #6c757d;
+  font-size: 11px;
+}

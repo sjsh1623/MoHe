@@ -4,7 +4,6 @@ import styles from '@/styles/pages/place-detail-page.module.css';
 import PlaceDetailSkeleton from '@/components/ui/skeletons/PlaceDetailSkeleton';
 import ErrorMessage from '@/components/ui/alerts/ErrorMessage';
 import { placeService } from '@/services/apiService';
-import { authService } from '@/services/authService';
 
 export default function PlaceDetailPage({
   place = null, // Allow prop injection for testing/reusability
@@ -19,6 +18,7 @@ export default function PlaceDetailPage({
   // Get preloaded data from navigation state
   const preloadedImage = location.state?.preloadedImage;
   const preloadedData = location.state?.preloadedData;
+  
   
   useEffect(() => {
     const loadPlaceDetail = async () => {
@@ -39,6 +39,21 @@ export default function PlaceDetailPage({
           return;
         }
 
+        // Try to use preloaded data first, then load from backend
+        if (preloadedData) {
+          console.log('Using preloaded place data:', preloadedData);
+          setPlaceData({
+            ...preloadedData,
+            gallery: preloadedData.gallery || (preloadedData.imageUrl ? [preloadedData.imageUrl] : []),
+            description: preloadedData.description || preloadedData.reasonWhy || '이 장소에 대한 상세 정보가 준비 중입니다.',
+            address: preloadedData.address || preloadedData.location, // Prioritize full address
+            location: preloadedData.address || preloadedData.location, // Show full address in location display
+            name: preloadedData.title || preloadedData.name
+          });
+          setIsLoading(false);
+          return;
+        }
+
         // Load place details from backend
         const response = await placeService.getPlaceById(id);
         if (response.success) {
@@ -48,11 +63,12 @@ export default function PlaceDetailPage({
           // For now, just log the view
           console.log(`Place ${id} viewed by user`);
         } else {
-          setError('장소 정보를 불러오는데 실패했습니다.');
+          console.error('Backend place detail not available for id:', id);
+          setError('장소 정보를 찾을 수 없습니다.');
         }
       } catch (err) {
         console.error('Failed to load place details:', err);
-        setError('장소 정보를 불러오는 중 오류가 발생했습니다.');
+        setError('장소 정보를 불러오는데 실패했습니다.');
       } finally {
         setIsLoading(false);
       }
@@ -71,7 +87,7 @@ export default function PlaceDetailPage({
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isImageDragging, setIsImageDragging] = useState(false);
   const startX = useRef(0);
-  const dragThreshold = 50; // Minimum drag distance to change image
+  const DRAG_THRESHOLD = 50; // Minimum drag distance to change image
   
   // Calculate sheet heights based on viewport
   const getSheetHeight = (state) => {
@@ -101,12 +117,19 @@ export default function PlaceDetailPage({
     );
   }
 
-  // Get images from the place data
-  const images = placeData.images?.length ? placeData.images : 
+  // Get images from the place data - prioritize images array with 5 images
+  const images = placeData.images?.length >= 5 ? placeData.images : 
                  placeData.gallery?.length ? placeData.gallery : 
                  placeData.image ? [placeData.image] :
                  placeData.imageUrl ? [placeData.imageUrl] :
-                 ['https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=440&h=563&fit=crop&crop=center'];
+                 // Default to 5 high-quality sample images
+                 [
+                   'https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=440&h=563&fit=crop&crop=center',
+                   'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=440&h=563&fit=crop&crop=center',
+                   'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=440&h=563&fit=crop&crop=center',
+                   'https://images.unsplash.com/photo-1559925393-8be0ec4767c8?w=440&h=563&fit=crop&crop=center',
+                   'https://images.unsplash.com/photo-1544918999-6c6b10bdb76f?w=440&h=563&fit=crop&crop=center'
+                 ];
 
   const handleExperienceClick = () => {
     if (onExperience) {
@@ -377,18 +400,20 @@ export default function PlaceDetailPage({
         </div>
 
         {/* Gallery */}
-        <div className={styles.gallery}>
-          {placeData.gallery.map((image, index) => (
-            <div key={index} className={styles.galleryItem}>
-              <img src={image} alt={`Gallery ${index + 1}`} className={styles.galleryImage} />
-              {index === placeData.gallery.length - 1 && placeData.additionalImageCount > 0 && (
-                <div className={styles.additionalCount}>
-                  +{placeData.additionalImageCount}
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
+        {placeData.gallery && placeData.gallery.length > 0 && (
+          <div className={styles.gallery}>
+            {placeData.gallery.map((image, index) => (
+              <div key={index} className={styles.galleryItem}>
+                <img src={image} alt={`Gallery ${index + 1}`} className={styles.galleryImage} />
+                {index === placeData.gallery.length - 1 && placeData.additionalImageCount > 0 && (
+                  <div className={styles.additionalCount}>
+                    +{placeData.additionalImageCount}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
 
         {/* Description */}
         {placeData.description && (

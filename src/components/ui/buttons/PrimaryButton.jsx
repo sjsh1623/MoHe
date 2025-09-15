@@ -1,14 +1,15 @@
 import React from 'react';
 import styles from '@/styles/components/buttons/primary-button.module.css';
 
-export default function PrimaryButton({ 
-  children, 
-  disabled = false, 
+export default function PrimaryButton({
+  children,
+  disabled = false,
   variant = 'primary',
   onClick,
   className = '',
-  ...props 
+  ...props
 }) {
+
   const classes = [
     styles.button,
     styles[variant],

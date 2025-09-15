@@ -21,12 +21,6 @@ export default function AuthPage() {
         navigate('/signup');
     };
 
-    const handleGuestBrowse = (e) => {
-        e.preventDefault();
-        // Create guest session and navigate to home
-        authService.createGuestSession();
-        navigate('/home');
-    };
 
     return (
         <Container className={styles.pageContainer}>
@@ -43,13 +37,6 @@ export default function AuthPage() {
                     type="button"
                 >
                     회원가입
-                </button>
-                <button
-                    className={styles.guestBrowseLink}
-                    onClick={handleGuestBrowse}
-                    type="button"
-                >
-                    로그인 없이 둘러보기
                 </button>
             </Stack>
         </Container>

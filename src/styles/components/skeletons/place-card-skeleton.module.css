@@ -1,7 +1,7 @@
-/* Default Place Card Skeleton */
+/* Default Place Card Skeleton - Made thinner */
 .card {
   display: flex;
-  gap: 16px;
+  gap: 8px;
   align-items: flex-start;
 }
 
@@ -13,14 +13,14 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 4px;
 }
 
 .header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  gap: 8px;
+  gap: 4px;
 }
 
 .title {
@@ -30,31 +30,31 @@
 .rating {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 2px;
 }
 
 .locationRow {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 3px;
 }
 
 .avatarRow {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-top: 4px;
+  gap: 4px;
+  margin-top: 2px;
 }
 
 .additionalCount {
   margin-left: 4px;
 }
 
-/* Grid Place Card Skeleton */
+/* Grid Place Card Skeleton - Made thinner */
 .gridCard {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 6px;
 }
 
 .gridImage {
@@ -64,18 +64,18 @@
 .gridContent {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 4px;
 }
 
 .gridContent .title {
-  margin-bottom: 4px;
+  margin-bottom: 2px;
 }
 
 .gridContent .locationRow {
   display: flex;
   align-items: center;
-  gap: 6px;
-  margin-bottom: 4px;
+  gap: 3px;
+  margin-bottom: 2px;
 }
 
 .ratingRow {
@@ -88,17 +88,17 @@
   margin-left: 6px;
 }
 
-/* Mobile adjustments */
+/* Mobile adjustments - Made thinner */
 @media (max-width: 480px) {
   .card {
-    gap: 12px;
+    gap: 6px;
   }
   
   .content {
-    gap: 6px;
+    gap: 3px;
   }
   
   .avatarRow {
-    gap: 6px;
+    gap: 3px;
   }
 }
