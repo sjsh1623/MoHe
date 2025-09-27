@@ -1,0 +1,125 @@
+# Environment files with sensitive data
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+*.env
+
+# API Keys and secrets
+**/application-secrets.yml
+**/application-local.yml
+secrets/
+config/secrets/
+
+# IDE files
+.vscode/
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Build artifacts
+**/build/
+**/dist/
+**/target/
+**/out/
+**/.gradle/
+
+# Node.js
+**/node_modules/
+**/npm-debug.log*
+**/yarn-debug.log*
+**/yarn-error.log*
+**/.pnpm-debug.log*
+
+# Docker
+docker-compose.override.yml
+**/Dockerfile.local
+
+# Database
+**/data/
+**/db-data/
+*.db
+*.sqlite
+*.sqlite3
+
+# Logs
+**/logs/
+*.log
+**/log/
+
+# Temporary files
+**/tmp/
+**/temp/
+*.tmp
+*.temp
+
+# Java specific
+*.class
+**/target/
+*.jar
+*.war
+*.ear
+
+# Kotlin specific
+**/.kotlin/
+**/kotlin-js-store/
+
+# Gradle specific
+**/.gradle/
+**/gradle-app.setting
+**/gradlew
+**/gradlew.bat
+**/gradle/wrapper/gradle-wrapper.jar
+
+# Maven specific
+**/pom.xml.tag
+**/pom.xml.releaseBackup
+**/pom.xml.versionsBackup
+**/pom.xml.next
+**/release.properties
+**/dependency-reduced-pom.xml
+
+# Spring Boot specific - CRITICAL: Keep config files with secrets out of git
+**/application.yml
+**/application.yaml
+**/application-*.yml
+**/application-*.yaml
+**/application-local.yml
+**/application-local.yaml
+**/application-secrets.yml
+**/application-secrets.yaml
+
+# Testing
+**/test-results/
+**/coverage/
+**/.nyc_output/
+
+# Package managers
+**/package-lock.json
+**/yarn.lock
+**/pnpm-lock.yaml
+
+# Backup files
+*.bak
+*.backup
+*.orig
+
+# System and runtime files
+*.pid
+*.seed
+*.pid.lock
+**/pids/
+# Environment files
+.env.dev
+.env.prod
