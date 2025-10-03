@@ -29,7 +29,8 @@ function BookmarksPage() {
         // Load user's bookmarks from backend
         const response = await bookmarkService.getUserBookmarks();
         if (response.success) {
-          setBookmarkedPlaces(response.data || []);
+          const bookmarks = response.data?.bookmarks ?? response.data ?? [];
+          setBookmarkedPlaces(bookmarks);
         } else {
           setError('북마크를 불러오는데 실패했습니다.');
         }

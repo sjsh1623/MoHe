@@ -49,20 +49,21 @@ export default function PlacesListPage() {
       });
 
       if (response.success) {
-        const { places: newPlaces, pagination } = response.data;
-        
+        const data = response.data || {};
+        const newPlaces = data.places || [];
+
         if (append) {
           setPlaces(prev => [...prev, ...newPlaces]);
         } else {
           setPlaces(newPlaces);
         }
-        
-        if (pagination) {
-          setTotalPages(pagination.totalPages);
-          setHasMorePlaces(pagination.currentPage < pagination.totalPages);
-        }
-        
-        setCurrentPage(page);
+
+        const totalPagesValue = data.totalPages ?? data.pagination?.totalPages ?? 0;
+        const currentPageValue = data.currentPage ?? data.pagination?.currentPage ?? page;
+
+        setTotalPages(totalPagesValue);
+        setHasMorePlaces(totalPagesValue > 0 && currentPageValue + 1 < totalPagesValue);
+        setCurrentPage(currentPageValue);
       } else {
         setError('장소를 불러오는데 실패했습니다.');
       }
@@ -101,13 +102,17 @@ export default function PlacesListPage() {
         return;
       }
 
-      const response = await bookmarkService.toggleBookmark(placeId);
-      
+      let response;
+      if (isBookmarked) {
+        response = await bookmarkService.addBookmark(placeId);
+      } else {
+        response = await bookmarkService.removeBookmark(placeId);
+      }
+
       if (response.success) {
-        // Update local state
         setPlaces(prevPlaces => 
           prevPlaces.map(place => 
-            place.id === placeId ? { ...place, isBookmarked: response.data.isBookmarked } : place
+            place.id === placeId ? { ...place, isBookmarked } : place
           )
         );
       } else {

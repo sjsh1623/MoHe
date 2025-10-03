@@ -1,12 +1,34 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styles from '@/styles/pages/profile-edit-page.module.css';
+import { userService } from '@/services/apiService';
 
 export default function ProfileEditPage() {
   const navigate = useNavigate();
-  const [nickname, setNickname] = useState('석현'); // Start with original nickname
-  const [originalNickname] = useState('석현'); // Original nickname
+  const [nickname, setNickname] = useState('');
+  const [originalNickname, setOriginalNickname] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState('');
   const hasChanges = nickname.trim() !== originalNickname.trim() && nickname.trim() !== '';
+
+  useEffect(() => {
+    const loadProfile = async () => {
+      try {
+        const response = await userService.getProfile();
+        if (response.success) {
+          const user = response.data?.user;
+          if (user?.nickname) {
+            setNickname(user.nickname);
+            setOriginalNickname(user.nickname);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load profile:', err);
+      }
+    };
+
+    loadProfile();
+  }, []);
 
 
   const handleClose = () => {
@@ -17,10 +39,27 @@ export default function ProfileEditPage() {
     setNickname(e.target.value);
   };
 
-  const handleSave = () => {
-    console.log('Saving nickname:', nickname);
-    // TODO: Save nickname to backend
-    navigate(-1);
+  const handleSave = async () => {
+    if (!hasChanges) {
+      return;
+    }
+
+    try {
+      setIsSaving(true);
+      setError('');
+      const response = await userService.updateProfile({ nickname: nickname.trim() });
+      if (response.success) {
+        setOriginalNickname(nickname.trim());
+        navigate(-1);
+      } else {
+        setError(response.message || '프로필 수정에 실패했습니다.');
+      }
+    } catch (err) {
+      console.error('Failed to save profile:', err);
+      setError(err.message || '프로필 수정에 실패했습니다.');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -53,6 +92,7 @@ export default function ProfileEditPage() {
                 onChange={handleNicknameChange}
                 className={styles.nicknameInput}
                 placeholder="닉네임을 입력하세요"
+                disabled={isSaving}
               />
             </div>
           </div>
@@ -65,11 +105,20 @@ export default function ProfileEditPage() {
           </div>
         </div>
 
+        {error && (
+          <div style={{
+            color: '#dc2626',
+            fontSize: '14px',
+            textAlign: 'center',
+            marginTop: '12px'
+          }}>{error}</div>
+        )}
+
         {/* Save Button - appears when input changes */}
         {hasChanges && (
           <div className={styles.saveButtonContainer}>
-            <button className={styles.saveButton} onClick={handleSave}>
-              저장
+            <button className={styles.saveButton} onClick={handleSave} disabled={isSaving}>
+              {isSaving ? '저장 중...' : '저장'}
             </button>
           </div>
         )}

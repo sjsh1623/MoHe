@@ -89,7 +89,7 @@ export default function SearchResultsPage() {
     searchPlaces();
   }, [debouncedQuery, location]);
 
-  const handleBookmark = async (placeId) => {
+  const handleBookmarkToggle = async (placeId, shouldBookmark) => {
     try {
       const user = authService.getCurrentUser();
       if (!user || user.isGuest) {
@@ -97,12 +97,16 @@ export default function SearchResultsPage() {
         return;
       }
 
-      await bookmarkService.addBookmark(placeId);
+      if (shouldBookmark) {
+        await bookmarkService.addBookmark(placeId);
+      } else {
+        await bookmarkService.removeBookmark(placeId);
+      }
       
       // Update local state
       setSearchResults(prevResults => 
         prevResults.map(place => 
-          place.id === placeId ? { ...place, isBookmarked: true } : place
+          place.id === placeId ? { ...place, isBookmarked: shouldBookmark } : place
         )
       );
     } catch (err) {
@@ -159,7 +163,7 @@ export default function SearchResultsPage() {
                     />
                     <button 
                       className={styles.bookmarkButton}
-                      onClick={() => handleBookmark(place.id)}
+                      onClick={() => handleBookmarkToggle(place.id, !(place.isBookmarked || false))}
                     >
                       <svg width="14" height="17" viewBox="0 0 14 17" fill="none">
                         <path d="M1.00009 4C1.00009 2.34315 2.34324 1 4.00009 1H10.0001C11.6569 1 13.0001 2.34315 13.0001 4V14.3358C13.0001 15.2267 11.9229 15.6729 11.293 15.0429L8.41431 12.1642C7.63326 11.3832 6.36693 11.3832 5.58588 12.1642L2.7072 15.0429C2.07723 15.6729 1.00009 15.2267 1.00009 14.3358V4Z" stroke="white" strokeWidth="1.5" strokeLinejoin="round"/>
@@ -171,7 +175,7 @@ export default function SearchResultsPage() {
                       <img src={imageUrl} alt={place.name || place.title} className={styles.placeImage} />
                       <button 
                         className={styles.bookmarkButton}
-                        onClick={() => handleBookmark(place.id)}
+                        onClick={() => handleBookmarkToggle(place.id, !(place.isBookmarked || false))}
                       >
                         <svg width="14" height="17" viewBox="0 0 14 17" fill="none">
                           <path d="M1.00009 4C1.00009 2.34315 2.34324 1 4.00009 1H10.0001C11.6569 1 13.0001 2.34315 13.0001 4V14.3358C13.0001 15.2267 11.9229 15.6729 11.293 15.0429L8.41431 12.1642C7.63326 11.3832 6.36693 11.3832 5.58588 12.1642L2.7072 15.0429C2.07723 15.6729 1.00009 15.2267 1.00009 14.3358V4Z" stroke="white" strokeWidth="1.5" strokeLinejoin="round"/>

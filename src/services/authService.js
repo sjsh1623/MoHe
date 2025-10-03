@@ -150,6 +150,31 @@ class AuthService {
   }
 
   /**
+   * Check nickname availability
+   */
+  async checkNickname(nickname) {
+    const response = await fetch(`${this.baseURL}/api/auth/check-nickname`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ nickname }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Nickname check failed');
+    }
+
+    if (data.success) {
+      return data.data;
+    } else {
+      throw new Error(data.message || 'Nickname check failed');
+    }
+  }
+
+  /**
    * Set up nickname and password
    */
   async setupProfile(tempUserId, nickname, password, termsAgreed = true) {
@@ -207,7 +232,7 @@ class AuthService {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ refreshToken }),
+      body: JSON.stringify({ refresh_token: refreshToken }),
     });
 
     const data = await response.json();
@@ -231,8 +256,9 @@ class AuthService {
    */
   async logout() {
     const token = this.getToken();
-    
-    if (token) {
+    const refreshToken = this.getRefreshToken();
+
+    if (token && refreshToken) {
       try {
         await fetch(`${this.baseURL}/api/auth/logout`, {
           method: 'POST',
@@ -240,6 +266,7 @@ class AuthService {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
           },
+          body: JSON.stringify({ refresh_token: refreshToken }),
         });
       } catch (error) {
         console.warn('Logout API call failed:', error);
@@ -295,34 +322,53 @@ class AuthService {
    * Try to get a guest token from backend for limited access
    */
   async createGuestSession() {
-    try {
-      // Try to create a guest session with backend for place access
-      const response = await fetch(`${this.baseURL}/api/auth/guest`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+    const guestUser = {
+      id: 'guest',
+      isGuest: true,
+      roles: [],
+    };
+    localStorage.setItem(this.userKey, JSON.stringify(guestUser));
+    return guestUser;
+  }
 
-      if (response.ok) {
-        const data = await response.json();
-        if (data.success && data.data) {
-          // Backend provided guest token
-          const guestUser = {
-            ...data.data,
-            isGuest: true
-          };
-          localStorage.setItem(this.userKey, JSON.stringify(guestUser));
-          return guestUser;
-        }
-      }
-    } catch (error) {
-      console.warn('Failed to create backend guest session:', error);
-      throw error;
+  async forgotPassword(email) {
+    const response = await fetch(`${this.baseURL}/api/auth/forgot-password`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || '비밀번호 재설정 요청에 실패했습니다');
     }
-    
-    // If we reach here, backend didn't provide proper guest session
-    throw new Error('Guest session creation failed');
+
+    if (!data.success) {
+      throw new Error(data.message || '비밀번호 재설정 요청에 실패했습니다');
+    }
+
+    return data.data;
+  }
+
+  async resetPassword(token, password) {
+    const response = await fetch(`${this.baseURL}/api/auth/reset-password`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ token, password }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok || !data.success) {
+      throw new Error(data.message || '비밀번호 재설정에 실패했습니다');
+    }
+
+    return data.data;
   }
 
   /**

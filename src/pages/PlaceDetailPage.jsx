@@ -3,7 +3,8 @@ import { useParams, useLocation } from 'react-router-dom';
 import styles from '@/styles/pages/place-detail-page.module.css';
 import PlaceDetailSkeleton from '@/components/ui/skeletons/PlaceDetailSkeleton';
 import ErrorMessage from '@/components/ui/alerts/ErrorMessage';
-import { placeService } from '@/services/apiService';
+import { activityService, placeService } from '@/services/apiService';
+import { authService } from '@/services/authService';
 
 export default function PlaceDetailPage({
   place = null, // Allow prop injection for testing/reusability
@@ -58,10 +59,14 @@ export default function PlaceDetailPage({
         const response = await placeService.getPlaceById(id);
         if (response.success) {
           setPlaceData(response.data);
-          
-          // TODO: Implement recent view tracking when backend API is available
-          // For now, just log the view
-          console.log(`Place ${id} viewed by user`);
+
+          if (authService.isAuthenticated()) {
+            try {
+              await activityService.recordRecentView(id);
+            } catch (err) {
+              console.warn('Failed to record recent view:', err);
+            }
+          }
         } else {
           console.error('Backend place detail not available for id:', id);
           setError('장소 정보를 찾을 수 없습니다.');

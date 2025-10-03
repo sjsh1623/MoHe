@@ -11,8 +11,6 @@ export default function TermsList({
 }) {
   const allRequired = agreements.filter(term => term.required);
   const allOptional = agreements.filter(term => !term.required);
-  const allRequiredChecked = allRequired.every(term => term.checked);
-  const allOptionalChecked = allOptional.every(term => term.checked);
   const allChecked = agreements.every(term => term.checked);
 
   const handleAllAgreeChange = (checked) => {

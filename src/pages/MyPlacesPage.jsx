@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import BookmarkPlaceCard from '@/components/ui/cards/BookmarkPlaceCard';
 import BookmarksSkeleton from '@/components/ui/skeletons/BookmarksSkeleton';
 import ErrorMessage from '@/components/ui/alerts/ErrorMessage';
-// TODO: Import recentViewService when backend API is available
+import { activityService } from '@/services/apiService';
 import { authService } from '@/services/authService';
 import styles from '@/styles/pages/my-places-page.module.css';
 
@@ -23,10 +23,21 @@ export default function MyPlacesPage() {
           return;
         }
 
-        // TODO: Load user's recent views when backend API is available
-        // For now, show empty state
-        console.log('MyPlacesPage: Recent view service not implemented yet');
-        setMyPlaces([]);
+        const response = await activityService.getMyPlaces();
+        if (response.success) {
+          const places = response.data?.places || [];
+          const mapped = places.map(place => ({
+            id: place.id || place.place?.id,
+            name: place.name || place.title || place.place?.title,
+            title: place.title || place.place?.title,
+            location: place.location || place.address || place.place?.location,
+            image: place.imageUrl || place.image || place.place?.imageUrl,
+            rating: place.rating || place.place?.rating
+          }));
+          setMyPlaces(mapped);
+        } else {
+          setError('내 장소를 불러오는 데 실패했습니다.');
+        }
       } catch (err) {
         console.error('Failed to load my places:', err);
         setError('내 장소를 불러오는 중 오류가 발생했습니다.');

@@ -54,10 +54,10 @@ export default function HomePage() {
               currentUser = await authService.getUserProfile();
             } catch (error) {
               console.warn('Failed to get user profile:', error);
-              currentUser = authService.createGuestSession();
+              currentUser = await authService.createGuestSession();
             }
           } else {
-            currentUser = authService.createGuestSession();
+            currentUser = await authService.createGuestSession();
           }
         }
         
@@ -507,15 +507,19 @@ export default function HomePage() {
     async (placeId, isBookmarked) => {
       try {
         console.log(`Place ${placeId} bookmark toggled:`, isBookmarked);
-        
-        const response = await bookmarkService.toggleBookmark(placeId);
-        
+
+        let response;
+        if (isBookmarked) {
+          response = await bookmarkService.addBookmark(placeId);
+        } else {
+          response = await bookmarkService.removeBookmark(placeId);
+        }
+
         if (response.success) {
-          // Update local state
           setRecommendations(prevRecommendations =>
             prevRecommendations.map(place =>
               place.id === placeId 
-                ? { ...place, isBookmarked: response.data.isBookmarked }
+                ? { ...place, isBookmarked }
                 : place
             )
           );

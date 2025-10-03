@@ -6,7 +6,7 @@ import { Container } from '@/components/ui/layout';
 import GridPlaceCard from '@/components/ui/cards/GridPlaceCard';
 import PlacesListSkeleton from '@/components/ui/skeletons/PlacesListSkeleton';
 import ErrorMessage from '@/components/ui/alerts/ErrorMessage';
-import { bookmarkService } from '@/services/apiService';
+import { activityService, bookmarkService } from '@/services/apiService';
 import { authService } from '@/services/authService';
 
 export default function RecentViewPage() {
@@ -27,10 +27,23 @@ export default function RecentViewPage() {
           return;
         }
 
-        // TODO: Load user's recent views when backend API is available
-        // For now, show empty state
-        console.log('RecentViewPage: Recent view service not implemented yet');
-        setRecentPlaces([]);
+        const response = await activityService.getRecentPlaces();
+        if (response.success) {
+          const recentPlacesData = response.data?.recent_places || response.data?.recentPlaces || [];
+          const mapped = recentPlacesData.map(place => ({
+            id: place.id,
+            name: place.title || place.place?.title || place.place?.name,
+            title: place.title || place.place?.title,
+            location: place.location || place.place?.location,
+            image: place.image || place.place?.imageUrl,
+            imageUrl: place.place?.imageUrl,
+            rating: place.rating || place.place?.rating,
+            isBookmarked: place.place?.isBookmarked || false
+          }));
+          setRecentPlaces(mapped);
+        } else {
+          setError('최근 본 장소를 불러오는데 실패했습니다.');
+        }
       } catch (err) {
         console.error('Failed to load recent views:', err);
         setError('최근 본 장소를 불러오는 중 오류가 발생했습니다.');

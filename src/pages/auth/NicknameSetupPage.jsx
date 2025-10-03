@@ -7,6 +7,7 @@ import { AuthContainer, AuthTitle } from '@/components/auth';
 import { useAuthNavigation } from '@/hooks/useAuthNavigation';
 import FormInput from '@/components/ui/inputs/FormInput';
 import PrimaryButton from '@/components/ui/buttons/PrimaryButton';
+import { authService } from '@/services/authService';
 
 export default function NicknameSetupPage() {
   const { goToTerms } = useAuthNavigation();
@@ -42,13 +43,9 @@ export default function NicknameSetupPage() {
     setIsCheckingDuplicate(true);
     
     try {
-      // TODO: Implement real nickname duplicate check API
-      // For now, just simulate the check
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Mock logic - for demo purposes (these would be real API calls)
-      const isTaken = nickname.toLowerCase() === 'admin' || nickname.toLowerCase() === 'test';
-      setDuplicateCheckResult(isTaken ? 'taken' : 'available');
+      const response = await authService.checkNickname(nickname.trim());
+      const isAvailable = response?.isAvailable ?? response?.available;
+      setDuplicateCheckResult(isAvailable ? 'available' : 'taken');
     } catch (error) {
       console.error('Duplicate check failed:', error);
       setDuplicateCheckResult('error');
@@ -58,6 +55,11 @@ export default function NicknameSetupPage() {
   };
 
   const handleNext = () => {
+    if (!tempUserId) {
+      navigate('/signup');
+      return;
+    }
+
     if (isValidNickname && duplicateCheckResult === 'available') {
       console.log('Proceeding with nickname:', nickname);
       // Store nickname for later use
@@ -113,13 +115,19 @@ export default function NicknameSetupPage() {
             </button>
           </div>
 
-          {duplicateCheckResult && (
+          {duplicateCheckResult && duplicateCheckResult !== 'error' && (
             <div className={`${styles.resultMessage} ${
               duplicateCheckResult === 'available' ? styles.success : styles.error
             }`}>
               {duplicateCheckResult === 'available' 
                 ? '사용 가능한 닉네임입니다.' 
                 : '이미 사용중인 닉네임입니다.'}
+            </div>
+          )}
+
+          {duplicateCheckResult === 'error' && (
+            <div className={`${styles.resultMessage} ${styles.error}`}>
+              닉네임 중복 확인 중 오류가 발생했습니다.
             </div>
           )}
 

@@ -5,6 +5,7 @@ import { Stack } from '@/components/ui/layout';
 import { AuthContainer, AuthTitle } from '@/components/auth';
 import FormInput from '@/components/ui/inputs/FormInput';
 import PrimaryButton from '@/components/ui/buttons/PrimaryButton';
+import { authService } from '@/services/authService';
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
@@ -15,15 +16,15 @@ export default function ForgotPasswordPage() {
     setEmail(e.target.value);
   };
 
-  const handleSendEmail = () => {
-    // TODO: Implement password reset email logic
-    console.log('Sending password reset email to:', email);
-    setEmailSent(true);
-    
-    // Simulate email sending
-    setTimeout(() => {
+  const handleSendEmail = async () => {
+    try {
+      await authService.forgotPassword(email.trim());
+      setEmailSent(true);
       alert('비밀번호 재설정 이메일이 전송되었습니다.');
-    }, 1000);
+    } catch (error) {
+      console.error('Failed to send reset email:', error);
+      alert(error.message || '비밀번호 재설정 이메일 전송에 실패했습니다.');
+    }
   };
 
   const isValidEmail = email.trim() && email.includes('@');

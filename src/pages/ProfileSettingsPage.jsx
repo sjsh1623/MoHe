@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styles from '@/styles/pages/profile-settings-page.module.css';
 import ProfileMenuItem from '@/components/ui/items/ProfileMenuItem';
@@ -11,6 +11,7 @@ import {
   RecentPlacesIcon, 
   VersionIcon 
 } from '@/components/ui/icons/MenuIcons';
+import { userService, activityService } from '@/services/apiService';
 
 // Menu items configuration with exact CSS class mappings
 const MENU_ITEMS = [
@@ -81,6 +82,35 @@ const MENU_ITEMS = [
 export default function ProfileSettingsPage() {
   const navigate = useNavigate();
   const { isGuest } = useAuthGuard(true); // This page requires authentication
+  const [profile, setProfile] = useState(null);
+  const [myPlacesCount, setMyPlacesCount] = useState(0);
+  const userDescription = profile?.mbti ? `${profile.mbti} 취향의 이용자입니다.` : '취향 정보를 설정해보세요.';
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const [profileResponse, myPlacesResponse] = await Promise.all([
+          userService.getProfile(),
+          activityService.getMyPlaces()
+        ]);
+
+        if (profileResponse.success) {
+          setProfile(profileResponse.data?.user);
+        }
+
+        if (myPlacesResponse.success) {
+          const places = myPlacesResponse.data?.places;
+          setMyPlacesCount(Array.isArray(places) ? places.length : 0);
+        }
+      } catch (error) {
+        console.error('Failed to load profile data:', error);
+      }
+    };
+
+    if (!isGuest) {
+      loadData();
+    }
+  }, [isGuest]);
 
   const handleMenuItemClick = (item) => {
     if (item.route) {
@@ -98,7 +128,14 @@ export default function ProfileSettingsPage() {
         </header>
         
         {/* Profile Header */}
-        <ProfileInfoCard styles={styles} />
+        <ProfileInfoCard 
+          styles={styles}
+          userName={profile?.nickname || '이용자'}
+          mbtiValue={profile?.mbti || '----'}
+          placesCount={myPlacesCount}
+          userDescription={userDescription}
+          profileImage={profile?.profileImage || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop&crop=face'}
+        />
 
         {/* Menu Section */}
         <div className={styles.overlap}>

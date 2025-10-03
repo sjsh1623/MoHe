@@ -267,7 +267,7 @@ export class WeatherService extends ApiService {
    * Get current weather data for coordinates
    */
   async getCurrentWeather(latitude, longitude) {
-    return this.get(`/api/weather/current?lat=${latitude}&lon=${longitude}`, {
+    return this.get(`/api/weather/current?latitude=${latitude}&longitude=${longitude}`, {
       requireAuth: false
     });
   }
@@ -275,7 +275,9 @@ export class WeatherService extends ApiService {
   /**
    * Get weather context for recommendations
    */
-  
+  async getWeatherContext(latitude, longitude) {
+    return this.getCurrentWeather(latitude, longitude);
+  }
 }
 
 /**
@@ -356,13 +358,32 @@ export class PlaceService extends ApiService {
    */
   async searchPlaces(query, options = {}) {
     const params = new URLSearchParams({
-      query,
       page: (options.page || 0).toString(),
       size: (options.size || 10).toString(),
       ...(options.sort && { sort: options.sort })
     });
 
+    if (query) {
+      params.set('q', query);
+    }
+
     return this.get(`/api/places/search?${params}`, {
+      requireAuth: false
+    });
+  }
+
+  /**
+   * Get places near a set of coordinates
+   */
+  async getNearbyPlaces(latitude, longitude, options = {}) {
+    const params = new URLSearchParams({
+      latitude: latitude.toString(),
+      longitude: longitude.toString(),
+      radius: (options.radius || 3000).toString(),
+      limit: (options.limit || 20).toString()
+    });
+
+    return this.get(`/api/places/nearby?${params}`, {
       requireAuth: false
     });
   }
@@ -471,7 +492,85 @@ export class BookmarkService extends ApiService {
     });
   }
 
-  
+  /**
+   * Add bookmark explicitly
+   */
+  async addBookmark(placeId) {
+    return this.post(`/api/bookmarks`, { placeId }, {
+      requireAuth: true
+    });
+  }
+
+  /**
+   * Remove bookmark explicitly
+   */
+  async removeBookmark(placeId) {
+    return this.delete(`/api/bookmarks/${placeId}`, {
+      requireAuth: true
+    });
+  }
+
+  /**
+   * Check bookmark status for a place
+   */
+  async isBookmarked(placeId) {
+    return this.get(`/api/bookmarks/${placeId}`, {
+      requireAuth: true
+    });
+  }
+}
+
+/**
+ * Activity API service
+ */
+export class ActivityService extends ApiService {
+  async getRecentPlaces() {
+    return this.get('/api/user/recent-places', {
+      requireAuth: true
+    });
+  }
+
+  async recordRecentView(placeId) {
+    return this.post('/api/user/recent-places', { placeId }, {
+      requireAuth: true
+    });
+  }
+
+  async getMyPlaces() {
+    return this.get('/api/user/my-places', {
+      requireAuth: true
+    });
+  }
+}
+
+/**
+ * User profile service
+ */
+export class UserService extends ApiService {
+  async getProfile() {
+    return this.get('/api/user/profile', {
+      requireAuth: true
+    });
+  }
+
+  async updateProfile(payload) {
+    return this.put('/api/user/profile', payload, {
+      requireAuth: true
+    });
+  }
+}
+
+/**
+ * Terms API service
+ */
+export class TermsService extends ApiService {
+  async listTerms() {
+    return this.get('/api/terms', { requireAuth: false });
+  }
+
+  async getTermDetail(termsId) {
+    return this.get(`/api/terms/${termsId}`, { requireAuth: false });
+  }
 }
 
 // Export service instances
@@ -479,6 +578,9 @@ export const weatherService = new WeatherService();
 export const contextualRecommendationService = new ContextualRecommendationService();
 export const recommendationService = new RecommendationService();
 export const placeService = new PlaceService();
+export const activityService = new ActivityService();
+export const userService = new UserService();
+export const termsService = new TermsService();
 /**
  * Address API service for reverse geocoding
  */

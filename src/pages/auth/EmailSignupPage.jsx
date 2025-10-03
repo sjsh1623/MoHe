@@ -33,6 +33,9 @@ export default function EmailSignupPage() {
       
       // Store email for verification step
       sessionStorage.setItem('signup_email', email.trim());
+      if (result?.tempUserId) {
+        sessionStorage.setItem('temp_user_id', result.tempUserId);
+      }
       
       // Navigate to email verification
       navigate('/verify-email');

@@ -17,6 +17,7 @@ export default function EmailVerificationPage() {
   const [isVerifying, setIsVerifying] = useState(false);
   const [error, setError] = useState('');
   const [email, setEmail] = useState('');
+  const [tempUserId, setTempUserId] = useState('');
 
   useEffect(() => {
     // Get email from session storage
@@ -26,6 +27,11 @@ export default function EmailVerificationPage() {
     } else {
       // If no email, redirect back to signup
       navigate('/signup');
+    }
+
+    const storedTempUserId = sessionStorage.getItem('temp_user_id');
+    if (storedTempUserId) {
+      setTempUserId(storedTempUserId);
     }
   }, [navigate]);
 
@@ -48,8 +54,8 @@ export default function EmailVerificationPage() {
       return;
     }
 
-    if (!email) {
-      setError('이메일 정보가 없습니다. 다시 회원가입을 시도해주세요.');
+    if (!tempUserId) {
+      setError('인증 정보가 없습니다. 다시 회원가입을 시도해주세요.');
       return;
     }
 
@@ -57,13 +63,8 @@ export default function EmailVerificationPage() {
     setError('');
 
     try {
-      const result = await authService.verifyEmail(email, code);
+      const result = await authService.verifyEmail(tempUserId, code);
       console.log('Verification successful:', result);
-      
-      // Store temp user ID for next step
-      if (result.tempUserId) {
-        sessionStorage.setItem('temp_user_id', result.tempUserId);
-      }
       
       // Success - navigate to nickname setup
       navigate('/nickname-setup');
@@ -82,7 +83,11 @@ export default function EmailVerificationPage() {
     }
 
     try {
-      await authService.signup(email);
+      const result = await authService.signup(email);
+      if (result?.tempUserId) {
+        sessionStorage.setItem('temp_user_id', result.tempUserId);
+        setTempUserId(result.tempUserId);
+      }
       alert('인증번호가 재전송되었습니다.');
     } catch (error) {
       console.error('Resend failed:', error);
