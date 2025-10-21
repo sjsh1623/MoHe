@@ -1,12 +1,72 @@
-# React + Vite
+# MoHe - 장소 추천 서비스 프론트엔드
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React 기반 장소 추천 모바일 웹 애플리케이션입니다.
 
-Currently, two official plugins are available:
+## 기술 스택
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **Frontend**: React 19.1.0 with Vite 7.0.4
+- **Routing**: React Router DOM 7.7.1
+- **Animations**: Framer Motion 12.23.12 + React Transition Group 4.4.5
+- **Styling**: CSS Modules
+- **State Management**: React Context API
 
-## Expanding the ESLint configuration
+## 시작하기
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+### 설치
+
+```bash
+npm install
+```
+
+### 개발 서버 실행
+
+```bash
+npm run dev
+```
+
+개발 서버는 http://localhost:3000 에서 실행됩니다.
+
+### 프로덕션 빌드
+
+```bash
+npm run build
+```
+
+### 프로덕션 미리보기
+
+```bash
+npm run preview
+```
+
+### 린트 검사
+
+```bash
+npm run lint
+```
+
+## 주요 기능
+
+- 사용자 인증 및 이메일 인증
+- MBTI 기반 성격 평가
+- 사용자 선호도 수집 (연령, 공간 유형, 교통수단)
+- 장소 추천 시스템
+- 북마크 기능
+- 프로필 관리
+
+## 프로젝트 구조
+
+```
+src/
+├── components/         # 재사용 가능한 UI 컴포넌트
+│   ├── ui/            # 기본 UI 컴포넌트 (버튼, 카드, 입력 등)
+│   ├── layout/        # 레이아웃 컴포넌트
+│   └── auth/          # 인증 관련 컴포넌트
+├── pages/             # 페이지 컴포넌트
+├── contexts/          # React Context 상태 관리
+├── styles/            # CSS 모듈
+└── assets/            # 이미지 및 정적 파일
+```
+
+## 개발 가이드
+
+자세한 개발 가이드는 [CLAUDE.md](./CLAUDE.md)를 참조하세요.
