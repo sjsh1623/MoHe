@@ -558,6 +558,33 @@ export class UserService extends ApiService {
       requireAuth: true
     });
   }
+
+  /**
+   * Update user preferences (MBTI, age, space, transportation)
+   */
+  async updatePreferences(preferences) {
+    return this.put('/api/user/preferences', preferences, {
+      requireAuth: true
+    });
+  }
+
+  /**
+   * Complete onboarding process
+   */
+  async completeOnboarding(data) {
+    return this.post('/api/user/onboarding/complete', data, {
+      requireAuth: true
+    });
+  }
+
+  /**
+   * Save user agreements (terms, privacy, location, age)
+   */
+  async saveAgreements(agreements) {
+    return this.post('/api/user/agreements', agreements, {
+      requireAuth: true
+    });
+  }
 }
 
 /**
@@ -573,6 +600,20 @@ export class TermsService extends ApiService {
   }
 }
 
+/**
+ * Support/Contact API service
+ */
+export class SupportService extends ApiService {
+  /**
+   * Send contact/feedback message
+   */
+  async sendContactMessage(data) {
+    return this.post('/api/support/contact', data, {
+      requireAuth: true
+    });
+  }
+}
+
 // Export service instances
 export const weatherService = new WeatherService();
 export const contextualRecommendationService = new ContextualRecommendationService();
@@ -581,6 +622,7 @@ export const placeService = new PlaceService();
 export const activityService = new ActivityService();
 export const userService = new UserService();
 export const termsService = new TermsService();
+export const supportService = new SupportService();
 /**
  * Address API service for reverse geocoding
  */
