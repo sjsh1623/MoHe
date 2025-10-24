@@ -17,6 +17,20 @@ export default function PlaceCard({
   const [imageError, setImageError] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
+  // Extract location string safely
+  const getLocationString = () => {
+    if (typeof location === 'string') {
+      return location;
+    } else if (location && typeof location === 'object') {
+      // If location is an object (e.g., {latitude, longitude}), show a fallback
+      console.warn('PlaceCard received location object instead of string:', location);
+      return '위치 정보 없음';
+    }
+    return '위치 정보 없음';
+  };
+
+  const locationStr = getLocationString();
+
   const handleBookmarkClick = (e) => {
     e.stopPropagation();
     const newBookmarked = !bookmarked;
@@ -132,7 +146,7 @@ export default function PlaceCard({
             <circle cx="8" cy="7.33325" r="2" stroke="#7D848D" strokeWidth="1.5"/>
             <path d="M14 7.25918C14 10.532 10.25 14.6666 8 14.6666C5.75 14.6666 2 10.532 2 7.25918C2 3.98638 4.68629 1.33325 8 1.33325C11.3137 1.33325 14 3.98638 14 7.25918Z" stroke="#7D848D" strokeWidth="1.5"/>
           </svg>
-          <span className={styles.location}>{location}</span>
+          <span className={styles.location}>{locationStr}</span>
         </div>
       </div>
     </div>

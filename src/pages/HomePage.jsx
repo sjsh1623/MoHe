@@ -197,17 +197,37 @@ export default function HomePage() {
             if (guestResponse.success && guestResponse.data.length > 0) {
               console.log('HomePage: Processing guest recommendations, count:', guestResponse.data.length);
               
-              recommendationsData = guestResponse.data.map(place => ({
-                id: place.id,
-                title: place.name,
-                rating: place.rating,
-                location: place.location,
-                image: place.image,
-                isBookmarked: place.isBookmarked,
-                distance: 0,
-                weatherSuitability: place.weatherSuitability,
-                reasonWhy: place.description
-              }));
+              recommendationsData = guestResponse.data.map(place => {
+                // Extract location string properly
+                let locationStr = '위치 정보 없음';
+                if (typeof place.location === 'string') {
+                  locationStr = place.location;
+                } else if (place.location && typeof place.location === 'object') {
+                  // If location is an object (lat/lng), use address or category
+                  locationStr = place.address || place.category || '위치 정보 없음';
+                } else {
+                  locationStr = place.category || '위치 정보 없음';
+                }
+
+                console.log('HomePage guest mapping:', {
+                  id: place.id,
+                  name: place.name,
+                  originalLocation: place.location,
+                  mappedLocation: locationStr
+                });
+
+                return {
+                  id: place.id,
+                  title: place.name,
+                  rating: place.rating,
+                  location: locationStr,
+                  image: place.image,
+                  isBookmarked: place.isBookmarked,
+                  distance: 0,
+                  weatherSuitability: place.weatherSuitability,
+                  reasonWhy: place.description
+                };
+              });
               
               console.log('HomePage: Mapped recommendations data:', recommendationsData);
             } else {
@@ -391,16 +411,29 @@ export default function HomePage() {
         if (response.success && isMounted) {
           console.log('✅ Bookmark-based places loaded:', response.data.length);
           // Transform the data to match the expected format
-          const transformedPlaces = response.data.map(place => ({
-            id: place.id,
-            name: place.name || place.title,
-            title: place.title || place.name,
-            rating: place.rating,
-            location: place.location || place.address,
-            image: place.imageUrl || place.image,
-            images: place.images || [],
-            isBookmarked: place.isBookmarked || false
-          }));
+          const transformedPlaces = response.data.map(place => {
+            // Extract location string properly
+            let locationStr = '위치 정보 없음';
+            if (typeof place.location === 'string') {
+              locationStr = place.location;
+            } else if (place.location && typeof place.location === 'object') {
+              // If location is an object (lat/lng), use address or category
+              locationStr = place.address || place.category || '위치 정보 없음';
+            } else {
+              locationStr = place.address || place.category || '위치 정보 없음';
+            }
+
+            return {
+              id: place.id,
+              name: place.name || place.title,
+              title: place.title || place.name,
+              rating: place.rating,
+              location: locationStr,
+              image: place.imageUrl || place.image,
+              images: place.images || [],
+              isBookmarked: place.isBookmarked || false
+            };
+          });
           setPopularPlaces(transformedPlaces);
         } else if (isMounted) {
           console.warn('⚠️ Bookmark-based places API returned no success:', response);

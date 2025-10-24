@@ -1,4 +1,7 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+
+// Debug: Log the API base URL being used
+console.log('🔧 API Base URL:', API_BASE_URL);
 
 /**
  * Base API service with common functionality
@@ -683,19 +686,40 @@ class GuestRecommendationService extends ApiService {
         console.log('GuestRecommendationService: Processing places data, count:', response.data.places.length);
         console.log('GuestRecommendationService: Sample place:', response.data.places[0]);
         
-        const mappedPlaces = response.data.places.map(place => ({
-          id: place.id,
-          name: place.name,
-          rating: place.rating || 4.0,
-          location: place.category || place.location,
-          image: place.imageUrl || place.images?.[0],
-          isBookmarked: false,
-          category: place.category,
-          description: place.reasonWhy || `${place.category}`,
-          distance: 0, // Distance disabled as per requirements
-          weatherSuitability: place.weatherSuitability,
-          reasonWhy: place.reasonWhy
-        }));
+        const mappedPlaces = response.data.places.map(place => {
+          // Extract location string: prioritize address, then category, then location string
+          let locationStr = place.category || '위치 정보 없음';
+
+          // If location is an object with latitude/longitude, use address instead
+          if (place.location && typeof place.location === 'object') {
+            locationStr = place.address || place.category || '위치 정보 없음';
+          } else if (typeof place.location === 'string') {
+            locationStr = place.location;
+          }
+
+          console.log('Place location mapping:', {
+            id: place.id,
+            name: place.name,
+            originalLocation: place.location,
+            address: place.address,
+            category: place.category,
+            mappedLocation: locationStr
+          });
+
+          return {
+            id: place.id,
+            name: place.name,
+            rating: place.rating || 4.0,
+            location: locationStr,
+            image: place.imageUrl || place.images?.[0],
+            isBookmarked: false,
+            category: place.category,
+            description: place.reasonWhy || `${place.category}`,
+            distance: 0, // Distance disabled as per requirements
+            weatherSuitability: place.weatherSuitability,
+            reasonWhy: place.reasonWhy
+          };
+        });
         
         console.log('GuestRecommendationService: Mapped places count:', mappedPlaces.length);
         console.log('GuestRecommendationService: Sample mapped place:', mappedPlaces[0]);
