@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  mohe-frontend-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: mohe-react-dev
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - VITE_HOST=0.0.0.0
+    volumes:
+      # 소스 코드 볼륨 마운트 (실시간 반영)
+      - ./src:/app/src
+      - ./public:/app/public
+      - ./index.html:/app/index.html
+      - ./vite.config.js:/app/vite.config.js
+      - ./package.json:/app/package.json
+      # node_modules는 컨테이너 것을 사용 (성능 향상)
+      - /app/node_modules
+    restart: unless-stopped
+    networks:
+      - mohe-network
+    stdin_open: true
+    tty: true
+
+networks:
+  mohe-network:
+    driver: bridge

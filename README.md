@@ -20,17 +20,38 @@ npm install
 
 ### 개발 서버 실행
 
+**로컬 환경:**
 ```bash
 npm run dev
 ```
 
 개발 서버는 http://localhost:3000 에서 실행됩니다.
 
+**Docker 개발 환경 (HMR 지원):**
+```bash
+docker-compose -f docker-compose.dev.yml up --build
+```
+
+Docker를 사용하면 볼륨 마운트를 통해 소스 코드 수정사항이 실시간으로 반영됩니다. 개발 서버는 http://localhost:3000 에서 접속할 수 있습니다.
+
+중지:
+```bash
+docker-compose -f docker-compose.dev.yml down
+```
+
 ### 프로덕션 빌드
 
+**로컬 환경:**
 ```bash
 npm run build
 ```
+
+**Docker 프로덕션 환경:**
+```bash
+docker-compose up --build
+```
+
+프로덕션 환경은 Nginx로 빌드된 정적 파일을 서빙하며 http://localhost:3002 에서 접속할 수 있습니다.
 
 ### 프로덕션 미리보기
 

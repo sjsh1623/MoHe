@@ -17,6 +17,12 @@ export default defineConfig({
   },
   server: {
     host: true, // Allow external connections for mobile testing
-    port: 3000
+    port: 3000,
+    watch: {
+      usePolling: true, // Docker 환경에서 파일 변경 감지를 위해 필요
+    },
+    hmr: {
+      overlay: true, // 에러 오버레이 표시
+    }
   }
 });
