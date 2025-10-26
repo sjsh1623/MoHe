@@ -81,7 +81,7 @@ export default function LoginPage() {
                     <FormInput
                         label="이메일 주소"
                         type="email"
-                        placeholder="example@mohae.com"
+                        placeholder="example@mohe.com"
                         value={formData.email}
                         onChange={handleInputChange('email')}
                         onKeyPress={handleKeyPress}

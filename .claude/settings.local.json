@@ -28,7 +28,8 @@
       "Bash(open:*)",
       "Bash(docker stop:*)",
       "Bash(docker rm:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(git reset:*)"
     ],
     "deny": []
   }

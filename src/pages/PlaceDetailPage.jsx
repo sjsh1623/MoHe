@@ -4,6 +4,7 @@ import styles from '@/styles/pages/place-detail-page.module.css';
 import PlaceDetailSkeleton from '@/components/ui/skeletons/PlaceDetailSkeleton';
 import ErrorMessage from '@/components/ui/alerts/ErrorMessage';
 import { placeService } from '@/services/apiService';
+import { buildImageUrl, buildImageUrlList, normalizePlaceImages } from '@/utils/image';
 
 export default function PlaceDetailPage({
   place = null, // Allow prop injection for testing/reusability
@@ -16,8 +17,10 @@ export default function PlaceDetailPage({
   const [error, setError] = useState(null);
   
   // Get preloaded data from navigation state
-  const preloadedImage = location.state?.preloadedImage;
-  const preloadedData = location.state?.preloadedData;
+  const preloadedImage = buildImageUrl(location.state?.preloadedImage);
+  const preloadedData = location.state?.preloadedData
+    ? normalizePlaceImages(location.state?.preloadedData)
+    : null;
   
   
   useEffect(() => {
@@ -28,7 +31,7 @@ export default function PlaceDetailPage({
 
         // Use prop data if available, or load from backend
         if (place) {
-          setPlaceData(place);
+          setPlaceData(normalizePlaceImages(place));
           setIsLoading(false);
           return;
         }
@@ -44,10 +47,9 @@ export default function PlaceDetailPage({
           console.log('Using preloaded place data:', preloadedData);
           setPlaceData({
             ...preloadedData,
-            gallery: preloadedData.gallery || (preloadedData.imageUrl ? [preloadedData.imageUrl] : []),
             description: preloadedData.description || preloadedData.reasonWhy || '이 장소에 대한 상세 정보가 준비 중입니다.',
-            address: preloadedData.address || preloadedData.location, // Prioritize full address
-            location: preloadedData.address || preloadedData.location, // Show full address in location display
+            address: preloadedData.address || preloadedData.location,
+            location: preloadedData.address || preloadedData.location,
             name: preloadedData.title || preloadedData.name
           });
           setIsLoading(false);
@@ -57,7 +59,7 @@ export default function PlaceDetailPage({
         // Load place details from backend
         const response = await placeService.getPlaceById(id);
         if (response.success) {
-          setPlaceData(response.data);
+          setPlaceData(normalizePlaceImages(response.data));
           
           // TODO: Implement recent view tracking when backend API is available
           // For now, just log the view
@@ -117,19 +119,21 @@ export default function PlaceDetailPage({
     );
   }
 
-  // Get images from the place data - prioritize images array with 5 images
-  const images = placeData.images?.length >= 5 ? placeData.images : 
-                 placeData.gallery?.length ? placeData.gallery : 
-                 placeData.image ? [placeData.image] :
-                 placeData.imageUrl ? [placeData.imageUrl] :
-                 // Default to 5 high-quality sample images
-                 [
-                   'https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=440&h=563&fit=crop&crop=center',
-                   'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=440&h=563&fit=crop&crop=center',
-                   'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=440&h=563&fit=crop&crop=center',
-                   'https://images.unsplash.com/photo-1559925393-8be0ec4767c8?w=440&h=563&fit=crop&crop=center',
-                   'https://images.unsplash.com/photo-1544918999-6c6b10bdb76f?w=440&h=563&fit=crop&crop=center'
-                 ];
+  const defaultImages = [
+    'https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=440&h=563&fit=crop&crop=center',
+    'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=440&h=563&fit=crop&crop=center',
+    'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=440&h=563&fit=crop&crop=center',
+    'https://images.unsplash.com/photo-1559925393-8be0ec4767c8?w=440&h=563&fit=crop&crop=center',
+    'https://images.unsplash.com/photo-1544918999-6c6b10bdb76f?w=440&h=563&fit=crop&crop=center'
+  ];
+
+  const candidateImages = placeData.images?.length
+    ? placeData.images
+    : placeData.gallery?.length
+      ? buildImageUrlList(placeData.gallery)
+      : [];
+
+  const images = candidateImages.length ? candidateImages : defaultImages;
 
   const handleExperienceClick = () => {
     if (onExperience) {

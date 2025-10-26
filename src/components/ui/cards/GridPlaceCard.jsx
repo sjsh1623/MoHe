@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import styles from '@/styles/components/cards/grid-place-card.module.css';
 import StarRating from '@/components/ui/indicators/StarRating';
+import { buildImageUrl } from '@/utils/image';
 
 export default function GridPlaceCard({
   title,
@@ -42,7 +43,7 @@ export default function GridPlaceCard({
           </div>
         ) : (
           <img 
-            src={image || 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=176&h=159&fit=crop&crop=center'} 
+            src={buildImageUrl(image) || 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=176&h=159&fit=crop&crop=center'} 
             alt={title}
             className={styles.image}
             onError={handleImageError}

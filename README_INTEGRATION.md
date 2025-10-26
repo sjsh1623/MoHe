@@ -229,7 +229,7 @@ OLLAMA_TIMEOUT=30
 
 ### Frontend Environment
 ```env
-VITE_API_BASE_URL=http://localhost:8080
+VITE_API_BASE_URL=http://localhost:8000
 ```
 
 ## 🚀 Usage Examples
@@ -406,7 +406,7 @@ The MOHE React frontend now displays **only real data** from the database via pr
 ### 📞 Support & Issues
 
 If any integration issues occur:
-1. Check backend server is running on port 8080
+1. Check backend server is running on port 8000
 2. Check database connection is working
-3. Verify API endpoints are responding via Swagger UI: `http://localhost:8080/swagger-ui.html`
+3. Verify API endpoints are responding via Swagger UI: `http://localhost:8000/swagger-ui.html`
 4. Check browser console for specific error messages

@@ -8,6 +8,7 @@ import PlacesListSkeleton from '@/components/ui/skeletons/PlacesListSkeleton';
 import ErrorMessage from '@/components/ui/alerts/ErrorMessage';
 import { bookmarkService } from '@/services/apiService';
 import { authService } from '@/services/authService';
+import { buildImageUrl } from '@/utils/image';
 
 export default function RecentViewPage() {
   const navigate = useNavigate();
@@ -45,8 +46,12 @@ export default function RecentViewPage() {
   const handlePlaceClick = (placeId) => {
     console.log('Recent place clicked:', placeId);
     const selectedPlace = recentPlaces.find(place => place.id === placeId);
+    const preloadedImage = buildImageUrl(
+      selectedPlace?.image || selectedPlace?.imageUrl || selectedPlace?.images?.[0]
+    );
+
     navigate(`/place/${placeId}`, { 
-      state: { preloadedImage: selectedPlace?.image || selectedPlace?.imageUrl, preloadedData: selectedPlace } 
+      state: { preloadedImage, preloadedData: selectedPlace } 
     });
   };
 

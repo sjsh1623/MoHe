@@ -1,12 +1,13 @@
 import React from 'react';
 import styles from '@/styles/components/cards/bookmark-place-card.module.css';
+import { buildImageUrl } from '@/utils/image';
 
 export default function BookmarkPlaceCard({ name, location, image, rating }) {
   return (
     <div className={styles.card}>
       <div className={styles.imageContainer}>
         <img 
-          src={image} 
+          src={buildImageUrl(image) || 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=176&h=159&fit=crop&crop=center'} 
           alt={name} 
           className={styles.image}
         />

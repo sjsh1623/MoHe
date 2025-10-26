@@ -15,7 +15,7 @@ export default function ApiStatus() {
   const checkApiStatus = async () => {
     // Check backend health
     try {
-      const backendResponse = await fetch('http://localhost:8080/health');
+      const backendResponse = await fetch('http://localhost:8000/health');
       const backendData = await backendResponse.json();
       setStatus(prev => ({
         ...prev,
@@ -38,7 +38,7 @@ export default function ApiStatus() {
 
     // Check database through backend
     try {
-      const dbResponse = await fetch('http://localhost:8080/api/places?page=0&limit=1');
+      const dbResponse = await fetch('http://localhost:8000/api/places?page=0&limit=1');
       setStatus(prev => ({
         ...prev,
         database: dbResponse.status === 500 ? 'partial' : 'connected'

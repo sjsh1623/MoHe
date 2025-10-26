@@ -10,6 +10,7 @@ import PrimaryButton from '@/components/ui/buttons/PrimaryButton';
 import { placeService, bookmarkService } from '@/services/apiService';
 import { authService } from '@/services/authService';
 import { useGeolocation } from '@/hooks/useGeolocation';
+import { normalizePlaceImages, buildImageUrl } from '@/utils/image';
 
 export default function PlacesListPage() {
   const navigate = useNavigate();
@@ -49,12 +50,13 @@ export default function PlacesListPage() {
       });
 
       if (response.success) {
-        const { places: newPlaces, pagination } = response.data;
+        const { places: newPlaces = [], pagination } = response.data;
+        const normalizedPlaces = newPlaces.map(normalizePlaceImages);
         
         if (append) {
-          setPlaces(prev => [...prev, ...newPlaces]);
+          setPlaces(prev => [...prev, ...normalizedPlaces]);
         } else {
-          setPlaces(newPlaces);
+          setPlaces(normalizedPlaces);
         }
         
         if (pagination) {
@@ -83,8 +85,11 @@ export default function PlacesListPage() {
   const handlePlaceClick = (placeId) => {
     console.log('Place clicked:', placeId);
     const selectedPlace = places.find(place => place.id === placeId);
+    const preloadedImage = buildImageUrl(
+      selectedPlace?.image || selectedPlace?.imageUrl || selectedPlace?.images?.[0]
+    );
     navigate(`/place/${placeId}`, { 
-      state: { preloadedImage: selectedPlace?.image || selectedPlace?.imageUrl, preloadedData: selectedPlace } 
+      state: { preloadedImage, preloadedData: selectedPlace } 
     });
   };
 

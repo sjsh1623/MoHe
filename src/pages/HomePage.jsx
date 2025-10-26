@@ -10,10 +10,11 @@ import OutlineButton from '@/components/ui/buttons/OutlineButton';
 import HomePageSkeleton from '@/components/ui/skeletons/HomePageSkeleton';
 import ErrorMessage from '@/components/ui/alerts/ErrorMessage';
 import { useGeolocation, useLocationStorage } from '@/hooks/useGeolocation';
-import { weatherService, contextualRecommendationService, recommendationService, bookmarkService, addressService, guestRecommendationService, placeService, homeService } from '@/services/apiService';
+import { weatherService, contextualRecommendationService, bookmarkService, addressService, guestRecommendationService, placeService, homeService } from '@/services/apiService';
 import { authService } from '@/services/authService';
 import { withAuthCheck } from '@/hooks/useAuthGuard';
 import bannerLeft from '@/assets/image/banner_left.png';
+import { buildImageUrl, normalizePlaceImages } from '@/utils/image';
 
 export default function HomePage() {
   const navigate = useNavigate();
@@ -31,6 +32,7 @@ export default function HomePage() {
   const [user, setUser] = useState(null);
   const [popularPlaces, setPopularPlaces] = useState([]);
   const [homeImages, setHomeImages] = useState([]);
+  const [addressLoading, setAddressLoading] = useState(true);
 
   // Initialize app only once on mount
   useEffect(() => {
@@ -85,10 +87,13 @@ export default function HomePage() {
         if (isMounted) {
           console.log('📍 Setting location from storage:', storedLocation);
           setCurrentLocation(storedLocation);
-          // If stored location doesn't have address, resolve it
-          if (!storedLocation.address && storedLocation.latitude && storedLocation.longitude) {
+
+          if (storedLocation.address) {
+            setAddressLoading(false);
+          } else if (storedLocation.latitude && storedLocation.longitude) {
             await resolveAddress(storedLocation.latitude, storedLocation.longitude);
           }
+
           await loadWeatherData(storedLocation.latitude, storedLocation.longitude);
         }
         return;
@@ -97,6 +102,7 @@ export default function HomePage() {
       // Request location only once
       if (!locationPermissionRequested) {
         setLocationPermissionRequested(true);
+        setAddressLoading(true);
         try {
           const locationData = await requestLocation();
           if (locationData && isMounted) {
@@ -105,7 +111,6 @@ export default function HomePage() {
             console.log('🏠 Geolocation set, should trigger popular places loading');
             // Resolve address for the location
             await resolveAddress(locationData.latitude, locationData.longitude);
-            saveLocation(locationData);
             await loadWeatherData(locationData.latitude, locationData.longitude);
           }
         } catch (error) {
@@ -137,26 +142,44 @@ export default function HomePage() {
 
   // Resolve address from coordinates
   const resolveAddress = async (latitude, longitude) => {
+    if (!latitude || !longitude) {
+      setAddressLoading(false);
+      return null;
+    }
+
+    setAddressLoading(true);
     try {
       const addressResponse = await addressService.reverseGeocode(latitude, longitude);
       if (addressResponse.success) {
-        setCurrentLocation(prev => ({
-          ...prev,
-          latitude,
-          longitude,
-          address: addressResponse.data.shortAddress || addressResponse.data.fullAddress
-        }));
+        const formattedAddress = formatDisplayAddress(addressResponse.data);
+        setCurrentLocation(prev => {
+          const nextLocation = {
+            ...(prev || {}),
+            latitude,
+            longitude,
+            address: formattedAddress
+          };
+          saveLocation(nextLocation);
+          return nextLocation;
+        });
         return addressResponse.data;
       }
+      throw new Error('주소를 불러오지 못했습니다.');
     } catch (error) {
       console.warn('Failed to resolve address:', error);
-      // Keep coordinates as fallback
-      setCurrentLocation(prev => ({
-        ...prev,
-        latitude,
-        longitude,
-        address: `위도 ${latitude.toFixed(4)}, 경도 ${longitude.toFixed(4)}`
-      }));
+      setCurrentLocation(prev => {
+        const nextLocation = {
+          ...(prev || {}),
+          latitude,
+          longitude,
+          address: null
+        };
+        saveLocation(nextLocation);
+        return nextLocation;
+      });
+      return null;
+    } finally {
+      setAddressLoading(false);
     }
   };
 
@@ -197,12 +220,14 @@ export default function HomePage() {
             if (guestResponse.success && guestResponse.data.length > 0) {
               console.log('HomePage: Processing guest recommendations, count:', guestResponse.data.length);
               
-              recommendationsData = guestResponse.data.map(place => ({
+              recommendationsData = guestResponse.data.map(place => normalizePlaceImages({
                 id: place.id,
                 title: place.name,
                 rating: place.rating,
                 location: place.location,
                 image: place.image,
+                imageUrl: place.imageUrl,
+                images: place.images,
                 isBookmarked: place.isBookmarked,
                 distance: 0,
                 weatherSuitability: place.weatherSuitability,
@@ -304,14 +329,15 @@ export default function HomePage() {
       );
 
       if (response.success && response.data.places.length > 0) {
-        return response.data.places.map(place => ({
+        return response.data.places.map(place => normalizePlaceImages({
           id: place.id,
           title: place.name,
           rating: place.rating,
           location: place.category || '알 수 없음',
           image: place.imageUrl || place.images?.[0],
+          images: place.images,
           isBookmarked: false,
-          distance: 0, // Distance disabled as per requirements
+          distance: 0,
           weatherSuitability: place.weatherSuitability,
           reasonWhy: place.reasonWhy
         }));
@@ -324,12 +350,13 @@ export default function HomePage() {
       const response = await placeService.getRecommendations();
 
       if (response.success && response.data.recommendations && response.data.recommendations.length > 0) {
-        return response.data.recommendations.map(place => ({
+        return response.data.recommendations.map(place => normalizePlaceImages({
           id: place.id,
           title: place.name,
           rating: place.rating,
           location: place.category || '알 수 없음',
           image: place.imageUrl || place.image,
+          images: place.images,
           isBookmarked: false,
           distance: null,
           score: place.score || null,
@@ -391,7 +418,7 @@ export default function HomePage() {
         if (response.success && isMounted) {
           console.log('✅ Bookmark-based places loaded:', response.data.length);
           // Transform the data to match the expected format
-          const transformedPlaces = response.data.map(place => ({
+          const transformedPlaces = response.data.map(place => normalizePlaceImages({
             id: place.id,
             name: place.name || place.title,
             title: place.title || place.name,
@@ -467,7 +494,7 @@ export default function HomePage() {
       
       if (response.success && response.data.length > 0 && isMounted) {
         console.log('✅ MBTI recommendations loaded from database:', response.data.length);
-        setHomeImages(response.data);
+        setHomeImages(response.data.map(normalizePlaceImages));
       } else if (isMounted) {
         // No fallback - keep empty array to show only real database data
         console.log('🎯 No backend data available, showing empty state');
@@ -570,9 +597,12 @@ export default function HomePage() {
     }
     
     console.log('Selected place data:', selectedPlace);
+    const preloadedImage = buildImageUrl(
+      selectedPlace.image || selectedPlace.imageUrl || selectedPlace.images?.[0]
+    );
     navigate(`/place/${placeId}`, { 
       state: { 
-        preloadedImage: selectedPlace.imageUrl || selectedPlace.image, 
+        preloadedImage, 
         preloadedData: selectedPlace 
       } 
     });
@@ -583,10 +613,16 @@ export default function HomePage() {
     if (currentLocation?.address) {
       return currentLocation.address;
     }
-    if (currentLocation) {
-      return `위도 ${currentLocation.latitude.toFixed(4)}, 경도 ${currentLocation.longitude.toFixed(4)}`;
+
+    if (addressLoading || locationLoading) {
+      return '';
     }
-    return '위치 확인 중...'; // Loading state
+
+    if (currentLocation) {
+      return '주소를 불러올 수 없습니다';
+    }
+
+    return '위치 정보를 확인할 수 없습니다';
   };
 
   // Retry function for error handling
@@ -609,7 +645,7 @@ export default function HomePage() {
         <LocationPin 
           location={getDisplayLocation()} 
           size="medium"
-          loading={locationLoading && !currentLocation}
+          loading={addressLoading || locationLoading}
         />
       </div>
 
@@ -780,9 +816,9 @@ export default function HomePage() {
       <footer className={styles.footer}>
         <div className={`${styles.footerContent} container-padding`}>
           <p className={styles.footerText}>
-            © 2025 MOHAE<br />
+            © 2025 MOHE<br />
             서비스 이용약관 | 개인정보처리방침 | 문의하기<br />
-            hello@mohae.app
+            hello@mohe.app
           </p>
         </div>
       </footer>
@@ -790,3 +826,21 @@ export default function HomePage() {
     </div>
   );
 }
+
+const formatDisplayAddress = (addressData = {}) => {
+  if (!addressData) return '';
+
+  if (addressData.shortAddress) {
+    return addressData.shortAddress;
+  }
+
+  if (addressData.fullAddress) {
+    return addressData.fullAddress;
+  }
+
+  const hierarchy = [addressData.sido, addressData.sigungu, addressData.dong, addressData.eupMyeon, addressData.ri]
+    .filter(Boolean)
+    .join(' ');
+
+  return hierarchy || '';
+};

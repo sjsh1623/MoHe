@@ -91,7 +91,7 @@ User clicks bookmark →
 ### Common Issues
 
 #### 1. CORS Errors
-If you see CORS errors, make sure your backend is running on `http://localhost:8080` and includes CORS configuration.
+If you see CORS errors, make sure your backend is running on `http://localhost:8000` and includes CORS configuration.
 
 #### 2. 401 Unauthorized
 The frontend handles token refresh automatically. Check:

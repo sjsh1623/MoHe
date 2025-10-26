@@ -1,5 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { buildImageUrl } from '@/utils/image';
 
 export default function ProfileInfoCard({ 
   styles, 
@@ -29,7 +30,7 @@ export default function ProfileInfoCard({
           <div className={styles.textWrapper5}>{userName}</div>
           <p className={styles.p}>{userDescription}</p>
         </div>
-        <img className={styles.img} src={profileImage} alt="프로필" />
+        <img className={styles.img} src={buildImageUrl(profileImage) || profileImage} alt="프로필" />
       </div>
     </div>
   );

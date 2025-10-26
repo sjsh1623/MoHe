@@ -1,58 +1,72 @@
 import React from 'react';
-import { Container } from '@/components/ui/layout';
-import { SkeletonText, SkeletonBox } from '@/components/ui/layout/SkeletonLoader';
 import PlaceCardSkeleton from './PlaceCardSkeleton';
 import styles from '@/styles/components/skeletons/home-page-skeleton.module.css';
+import bannerLeft from '@/assets/image/banner_left.png';
+
+const cardPlaceholders = Array.from({ length: 3 });
 
 export default function HomePageSkeleton() {
   return (
     <div className={styles.contentContainer}>
-      <div className={styles.contentWrapper}>
-        {/* Personalized recommendations section */}
-        <section className={styles.section}>
-          <SkeletonText width="60%" height="24px" className={`${styles.sectionTitle} container-padding`} />
-          <div className={styles.horizontalScroll}>
-            <div className={styles.cardsContainer}>
-              {[...Array(2)].map((_, index) => (
-                <div key={index} className={styles.cardWrapper}>
-                  <PlaceCardSkeleton />
-                </div>
-              ))}
-            </div>
+      <section className={`${styles.section}`}>
+        <h2 className={`${styles.sectionTitle} container-padding`}>
+          지금 가기 좋은 플레이스
+        </h2>
+        <div className={styles.horizontalScroll}>
+          <div className={styles.cardsContainer}>
+            {cardPlaceholders.map((_, index) => (
+              <div key={`primary-card-${index}`} className={styles.cardWrapper}>
+                <PlaceCardSkeleton />
+              </div>
+            ))}
           </div>
-        </section>
+        </div>
+      </section>
 
-        {/* Mood-based section */}
-        <section className={`${styles.moodSection} container-padding`}>
-          <SkeletonBox width="100%" height="120px" borderRadius="16px" className={styles.moodCard} />
-        </section>
+      <section className={`${styles.moodSection} container-padding`}>
+        <div className={styles.moodCard}>
+          <div className={styles.moodContent}>
+            <h3 className={styles.moodTitle}>지금 뭐하지?</h3>
+            <p className={styles.moodDescription}>
+              시간, 기분, 취향을 반영해서<br />
+              당신에게 어울리는 곳을 골라봤어요.
+            </p>
+          </div>
+          <div className={styles.moodImage}>
+            <img src={bannerLeft} alt="Mood illustration" />
+          </div>
+        </div>
+      </section>
 
-        {/* Popular destinations section */}
-        <section className={styles.section}>
-          <SkeletonText width="40%" height="24px" className={`${styles.sectionTitle} container-padding`} />
-          <div className={styles.horizontalScroll}>
-            <div className={styles.destinationsContainer}>
-              {[...Array(2)].map((_, index) => (
-                <div key={index} className={styles.destinationWrapper}>
-                  <div className={styles.destinationCard}>
-                    <SkeletonBox width="270px" height="177px" borderRadius="12px" />
-                    <div className={styles.destinationInfo}>
-                      <SkeletonText width="70%" height="18px" />
-                      <div className={styles.destinationLocation}>
-                        <SkeletonBox width="12px" height="12px" borderRadius="50%" />
-                        <SkeletonText width="50%" height="14px" />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
+      <section className={styles.section}>
+        <h2 className={`${styles.sectionTitle} container-padding`}>
+          지금 이 시간 추천
+        </h2>
+        <div className={styles.horizontalScroll}>
+          <div className={styles.cardsContainer}>
+            {cardPlaceholders.map((_, index) => (
+              <div key={`secondary-card-${index}`} className={styles.cardWrapper}>
+                <PlaceCardSkeleton variant="compact" />
+              </div>
+            ))}
           </div>
-          <div className={`${styles.seeMoreContainer} container-padding`}>
-            <SkeletonBox width="140px" height="44px" borderRadius="22px" />
+        </div>
+      </section>
+
+      <section className={styles.section}>
+        <h2 className={`${styles.sectionTitle} container-padding`}>
+          오늘은 이런 곳 어떠세요?
+        </h2>
+        <div className={styles.horizontalScroll}>
+          <div className={styles.cardsContainer}>
+            {cardPlaceholders.map((_, index) => (
+              <div key={`popular-card-${index}`} className={styles.cardWrapper}>
+                <PlaceCardSkeleton />
+              </div>
+            ))}
           </div>
-        </section>
-      </div>
+        </div>
+      </section>
     </div>
   );
 }

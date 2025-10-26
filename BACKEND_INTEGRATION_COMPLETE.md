@@ -89,7 +89,7 @@ if (recommendationsData.length === 0) {
 ```bash
 cd MoheSpring
 ./gradlew bootRun
-# Backend should be running on http://localhost:8080
+# Backend should be running on http://localhost:8000
 ```
 
 ### 2. Start Frontend 
@@ -151,7 +151,7 @@ OLLAMA_HOST=http://192.168.1.100:11434
 
 ### Frontend Configuration (`.env`):
 ```env
-VITE_API_BASE_URL=http://localhost:8080
+VITE_API_BASE_URL=http://localhost:8000
 ```
 
 ## 🔍 Debug Commands
