@@ -306,7 +306,25 @@ export class ContextualRecommendationService extends ApiService {
     });
   }
 
-  
+  /**
+   * Get good-to-visit recommendations based on location
+   */
+  async getGoodToVisitRecommendations(latitude, longitude, options = {}) {
+    const params = new URLSearchParams({
+      lat: latitude.toString(),
+      lon: longitude.toString(),
+      limit: (options.limit || 10).toString()
+    });
+
+    const url = `/api/recommendations/good-to-visit?${params.toString()}`;
+    console.log('🌐 API Call:', url);
+
+    return this.get(url, {
+      requireAuth: false
+    });
+  }
+
+
 }
 
 /**

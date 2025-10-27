@@ -16,6 +16,45 @@ import { withAuthCheck } from '@/hooks/useAuthGuard';
 import bannerLeft from '@/assets/image/banner_left.png';
 import { buildImageUrl, normalizePlaceImages } from '@/utils/image';
 
+/**
+ * Format address to show district + detailed address
+ * If outside current region, show only district
+ * @param {string} fullAddress - Full address string
+ * @returns {string} Formatted address
+ */
+const formatPlaceAddress = (fullAddress) => {
+  if (!fullAddress || typeof fullAddress !== 'string') {
+    return '위치 정보 없음';
+  }
+
+  // Extract district (구/군) and detailed address
+  // Korean address format: 시도 시군구 구 도로명 번지
+  const addressParts = fullAddress.split(' ');
+
+  // Find the index of district (구 or 군)
+  const districtIndex = addressParts.findIndex(part =>
+    part.endsWith('구') || part.endsWith('군')
+  );
+
+  if (districtIndex === -1) {
+    // No district found, return city or full address
+    return addressParts.slice(0, 2).join(' ') || fullAddress;
+  }
+
+  // Get district + detailed address (road name and number)
+  const district = addressParts[districtIndex];
+  const detailedParts = addressParts.slice(districtIndex + 1);
+
+  // If there's detailed address, show "구 + 도로명 번지"
+  if (detailedParts.length > 0) {
+    // Limit to district + road name (max 2 parts after district)
+    return `${district} ${detailedParts.slice(0, 2).join(' ')}`;
+  }
+
+  // Only district available
+  return district;
+};
+
 export default function HomePage() {
   const navigate = useNavigate();
   console.log('HomePage component loaded');
@@ -221,29 +260,25 @@ export default function HomePage() {
               console.log('HomePage: Processing guest recommendations, count:', guestResponse.data.length);
 
               recommendationsData = guestResponse.data.map(place => {
-                // Extract location string properly
-                let locationStr = '위치 정보 없음';
-                if (typeof place.location === 'string') {
-                  locationStr = place.location;
-                } else if (place.location && typeof place.location === 'object') {
-                  // If location is an object (lat/lng), use address or category
-                  locationStr = place.address || place.category || '위치 정보 없음';
-                } else {
-                  locationStr = place.category || '위치 정보 없음';
-                }
+                // Use shortAddress field from backend
+                // Backend sends: shortAddress = formatted address, address = full address
+                const addressStr = place.shortAddress || place.address || '';
+
+                // Format the address to show district + detailed address
+                const formattedLocation = formatPlaceAddress(addressStr);
 
                 console.log('HomePage guest mapping:', {
                   id: place.id,
                   name: place.name,
-                  originalLocation: place.location,
-                  mappedLocation: locationStr
+                  originalAddress: addressStr,
+                  formattedLocation: formattedLocation
                 });
 
                 return normalizePlaceImages({
                   id: place.id,
                   title: place.name,
                   rating: place.rating,
-                  location: locationStr,
+                  location: formattedLocation,
                   image: place.image,
                   imageUrl: place.imageUrl,
                   images: place.images,
@@ -262,18 +297,19 @@ export default function HomePage() {
             console.warn('Guest recommendations failed:', error);
           }
         } else {
-          if (weather && isMounted) {
+          // For authenticated users, use good-to-visit recommendations
+          if (isMounted) {
             try {
-              const contextualData = await loadContextualRecommendations();
-              if (contextualData.length > 0 && isMounted) {
-                recommendationsData = contextualData;
+              const goodToVisitData = await loadContextualRecommendations();
+              if (goodToVisitData.length > 0 && isMounted) {
+                recommendationsData = goodToVisitData;
               }
             } catch (error) {
-              console.warn('Contextual recommendations failed:', error);
+              console.warn('Good-to-visit recommendations failed:', error);
             }
           }
 
-          // Load general recommendations for all users (guest and authenticated)
+          // Fallback to general recommendations if good-to-visit fails
           if (recommendationsData.length === 0 && isMounted) {
             try {
               const generalData = await loadGeneralRecommendations();
@@ -319,48 +355,41 @@ export default function HomePage() {
     };
 
     const loadContextualRecommendations = async () => {
-      if (!weather || !currentLocation) return [];
-      
-      const timeOfDay = new Date().getHours();
-      let contextQuery = '내 주변 좋은 곳';
+      if (!currentLocation) return [];
 
-      // Enhance query based on weather and time
-      if (weather.isRainy) {
-        contextQuery = '비 오는 날 실내에서 즐길 수 있는 곳';
-      } else if (weather.isHot) {
-        contextQuery = '더운 날씨에 시원한 곳';
-      } else if (weather.isCold) {
-        contextQuery = '추운 날씨에 따뜻한 곳';
-      } else if (timeOfDay >= 6 && timeOfDay < 12) {
-        contextQuery = '아침에 좋은 카페나 브런치 맛집';
-      } else if (timeOfDay >= 12 && timeOfDay < 17) {
-        contextQuery = '점심 시간에 좋은 맛집이나 휴식공간';
-      } else if (timeOfDay >= 17 && timeOfDay < 21) {
-        contextQuery = '저녁에 즐길 수 있는 분위기 좋은 곳';
-      } else {
-        contextQuery = '밤에 갈 만한 늦은 시간까지 하는 곳';
-      }
+      // Use good-to-visit API with user's current location
+      console.log('🎯 Calling good-to-visit API with location:', {
+        lat: currentLocation.latitude,
+        lon: currentLocation.longitude
+      });
 
-      const response = await contextualRecommendationService.getContextualRecommendations(
-        contextQuery,
+      const response = await contextualRecommendationService.getGoodToVisitRecommendations(
         currentLocation.latitude,
         currentLocation.longitude,
-        { limit: 10, maxDistance: 55000 } // 15km in meters
+        { limit: 10 }
       );
 
-      if (response.success && response.data.places.length > 0) {
-        return response.data.places.map(place => normalizePlaceImages({
-          id: place.id,
-          title: place.name,
-          rating: place.rating,
-          location: place.category || '알 수 없음',
-          image: place.imageUrl || place.images?.[0],
-          images: place.images,
-          isBookmarked: false,
-          distance: 0,
-          weatherSuitability: place.weatherSuitability,
-          reasonWhy: place.reasonWhy
-        }));
+      console.log('✅ Good-to-visit API response:', response);
+
+      if (response.success && response.data && response.data.length > 0) {
+        return response.data.map(place => {
+          // Use shortAddress field from backend
+          const addressStr = place.shortAddress || place.address || '';
+          const formattedLocation = formatPlaceAddress(addressStr);
+
+          return normalizePlaceImages({
+            id: place.id,
+            title: place.name,
+            rating: place.rating,
+            location: formattedLocation,
+            image: place.imageUrl || place.images?.[0],
+            images: place.images,
+            isBookmarked: false,
+            distance: place.distance || 0,
+            weatherSuitability: place.weatherSuitability,
+            reasonWhy: place.reasonWhy
+          });
+        });
       }
       return [];
     };
@@ -370,18 +399,24 @@ export default function HomePage() {
       const response = await placeService.getRecommendations();
 
       if (response.success && response.data.recommendations && response.data.recommendations.length > 0) {
-        return response.data.recommendations.map(place => normalizePlaceImages({
-          id: place.id,
-          title: place.name,
-          rating: place.rating,
-          location: place.category || '알 수 없음',
-          image: place.imageUrl || place.image,
-          images: place.images,
-          isBookmarked: false,
-          distance: null,
-          score: place.score || null,
-          reasonWhy: place.reasonWhy || null
-        }));
+        return response.data.recommendations.map(place => {
+          // Use shortAddress field from backend
+          const addressStr = place.shortAddress || place.address || '';
+          const formattedLocation = formatPlaceAddress(addressStr);
+
+          return normalizePlaceImages({
+            id: place.id,
+            title: place.name,
+            rating: place.rating,
+            location: formattedLocation,
+            image: place.imageUrl || place.image,
+            images: place.images,
+            isBookmarked: false,
+            distance: null,
+            score: place.score || null,
+            reasonWhy: place.reasonWhy || null
+          });
+        });
       }
       return [];
     };
@@ -439,23 +474,19 @@ export default function HomePage() {
           console.log('✅ Bookmark-based places loaded:', response.data.length);
           // Transform the data to match the expected format
           const transformedPlaces = response.data.map(place => {
-            // Extract location string properly
-            let locationStr = '위치 정보 없음';
-            if (typeof place.location === 'string') {
-              locationStr = place.location;
-            } else if (place.location && typeof place.location === 'object') {
-              // If location is an object (lat/lng), use address or category
-              locationStr = place.address || place.category || '위치 정보 없음';
-            } else {
-              locationStr = place.address || place.category || '위치 정보 없음';
-            }
+            // Use shortAddress field from backend
+            // Backend sends: shortAddress = formatted address, address = full address
+            const addressStr = place.shortAddress || place.address || '';
+
+            // Format the address to show district + detailed address
+            const formattedLocation = formatPlaceAddress(addressStr);
 
             return normalizePlaceImages({
               id: place.id,
               name: place.name || place.title,
               title: place.title || place.name,
               rating: place.rating,
-              location: locationStr,
+              location: formattedLocation,
               image: place.imageUrl || place.image,
               images: place.images || [],
               isBookmarked: place.isBookmarked || false
@@ -527,7 +558,16 @@ export default function HomePage() {
       
       if (response.success && response.data.length > 0 && isMounted) {
         console.log('✅ MBTI recommendations loaded from database:', response.data.length);
-        setHomeImages(response.data.map(normalizePlaceImages));
+        setHomeImages(response.data.map(place => {
+          // Use shortAddress field from backend
+          const addressStr = place.shortAddress || place.address || '';
+          const formattedLocation = formatPlaceAddress(addressStr);
+
+          return normalizePlaceImages({
+            ...place,
+            location: formattedLocation
+          });
+        }));
       } else if (isMounted) {
         // No fallback - keep empty array to show only real database data
         console.log('🎯 No backend data available, showing empty state');
@@ -601,20 +641,26 @@ export default function HomePage() {
     console.log('See more places clicked');
     navigate('/places');
   };
-  
+
   const handleBannerClick = () => {
     console.log('Banner clicked');
-    // Check if user is logged in and has completed survey
-    if (user && !user.isGuest) {
-      // Check if user has completed preference survey
-      const hasCompletedSurvey = user.mbti && user.ageRange && user.spacePreferences;
-      if (hasCompletedSurvey) {
-        navigate('/search-results');
-      } else {
-        navigate('/age-range');
-      }
+    // Check if user is logged in
+    if (!user || user.isGuest) {
+      // Not logged in - redirect to login page
+      navigate('/login', {
+        state: {
+          from: '/home',
+          message: '이 기능을 사용하려면 로그인이 필요합니다.'
+        }
+      });
+      return;
+    }
+
+    // Check if user has completed preference survey
+    const hasCompletedSurvey = user.mbti && user.ageRange && user.spacePreferences;
+    if (hasCompletedSurvey) {
+      navigate('/search-results');
     } else {
-      // Guest user - start survey
       navigate('/age-range');
     }
   };
