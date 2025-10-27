@@ -1,104 +1,27 @@
-/* Default Place Card Skeleton - Made thinner */
 .card {
-  display: flex;
-  gap: 8px;
-  align-items: flex-start;
+  background: linear-gradient(180deg, rgba(248, 248, 248, 0.8) 0%, rgba(250, 250, 250, 0.9) 100%);
+  padding: 0;
 }
 
 .image {
-  flex-shrink: 0;
+  border-radius: 16px;
 }
 
-.content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+.bookmarkPlaceholder {
+  position: absolute;
+  top: 1.2vh;
+  right: 3.18vw;
 }
 
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 4px;
-}
-
-.title {
-  flex: 1;
-}
-
-.rating {
-  display: flex;
-  align-items: center;
-  gap: 2px;
-}
-
-.locationRow {
-  display: flex;
-  align-items: center;
-  gap: 3px;
-}
-
-.avatarRow {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  margin-top: 2px;
-}
-
-.additionalCount {
-  margin-left: 4px;
-}
-
-/* Grid Place Card Skeleton - Made thinner */
-.gridCard {
+.metaRow {
   display: flex;
   flex-direction: column;
   gap: 6px;
+  margin: 8px 0;
 }
 
-.gridImage {
-  width: 100%;
-}
-
-.gridContent {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.gridContent .title {
-  margin-bottom: 2px;
-}
-
-.gridContent .locationRow {
-  display: flex;
-  align-items: center;
-  gap: 3px;
-  margin-bottom: 2px;
-}
-
-.ratingRow {
-  display: flex;
-  align-items: center;
-  gap: 2px;
-}
-
-.ratingRow > div:last-child {
-  margin-left: 6px;
-}
-
-/* Mobile adjustments - Made thinner */
 @media (max-width: 480px) {
-  .card {
-    gap: 6px;
-  }
-  
-  .content {
-    gap: 3px;
-  }
-  
-  .avatarRow {
-    gap: 3px;
+  .bookmarkPlaceholder {
+    right: 16px;
   }
 }

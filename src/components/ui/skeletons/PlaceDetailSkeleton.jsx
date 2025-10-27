@@ -1,15 +1,17 @@
 import React from 'react';
 import { SkeletonImage, SkeletonText, SkeletonBox, SkeletonCircle } from '@/components/ui/layout/SkeletonLoader';
 import styles from '@/styles/components/skeletons/place-detail-skeleton.module.css';
+import { buildImageUrl } from '@/utils/image';
 
 export default function PlaceDetailSkeleton({ preloadedImage = null }) {
+  const resolvedPreloadedImage = buildImageUrl(preloadedImage);
   return (
     <div className={styles.pageContainer}>
       {/* Hero Section */}
       <div className={styles.heroSection}>
-        {preloadedImage ? (
+        {resolvedPreloadedImage ? (
           <img 
-            src={preloadedImage} 
+            src={resolvedPreloadedImage} 
             alt="" 
             className={styles.preloadedImage}
           />

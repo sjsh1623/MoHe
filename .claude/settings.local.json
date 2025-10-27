@@ -33,7 +33,8 @@
       "WebFetch(domain:localhost)",
       "Read(//tmp/**)",
       "Bash(cat:*)",
-      "Bash(python3:*)"
+      "Bash(python3:*)",
+      "Bash(git reset:*)"
     ],
     "deny": []
   }

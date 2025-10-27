@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import styles from '@/styles/components/cards/place-card.module.css';
+import { buildImageUrl, buildImageUrlList } from '@/utils/image';
 
 export default function PlaceCard({
   title,
@@ -31,6 +32,17 @@ export default function PlaceCard({
 
   const locationStr = getLocationString();
 
+  // Image processing from fallback branch
+  const fallbackImage = 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=240&h=240&fit=crop&crop=center';
+  const normalizedImages = buildImageUrlList(images);
+  const primaryImage = buildImageUrl(image);
+  const displayImages = normalizedImages.length > 0
+    ? normalizedImages
+    : primaryImage
+      ? [primaryImage]
+      : [];
+  const finalImages = displayImages.length > 0 ? displayImages : [fallbackImage];
+
   const handleBookmarkClick = (e) => {
     e.stopPropagation();
     const newBookmarked = !bookmarked;
@@ -45,8 +57,7 @@ export default function PlaceCard({
   };
 
   // Determine which images to use - prioritize images array if available
-  const displayImages = images.length > 0 ? images : (image ? [image] : []);
-  const hasMultipleImages = displayImages.length > 1;
+  const hasMultipleImages = finalImages.length > 1;
   
   // Handle image carousel navigation
   const nextImage = (e) => {
@@ -69,7 +80,7 @@ export default function PlaceCard({
         ) : (
           <>
             <img 
-              src={displayImages[currentImageIndex] || 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=240&h=240&fit=crop&crop=center'} 
+              src={finalImages[currentImageIndex]}
               alt={`${title} ${currentImageIndex + 1}`}
               className={styles.image}
               onError={handleImageError}
@@ -97,7 +108,7 @@ export default function PlaceCard({
                 </button>
                 {/* Image indicators */}
                 <div className={styles.imageIndicators}>
-                  {displayImages.map((_, index) => (
+                  {finalImages.map((_, index) => (
                     <div
                       key={index}
                       className={`${styles.indicator} ${index === currentImageIndex ? styles.active : ''}`}

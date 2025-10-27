@@ -1,5 +1,6 @@
 import React from 'react';
 import styles from '@/styles/components/cards/profile-card.module.css';
+import { buildImageUrl } from '@/utils/image';
 
 export default function ProfileCard({
   name,
@@ -21,7 +22,7 @@ export default function ProfileCard({
         <div className={styles.avatarContainer}>
           {avatarSrc ? (
             <img 
-              src={avatarSrc} 
+              src={buildImageUrl(avatarSrc) || avatarSrc} 
               alt={`${name}의 프로필`}
               className={styles.avatar}
             />

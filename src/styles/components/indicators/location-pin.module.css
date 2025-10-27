@@ -19,6 +19,10 @@
   white-space: nowrap;
 }
 
+.locationSkeleton {
+  border-radius: 999px;
+}
+
 /* Size variants */
 .small .location {
   font-size: 1rem; /* 16px */

@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import styles from '@/styles/components/cards/profile-header.module.css';
+import { buildImageUrl } from '@/utils/image';
 
 export default function ProfileHeader({
   name,
@@ -31,7 +32,7 @@ export default function ProfileHeader({
         </div>
         <img 
           className={styles.profileImage} 
-          src={profileImage} 
+          src={buildImageUrl(profileImage) || profileImage} 
           alt="프로필" 
         />
       </div>

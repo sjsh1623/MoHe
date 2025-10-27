@@ -9,6 +9,7 @@ import { placeService, bookmarkService, contextualRecommendationService } from '
 import { authService } from '@/services/authService';
 import { useGeolocation } from '@/hooks/useGeolocation';
 import { useDebounce } from '@/hooks/useDebounce';
+import { buildImageUrl, normalizePlaceImages } from '@/utils/image';
 
 export default function SearchResultsPage() {
   const [searchParams] = useSearchParams();
@@ -39,7 +40,7 @@ export default function SearchResultsPage() {
 
         // Check if we have pre-loaded results from navigation state
         if (locationState?.results) {
-          setSearchResults(locationState.results);
+          setSearchResults(locationState.results.map(normalizePlaceImages));
           if (locationState.error) {
             setError(locationState.error);
           }
@@ -74,7 +75,8 @@ export default function SearchResultsPage() {
         }
 
         if (response.success) {
-          setSearchResults(response.data?.places || response.data || []);
+          const data = response.data?.places || response.data || [];
+          setSearchResults(data.map(normalizePlaceImages));
         } else {
           setError('검색 결과를 불러오는데 실패했습니다.');
         }
@@ -157,7 +159,7 @@ export default function SearchResultsPage() {
                 <div className={styles.imagesContainer}>
                   <div className={styles.imageWrapper}>
                     <img 
-                      src={place.image || place.imageUrl || 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=270&h=270&fit=crop&crop=center'} 
+                      src={buildImageUrl(place.image || place.imageUrl) || 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=270&h=270&fit=crop&crop=center'} 
                       alt={place.name || place.title} 
                       className={styles.placeImage} 
                     />
@@ -172,7 +174,7 @@ export default function SearchResultsPage() {
                   </div>
                   {place.images && place.images.length > 1 && place.images.slice(1, 3).map((imageUrl, index) => (
                     <div key={index} className={styles.imageWrapper}>
-                      <img src={imageUrl} alt={place.name || place.title} className={styles.placeImage} />
+                      <img src={buildImageUrl(imageUrl)} alt={place.name || place.title} className={styles.placeImage} />
                       <button 
                         className={styles.bookmarkButton}
                         onClick={() => handleBookmarkToggle(place.id, !(place.isBookmarked || false))}
