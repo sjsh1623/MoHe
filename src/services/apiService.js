@@ -270,7 +270,7 @@ export class WeatherService extends ApiService {
    * Get current weather data for coordinates
    */
   async getCurrentWeather(latitude, longitude) {
-    return this.get(`/api/weather/current?latitude=${latitude}&longitude=${longitude}`, {
+    return this.get(`/api/weather/current?lat=${latitude}&lon=${longitude}`, {
       requireAuth: false
     });
   }
@@ -665,83 +665,61 @@ class GuestRecommendationService extends ApiService {
   }
 
   /**
-   * Get contextual recommendations for guest users
+   * Get good-to-visit recommendations for guest users
    */
   async getGuestRecommendations(latitude, longitude, options = {}) {
     const { limit = 10 } = options;
-    
+
     console.log('GuestRecommendationService: Starting guest recommendations', { latitude, longitude, limit });
-    
+
     try {
-      // Get current time and weather context for better recommendations
-      const hour = new Date().getHours();
-      let query = '내 주변 좋은 곳';
-      
-      // Contextual query based on time
-      if (hour >= 7 && hour < 11) {
-        query = '아침에 좋은 카페나 브런치 맛집';
-      } else if (hour >= 11 && hour < 14) {
-        query = '점심 시간에 좋은 맛집이나 휴식공간';
-      } else if (hour >= 14 && hour < 18) {
-        query = '오후에 갈만한 카페나 공원';
-      } else if (hour >= 18 && hour < 22) {
-        query = '저녁에 즐길 수 있는 분위기 좋은 곳';
-      } else {
-        query = '밤에 갈 만한 늦은 시간까지 하는 곳';
-      }
-
-      console.log('GuestRecommendationService: Using query:', query);
-
-      // Use contextual recommendations API (now public)
-      console.log('GuestRecommendationService: Making API call with query:', query);
-      const response = await contextualRecommendationService.getContextualRecommendations(query, latitude, longitude, options);
+      // Use good-to-visit recommendations API for guest users
+      console.log('GuestRecommendationService: Making API call to good-to-visit');
+      const response = await contextualRecommendationService.getGoodToVisitRecommendations(latitude, longitude, options);
       
       console.log('GuestRecommendationService: API response success:', response.success);
       console.log('GuestRecommendationService: API response data type:', typeof response.data);
       console.log('GuestRecommendationService: API response:', response);
-      
-      if (response.success && response.data.places && response.data.places.length > 0) {
-        console.log('GuestRecommendationService: Processing places data, count:', response.data.places.length);
-        console.log('GuestRecommendationService: Sample place:', response.data.places[0]);
-        
-        const mappedPlaces = response.data.places.map(place => {
-          // Extract location string: prioritize address, then category, then location string
-          let locationStr = place.category || '위치 정보 없음';
 
-          // If location is an object with latitude/longitude, use address instead
-          if (place.location && typeof place.location === 'object') {
-            locationStr = place.address || place.category || '위치 정보 없음';
-          } else if (typeof place.location === 'string') {
-            locationStr = place.location;
-          }
+      // good-to-visit API returns data as direct array
+      if (response.success && response.data && response.data.length > 0) {
+        console.log('GuestRecommendationService: Processing places data, count:', response.data.length);
+        console.log('GuestRecommendationService: Sample place:', response.data[0]);
+
+        const mappedPlaces = response.data.map(place => {
+          // Use shortAddress field from backend
+          const addressStr = place.shortAddress || place.address || place.category || '위치 정보 없음';
 
           console.log('Place location mapping:', {
             id: place.id,
             name: place.name,
-            originalLocation: place.location,
+            shortAddress: place.shortAddress,
             address: place.address,
             category: place.category,
-            mappedLocation: locationStr
+            mappedLocation: addressStr
           });
 
           return {
             id: place.id,
             name: place.name,
             rating: place.rating || 4.0,
-            location: locationStr,
+            location: addressStr,
             image: place.imageUrl || place.images?.[0],
+            images: place.images || [],
             isBookmarked: false,
             category: place.category,
-            description: place.reasonWhy || `${place.category}`,
-            distance: 0, // Distance disabled as per requirements
+            description: place.reasonWhy || place.description || `${place.category}`,
+            distance: place.distance || 0,
             weatherSuitability: place.weatherSuitability,
-            reasonWhy: place.reasonWhy
+            reasonWhy: place.reasonWhy,
+            shortAddress: place.shortAddress,
+            address: place.address
           };
         });
-        
+
         console.log('GuestRecommendationService: Mapped places count:', mappedPlaces.length);
         console.log('GuestRecommendationService: Sample mapped place:', mappedPlaces[0]);
-        
+
         return {
           success: true,
           data: mappedPlaces, // Return array directly for HomePage compatibility

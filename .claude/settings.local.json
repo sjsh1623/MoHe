@@ -34,7 +34,11 @@
       "Read(//tmp/**)",
       "Bash(cat:*)",
       "Bash(python3:*)",
-      "Bash(git reset:*)"
+      "Bash(git reset:*)",
+      "Bash(git stash:*)",
+      "Bash(docker logs:*)",
+      "Bash(/dev/null)",
+      "Bash(docker-compose:*)"
     ],
     "deny": []
   }

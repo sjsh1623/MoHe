@@ -300,7 +300,7 @@ export default function HomePage() {
           // For authenticated users, use good-to-visit recommendations
           if (isMounted) {
             try {
-              const goodToVisitData = await loadContextualRecommendations();
+              const goodToVisitData = await loadGoodToVisitRecommendations();
               if (goodToVisitData.length > 0 && isMounted) {
                 recommendationsData = goodToVisitData;
               }
@@ -354,7 +354,7 @@ export default function HomePage() {
       }
     };
 
-    const loadContextualRecommendations = async () => {
+    const loadGoodToVisitRecommendations = async () => {
       if (!currentLocation) return [];
 
       // Use good-to-visit API with user's current location
