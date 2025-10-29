@@ -10,7 +10,7 @@ import OutlineButton from '@/components/ui/buttons/OutlineButton';
 import HomePageSkeleton from '@/components/ui/skeletons/HomePageSkeleton';
 import ErrorMessage from '@/components/ui/alerts/ErrorMessage';
 import { useGeolocation, useLocationStorage } from '@/hooks/useGeolocation';
-import { weatherService, contextualRecommendationService, bookmarkService, addressService, guestRecommendationService, placeService, homeService } from '@/services/apiService';
+import { weatherService, contextualRecommendationService, bookmarkService, addressService, guestRecommendationService, placeService, homeService, categoryService } from '@/services/apiService';
 import { authService } from '@/services/authService';
 import { withAuthCheck } from '@/hooks/useAuthGuard';
 import bannerLeft from '@/assets/image/banner_left.png';
@@ -72,6 +72,8 @@ export default function HomePage() {
   const [popularPlaces, setPopularPlaces] = useState([]);
   const [homeImages, setHomeImages] = useState([]);
   const [addressLoading, setAddressLoading] = useState(true);
+  const [categories, setCategories] = useState([]);
+  const [categoriesPlaces, setCategoriesPlaces] = useState({});
 
   // Initialize app only once on mount
   useEffect(() => {
@@ -514,6 +516,98 @@ export default function HomePage() {
     };
   }, [currentLocation]);
 
+  // Load category-based recommendations
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadCategoryRecommendations = async () => {
+      if (!currentLocation || !isMounted) return;
+
+      try {
+        console.log('Loading suggested categories for location:', currentLocation);
+
+        // Get suggested categories
+        const categoriesResponse = await categoryService.getSuggestedCategories(
+          currentLocation.latitude,
+          currentLocation.longitude
+        );
+
+        if (categoriesResponse.success && isMounted && categoriesResponse.data.length > 0) {
+          console.log('✅ Suggested categories loaded:', categoriesResponse.data.length);
+          setCategories(categoriesResponse.data);
+
+          // Load places for each category
+          const placesPromises = categoriesResponse.data.map(async (category) => {
+            try {
+              const placesResponse = await categoryService.getPlacesByCategory(
+                category.name,
+                currentLocation.latitude,
+                currentLocation.longitude,
+                { limit: 10 }
+              );
+
+              if (placesResponse.success && placesResponse.data.length > 0) {
+                console.log(`✅ Places loaded for category ${category.name}:`, placesResponse.data.length);
+
+                // Transform places data
+                const transformedPlaces = placesResponse.data.map(place => {
+                  const addressStr = place.shortAddress || place.address || '';
+                  const formattedLocation = formatPlaceAddress(addressStr);
+
+                  return normalizePlaceImages({
+                    id: place.id,
+                    name: place.name || place.title,
+                    title: place.title || place.name,
+                    rating: place.rating,
+                    location: formattedLocation,
+                    image: place.imageUrl || place.image,
+                    images: place.images || [],
+                    isBookmarked: place.isBookmarked || false
+                  });
+                });
+
+                return { category: category.name, places: transformedPlaces };
+              }
+              return { category: category.name, places: [] };
+            } catch (error) {
+              console.warn(`Failed to load places for category ${category.name}:`, error);
+              return { category: category.name, places: [] };
+            }
+          });
+
+          const placesResults = await Promise.all(placesPromises);
+
+          if (isMounted) {
+            // Create object with category names as keys
+            const placesMap = {};
+            placesResults.forEach(result => {
+              placesMap[result.category] = result.places;
+            });
+            setCategoriesPlaces(placesMap);
+          }
+        } else if (isMounted) {
+          console.warn('⚠️ No suggested categories available');
+          setCategories([]);
+          setCategoriesPlaces({});
+        }
+      } catch (error) {
+        console.warn('⚠️ Failed to load category recommendations:', error);
+        if (isMounted) {
+          setCategories([]);
+          setCategoriesPlaces({});
+        }
+      }
+    };
+
+    if (currentLocation) {
+      loadCategoryRecommendations();
+    }
+
+    return () => {
+      isMounted = false;
+    };
+  }, [currentLocation]);
+
   // Load recommendations based on login status
   useEffect(() => {
     let isMounted = true;
@@ -845,9 +939,51 @@ export default function HomePage() {
             </section>
           )}
 
-          {/* Popular places section - Load from backend */}
-          <section className={styles.section}>
-            <h2 className={`${styles.sectionTitle} container-padding`}>오늘은 이런 곳 어떠세요?</h2>
+          {/* Category-based recommendations sections */}
+          {categories.length > 0 ? (
+            categories.map((category, index) => {
+              const categoryPlaces = categoriesPlaces[category.name] || [];
+
+              if (categoryPlaces.length === 0) {
+                return null; // Skip empty categories
+              }
+
+              return (
+                <section key={`category-${index}`} className={styles.section}>
+                  <h2 className={`${styles.sectionTitle} container-padding`}>
+                    {category.emoji} 오늘은 {category.name} 어때요?
+                  </h2>
+                  {category.description && (
+                    <p className={`${styles.sectionDescription} container-padding`}>
+                      {category.description}
+                    </p>
+                  )}
+                  <div className={styles.horizontalScroll}>
+                    <div className={styles.cardsContainer}>
+                      {categoryPlaces.map((place) => (
+                        <div key={place.id} className={styles.cardWrapper}>
+                          <div onClick={() => handlePlaceClick(place.id)} style={{ cursor: 'pointer' }}>
+                            <PlaceCard
+                              title={place.title || place.name}
+                              rating={place.rating}
+                              location={place.location}
+                              image={place.image || place.imageUrl}
+                              images={place.images || []}
+                              isBookmarked={place.isBookmarked || false}
+                              onBookmarkToggle={(isBookmarked) => handleBookmarkToggle(place.id, isBookmarked)}
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </section>
+              );
+            })
+          ) : (
+            /* Popular places section - Show only when no categories available */
+            <section className={styles.section}>
+              <h2 className={`${styles.sectionTitle} container-padding`}>오늘은 이런 곳 어떠세요?</h2>
             {(() => {
               // Only show popular places from backend - no fallback data
               const displayData = popularPlaces;
@@ -889,7 +1025,8 @@ export default function HomePage() {
                 더 많은 장소 보기
               </OutlineButton>
             </div>
-          </section>
+            </section>
+          )}
 
           </div>
         </div>

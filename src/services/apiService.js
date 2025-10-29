@@ -398,8 +398,8 @@ export class PlaceService extends ApiService {
    */
   async getNearbyPlaces(latitude, longitude, options = {}) {
     const params = new URLSearchParams({
-      latitude: latitude.toString(),
-      longitude: longitude.toString(),
+      lat: latitude.toString(),
+      lon: longitude.toString(),
       radius: (options.radius || 3000).toString(),
       limit: (options.limit || 20).toString()
     });
@@ -425,8 +425,8 @@ export class PlaceService extends ApiService {
    */
   async getBookmarkBasedRecommendations(latitude, longitude, options = {}) {
     const params = new URLSearchParams({
-      latitude: latitude.toString(),
-      longitude: longitude.toString(),
+      lat: latitude.toString(),
+      lon: longitude.toString(),
       distance: (options.distance || 20.0).toString(),
       limit: (options.limit || 15).toString()
     });
@@ -441,8 +441,8 @@ export class PlaceService extends ApiService {
    */
   async getPopularPlaces(latitude, longitude, options = {}) {
     const params = new URLSearchParams({
-      latitude: latitude.toString(),
-      longitude: longitude.toString(),
+      lat: latitude.toString(),
+      lon: longitude.toString(),
       limit: (options.limit || 10).toString(),
       maxDistance: (options.maxDistance || 55000).toString(), // Default 15km
     });
@@ -474,12 +474,12 @@ export class PlaceService extends ApiService {
     const params = new URLSearchParams({
       limit: (options.limit || 10).toString()
     });
-    
+
     if (latitude && longitude) {
-      params.append('latitude', latitude.toString());
-      params.append('longitude', longitude.toString());
+      params.append('lat', latitude.toString());
+      params.append('lon', longitude.toString());
     }
-    
+
     return this.get(`/api/places/current-time?${params}`, {
       requireAuth: false
     });
@@ -759,10 +759,50 @@ export class HomeService extends ApiService {
   }
 }
 
+/**
+ * Category API service for category-based recommendations
+ */
+export class CategoryService extends ApiService {
+  /**
+   * Get suggested categories based on current time and weather
+   * Returns 5 recommended categories
+   */
+  async getSuggestedCategories(latitude, longitude) {
+    const params = new URLSearchParams({
+      lat: latitude.toString(),
+      lon: longitude.toString()
+    });
+
+    return this.get(`/api/categories/suggested?${params}`, {
+      requireAuth: false
+    });
+  }
+
+  /**
+   * Get places filtered by specific category
+   * @param {string} category - Category name to filter by
+   * @param {number} latitude - User's latitude
+   * @param {number} longitude - User's longitude
+   * @param {object} options - Additional options (limit, etc.)
+   */
+  async getPlacesByCategory(category, latitude, longitude, options = {}) {
+    const params = new URLSearchParams({
+      lat: latitude.toString(),
+      lon: longitude.toString(),
+      limit: (options.limit || 10).toString()
+    });
+
+    return this.get(`/api/categories/${encodeURIComponent(category)}/places?${params}`, {
+      requireAuth: false
+    });
+  }
+}
+
 // Export service instances
 export const addressService = new AddressService();
 export const bookmarkService = new BookmarkService();
 export const guestRecommendationService = new GuestRecommendationService();
 export const homeService = new HomeService();
+export const categoryService = new CategoryService();
 
 export default ApiService;
