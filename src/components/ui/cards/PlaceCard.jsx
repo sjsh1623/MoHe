@@ -10,7 +10,7 @@ export default function PlaceCard({
   images = [],
   isBookmarked = false,
   onBookmarkToggle,
-  variant = 'default' // 'default' | 'compact'
+  className = '',
 }) {
   const [bookmarked, setBookmarked] = useState(isBookmarked);
   const [imageError, setImageError] = useState(false);
@@ -63,8 +63,10 @@ export default function PlaceCard({
     setImageError(true);
   };
 
+  const cardClassName = [styles.card, className].filter(Boolean).join(' ');
+
   return (
-    <div className={`${styles.card} ${styles[variant]}`}>
+    <div className={cardClassName}>
       <div className={styles.imageContainer}>
         {imageError ? (
           <div className={styles.imagePlaceholder}>

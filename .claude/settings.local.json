@@ -39,7 +39,8 @@
       "Bash(docker logs:*)",
       "Bash(/dev/null)",
       "Bash(docker-compose:*)",
-      "Bash(git log:*)"
+      "Bash(git log:*)",
+      "Bash(git push:*)"
     ],
     "deny": []
   }

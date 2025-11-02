@@ -1,0 +1,30 @@
+.scroller {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.scroller::-webkit-scrollbar {
+  display: none;
+}
+
+.track {
+  display: flex;
+  gap: 16px;
+  padding: 4px var(--app-shell-horizontal-gutter, 16px) 16px;
+  scroll-snap-type: x mandatory;
+}
+
+.track > * {
+  scroll-snap-align: start;
+  flex-shrink: 0;
+}
+
+@media (max-width: 480px) {
+  .track {
+    gap: 12px;
+  }
+}

@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styles from '@/styles/pages/home-page.module.css';
 
-import { Container } from '@/components/ui/layout';
 import PlaceCard from '@/components/ui/cards/PlaceCard';
 import LocationPin from '@/components/ui/indicators/LocationPin';
 import ProfileButton from '@/components/ui/buttons/ProfileButton';
@@ -15,6 +14,7 @@ import { authService } from '@/services/authService';
 import { withAuthCheck } from '@/hooks/useAuthGuard';
 import bannerLeft from '@/assets/image/banner_left.png';
 import { buildImageUrl, normalizePlaceImages } from '@/utils/image';
+import { HomeSection, HomeHorizontalScroller, HomeBanner } from '@/components/ui/home';
 
 /**
  * Format address to show district + detailed address
@@ -809,6 +809,70 @@ export default function HomePage() {
     window.location.reload(); // Simple retry by reloading
   };
 
+  const handleCardKeyDown = (event, placeId) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      handlePlaceClick(placeId);
+    }
+  };
+
+  const renderPlacesSection = (title, places, {
+    description,
+    emptyMessage,
+    footer,
+    bookmarkable = true,
+    sectionKey,
+  } = {}) => {
+    const key = sectionKey || title;
+
+    if (!places || places.length === 0) {
+      if (!emptyMessage) {
+        return null;
+      }
+
+      return (
+        <HomeSection key={`${key}-empty`} title={title} description={description}>
+          <div className={`${styles.placeholderMessage} ${styles.placeholderMessageDense}`}>
+            {emptyMessage}
+          </div>
+        </HomeSection>
+      );
+    }
+
+    return (
+      <HomeSection
+        key={key}
+        title={title}
+        description={description}
+        paddedBody={false}
+        footer={footer}
+      >
+        <HomeHorizontalScroller>
+          {places.map((place) => (
+            <div
+              key={place.id}
+              className={styles.cardLink}
+              role="button"
+              tabIndex={0}
+              onClick={() => handlePlaceClick(place.id)}
+              onKeyDown={(event) => handleCardKeyDown(event, place.id)}
+            >
+              <PlaceCard
+                title={place.title || place.name}
+                rating={place.rating}
+                location={place.location || place.category}
+                image={place.image || place.imageUrl}
+                images={place.images || []}
+                isBookmarked={place.isBookmarked || false}
+                onBookmarkToggle={bookmarkable ? ((isBookmarked) => handleBookmarkToggle(place.id, isBookmarked)) : undefined}
+              />
+            </div>
+          ))}
+        </HomeHorizontalScroller>
+      </HomeSection>
+    );
+  };
+
   return (
     <div className={styles.pageContainer}>
       {/* Header - Always shown immediately */}
@@ -818,7 +882,7 @@ export default function HomePage() {
       </header>
 
       {/* Location indicator */}
-      <div className={`${styles.locationSection} container-padding`}>
+      <div className={styles.locationSection}>
         <LocationPin 
           location={getDisplayLocation()} 
           size="medium"
@@ -828,7 +892,7 @@ export default function HomePage() {
 
       {/* Error message */}
       {error && (
-        <div className="container-padding">
+        <div className={styles.errorWrapper}>
           <ErrorMessage 
             message={error}
             onRetry={handleRetry}
@@ -843,198 +907,64 @@ export default function HomePage() {
         <HomePageSkeleton />
       ) : (
         <div className={styles.contentContainer}>
-          <div className={styles.contentWrapper}>
-          {/* Recommendations section - different for logged in vs guest users */}
-          <section className={styles.section}>
-            <h2 className={`${styles.sectionTitle} container-padding`}>
-              지금 가기 좋은 플레이스
-            </h2>
-            {(() => {
-              // Only show recommendations from backend - no fallback data
-              const displayData = recommendations;
-              
-              if (displayData.length === 0) {
-                return (
-                  <div className="container-padding">
-                    <p style={{ textAlign: 'center', color: '#666', padding: '20px 0' }}>
-                      현재 추천 장소를 불러오고 있습니다.
-                    </p>
-                  </div>
-                );
-              }
-              
-              return (
-                <div className={styles.horizontalScroll}>
-                  <div className={styles.cardsContainer}>
-                    {displayData.map((place) => (
-                      <div key={place.id} className={styles.cardWrapper}>
-                        <div onClick={() => handlePlaceClick(place.id)} style={{ cursor: 'pointer' }}>
-                          <PlaceCard
-                            title={place.title || place.name}
-                            rating={place.rating}
-                            location={place.location}
-                            image={place.image || place.imageUrl}
-                            images={place.images || []} // Pass the 5 images array
-                            isBookmarked={place.isBookmarked || false}
-                            avatars={place.avatars}
-                            additionalCount={place.additionalCount}
-                            onBookmarkToggle={(isBookmarked) => handleBookmarkToggle(place.id, isBookmarked)}
-                            variant={place.id === 2 ? 'compact' : 'default'}
-                            weatherSuitability={place.weatherSuitability}
-                            reasonWhy={place.reasonWhy}
-                            distance={place.distance}
-                          />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              );
-            })()}
-          </section>
+          <div className={styles.content}>
+            {renderPlacesSection('지금 가기 좋은 플레이스', recommendations, {
+              emptyMessage: '현재 추천 장소를 불러오고 있습니다.',
+              sectionKey: 'primary-recommendations'
+            })}
 
-          {/* Mood-based section */}
-          <section className={`${styles.moodSection} container-padding`}>
-            <div className={styles.moodCard} onClick={handleBannerClick} style={{ cursor: 'pointer' }}>
-              <div className={styles.moodContent}>
-                <h3 className={styles.moodTitle}>지금 뭐하지?</h3>
-                <p className={styles.moodDescription}>
-                  시간, 기분, 취향을 반영해서<br />
-                  당신에게 어울리는 곳을 골라봤어요.
-                </p>
-              </div>
-              <div className={styles.moodImage}>
-                <img src={bannerLeft} alt="Mood illustration" />
-              </div>
+            <div className={styles.bannerWrapper}>
+              <HomeBanner
+                title="지금 뭐하지?"
+                description={`시간, 기분, 취향을 반영해서
+당신에게 어울리는 곳을 골라봤어요.`}
+                image={bannerLeft}
+                onClick={handleBannerClick}
+              />
             </div>
-          </section>
 
-          
-          {/* Recommendations section - Based on login status */}
-          {homeImages.length > 0 && (
-            <section className={styles.section}>
-              <h2 className={`${styles.sectionTitle} container-padding`}>
-                {user && user.id && user.id !== 'guest' ? '당신을 위한 추천' : '지금 이 시간 추천'}
-              </h2>
-              <div className={styles.horizontalScroll}>
-                <div className={styles.cardsContainer}>
-                  {homeImages.map((place) => (
-                    <div key={place.id} className={styles.cardWrapper}>
-                      <div onClick={() => handlePlaceClick(place.id)} style={{ cursor: 'pointer' }}>
-                        <PlaceCard
-                          title={place.title || place.name}
-                          rating={place.rating}
-                          location={place.location || place.category}
-                          image={place.imageUrl || place.image}
-                          images={place.images || []} // Pass the 5 images array
-                          isBookmarked={false}
-                          distance={place.distance || 0}
-                          onBookmarkToggle={(isBookmarked) => handleBookmarkToggle(place.id, isBookmarked)}
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </section>
-          )}
+            {homeImages.length > 0
+              ? renderPlacesSection(
+                  user && user.id && user.id !== 'guest' ? '당신을 위한 추천' : '지금 이 시간 추천',
+                  homeImages,
+                  { sectionKey: 'time-recommendations' }
+                )
+              : null}
 
-          {/* Category-based recommendations sections */}
-          {categories.length > 0 ? (
-            categories.map((category, index) => {
-              const categoryPlaces = categoriesPlaces[category.name] || [];
+            {categories.length > 0
+              ? categories
+                  .map((category) => {
+                    const categoryPlaces = categoriesPlaces[category.name] || [];
+                    if (categoryPlaces.length === 0) {
+                      return null;
+                    }
 
-              if (categoryPlaces.length === 0) {
-                return null; // Skip empty categories
-              }
-
-              return (
-                <section key={`category-${index}`} className={styles.section}>
-                  <h2 className={`${styles.sectionTitle} container-padding`}>
-                    {category.emoji} 오늘은 {category.name} 어때요?
-                  </h2>
-                  {category.description && (
-                    <p className={`${styles.sectionDescription} container-padding`}>
-                      {category.description}
-                    </p>
-                  )}
-                  <div className={styles.horizontalScroll}>
-                    <div className={styles.cardsContainer}>
-                      {categoryPlaces.map((place) => (
-                        <div key={place.id} className={styles.cardWrapper}>
-                          <div onClick={() => handlePlaceClick(place.id)} style={{ cursor: 'pointer' }}>
-                            <PlaceCard
-                              title={place.title || place.name}
-                              rating={place.rating}
-                              location={place.location}
-                              image={place.image || place.imageUrl}
-                              images={place.images || []}
-                              isBookmarked={place.isBookmarked || false}
-                              onBookmarkToggle={(isBookmarked) => handleBookmarkToggle(place.id, isBookmarked)}
-                            />
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </section>
-              );
-            })
-          ) : (
-            /* Popular places section - Show only when no categories available */
-            <section className={styles.section}>
-              <h2 className={`${styles.sectionTitle} container-padding`}>오늘은 이런 곳 어떠세요?</h2>
-            {(() => {
-              // Only show popular places from backend - no fallback data
-              const displayData = popularPlaces;
-              
-              if (displayData.length === 0) {
-                return (
-                  <div className="container-padding">
-                    <p style={{ textAlign: 'center', color: '#666', padding: '20px 0' }}>
-                      현재 인기 장소를 불러오고 있습니다.
-                    </p>
-                  </div>
-                );
-              }
-              
-              return (
-                <div className={styles.horizontalScroll}>
-                  <div className={styles.cardsContainer}>
-                    {displayData.map((place) => (
-                      <div key={place.id} className={styles.cardWrapper}>
-                        <div onClick={() => handlePlaceClick(place.id)} style={{ cursor: 'pointer' }}>
-                          <PlaceCard
-                            title={place.title || place.name}
-                            rating={place.rating}
-                            location={place.location}
-                            image={place.image || place.imageUrl}
-                            images={place.images || []} // Pass the 5 images array
-                            isBookmarked={place.isBookmarked || false}
-                            onBookmarkToggle={(isBookmarked) => handleBookmarkToggle(place.id, isBookmarked)}
-                          />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              );
-            })()}
-            <div className={`${styles.seeMoreContainer} container-padding`}>
-              <OutlineButton onClick={handleSeeMore}>
-                더 많은 장소 보기
-              </OutlineButton>
-            </div>
-            </section>
-          )}
-
+                    return renderPlacesSection(
+                      `${category.emoji} 오늘은 ${category.name} 어때요?`,
+                      categoryPlaces,
+                      {
+                        description: category.description,
+                        sectionKey: `category-${category.name}`,
+                      }
+                    );
+                  })
+                  .filter(Boolean)
+              : renderPlacesSection('오늘은 이런 곳 어떠세요?', popularPlaces, {
+                  emptyMessage: '현재 인기 장소를 불러오고 있습니다.',
+                  footer: (
+                    <OutlineButton onClick={handleSeeMore}>
+                      더 많은 장소 보기
+                    </OutlineButton>
+                  ),
+                  sectionKey: 'popular-places',
+                })}
           </div>
         </div>
       )}
 
       {/* Footer moved outside contentWrapper */}
       <footer className={styles.footer}>
-        <div className={`${styles.footerContent} container-padding`}>
+        <div className={styles.footerContent}>
           <p className={styles.footerText}>
             © 2025 MOHE<br />
             서비스 이용약관 | 개인정보처리방침 | 문의하기<br />
