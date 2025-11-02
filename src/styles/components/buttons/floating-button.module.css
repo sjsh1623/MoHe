@@ -2,8 +2,8 @@
 .floatingButton {
   background: transparent;
   position: fixed;
-  bottom: 2rem;
-  right: 2rem;
+  bottom: calc(var(--app-shell-safe-bottom, 0px) + 1.75rem);
+  right: calc(var(--app-shell-offset, 0px) + var(--app-shell-safe-right, 0px) + var(--app-shell-horizontal-gutter, 16px));
   width: 60px;
   height: 60px;
   border: none;
@@ -45,10 +45,9 @@
 /* Mobile responsive */
 @media (max-width: 480px) {
   .floatingButton {
-    bottom: 1.5rem;
-    right: 1.5rem;
     width: 56px;
     height: 56px;
+    bottom: calc(var(--app-shell-safe-bottom, 0px) + 1.25rem);
   }
   
   .background {

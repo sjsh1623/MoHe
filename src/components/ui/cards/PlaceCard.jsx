@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import styles from '@/styles/components/cards/place-card.module.css';
 import { buildImageUrl, buildImageUrlList } from '@/utils/image';
 
@@ -7,16 +7,17 @@ export default function PlaceCard({
   rating,
   location,
   image,
-  images = [], // Array of images for carousel
+  images = [],
   isBookmarked = false,
   onBookmarkToggle,
-  avatars = [],
-  additionalCount = 0,
   variant = 'default' // 'default' | 'compact'
 }) {
   const [bookmarked, setBookmarked] = useState(isBookmarked);
   const [imageError, setImageError] = useState(false);
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  useEffect(() => {
+    setBookmarked(isBookmarked);
+  }, [isBookmarked]);
 
   // Extract location string safely
   const getLocationString = () => {
@@ -34,14 +35,20 @@ export default function PlaceCard({
 
   // Image processing from fallback branch
   const fallbackImage = 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=240&h=240&fit=crop&crop=center';
-  const normalizedImages = buildImageUrlList(images);
-  const primaryImage = buildImageUrl(image);
-  const displayImages = normalizedImages.length > 0
-    ? normalizedImages
-    : primaryImage
-      ? [primaryImage]
-      : [];
-  const finalImages = displayImages.length > 0 ? displayImages : [fallbackImage];
+
+  const displayedImage = useMemo(() => {
+    const normalizedImages = buildImageUrlList(images);
+    if (normalizedImages.length > 0) {
+      return normalizedImages[0];
+    }
+
+    const primaryImage = buildImageUrl(image);
+    if (primaryImage) {
+      return primaryImage;
+    }
+
+    return fallbackImage;
+  }, [image, images]);
 
   const handleBookmarkClick = (e) => {
     e.stopPropagation();
@@ -56,20 +63,6 @@ export default function PlaceCard({
     setImageError(true);
   };
 
-  // Determine which images to use - prioritize images array if available
-  const hasMultipleImages = finalImages.length > 1;
-  
-  // Handle image carousel navigation
-  const nextImage = (e) => {
-    e.stopPropagation();
-    setCurrentImageIndex((prev) => (prev + 1) % displayImages.length);
-  };
-
-  const prevImage = (e) => {
-    e.stopPropagation();
-    setCurrentImageIndex((prev) => (prev - 1 + displayImages.length) % displayImages.length);
-  };
-
   return (
     <div className={`${styles.card} ${styles[variant]}`}>
       <div className={styles.imageContainer}>
@@ -78,50 +71,12 @@ export default function PlaceCard({
             <div className={styles.placeholderText}>이미지를 불러올 수 없습니다</div>
           </div>
         ) : (
-          <>
-            <img 
-              src={finalImages[currentImageIndex]}
-              alt={`${title} ${currentImageIndex + 1}`}
-              className={styles.image}
-              onError={handleImageError}
-            />
-            {hasMultipleImages && (
-              <>
-                {/* Image navigation buttons */}
-                <button 
-                  className={`${styles.navButton} ${styles.prevButton}`}
-                  onClick={prevImage}
-                  aria-label="이전 이미지"
-                >
-                  <svg width="8" height="12" viewBox="0 0 8 12" fill="none">
-                    <path d="M6.5 1L1.5 6L6.5 11" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                </button>
-                <button 
-                  className={`${styles.navButton} ${styles.nextButton}`}
-                  onClick={nextImage}
-                  aria-label="다음 이미지"
-                >
-                  <svg width="8" height="12" viewBox="0 0 8 12" fill="none">
-                    <path d="M1.5 1L6.5 6L1.5 11" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                </button>
-                {/* Image indicators */}
-                <div className={styles.imageIndicators}>
-                  {finalImages.map((_, index) => (
-                    <div
-                      key={index}
-                      className={`${styles.indicator} ${index === currentImageIndex ? styles.active : ''}`}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setCurrentImageIndex(index);
-                      }}
-                    />
-                  ))}
-                </div>
-              </>
-            )}
-          </>
+          <img 
+            src={displayedImage}
+            alt={title}
+            className={styles.image}
+            onError={handleImageError}
+          />
         )}
         <button 
           className={styles.bookmarkButton}

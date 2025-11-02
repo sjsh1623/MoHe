@@ -119,7 +119,7 @@ export default function AnimatedRoutes() {
 
   const slideVariants = {
     initial: (direction) => ({
-      x: direction === 'forward' ? '100%' : '-100%',
+      x: direction === 'forward' ? '-100%' : '100%',
       opacity: 1,
       zIndex: 1
     }),
@@ -129,18 +129,20 @@ export default function AnimatedRoutes() {
       zIndex: 2
     },
     exit: (direction) => ({
-      x: direction === 'forward' ? '-100%' : '100%',
+      x: direction === 'forward' ? '100%' : '-100%',
       opacity: 1,
       zIndex: 0
     })
   };
 
   return (
-    <div style={{ 
-      width: '100%', 
-      height: '100vh',
-      background: 'white', 
-      position: 'relative', 
+    <div style={{
+      position: 'relative',
+      flex: 1,
+      width: '100%',
+      minHeight: '100%',
+      display: 'flex',
+      background: 'transparent',
       overflow: 'hidden'
     }}>
       <AnimatePresence initial={false} custom={slideDirection}>
@@ -160,18 +162,18 @@ export default function AnimatedRoutes() {
           data-route={location.pathname}
           style={{
             position: 'absolute',
-            top: 0,
-            left: 0,
+            inset: 0,
             width: '100%',
-            height: '100vh',
-            background: 'white',
-            overflow: 'auto', // Allow individual pages to scroll
+            minHeight: '100%',
+            background: '#ffffff',
+            overflowY: 'auto', // Allow individual pages to scroll
             willChange: 'transform',
             backfaceVisibility: 'hidden',
             WebkitBackfaceVisibility: 'hidden',
             WebkitTransform: 'translate3d(0,0,0)',
             transform: 'translate3d(0,0,0)',
-            WebkitOverflowScrolling: 'touch'
+            WebkitOverflowScrolling: 'touch',
+            paddingBottom: 'calc(var(--app-shell-safe-bottom, 0px) + 24px)'
           }}
           ref={containerRef}
           onScroll={handleScroll}

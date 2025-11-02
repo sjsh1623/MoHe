@@ -64,17 +64,14 @@
 }
 
 .medium {
-  width: 87.27vw; /* Responsive width */
-  max-width: 384px;
-  height: 9.11vh; /* Responsive height */
-  max-height: 40px;
-  padding: 2.74vh 3.64vw; /* Responsive padding */
-  font-size: 2.73vw; /* Responsive font size */
-  max-font-size: 12px;
-  min-height: 9.11vh;
-  border-radius: 2.73vw; /* Responsive border radius */
-  outline: 0.34vw solid #B3B3B3;
-  outline-offset: -0.34vw;
+  width: 100%;
+  max-width: 360px;
+  min-height: 44px;
+  padding: 0.75rem 1.125rem;
+  font-size: 0.875rem; /* 14px */
+  border-radius: 16px;
+  outline: 1px solid #E0E0E0;
+  outline-offset: -1px;
   border: none;
   overflow: hidden;
 }
@@ -97,8 +94,10 @@
   }
   
   .medium {
+    min-height: 42px;
     padding: 0.625rem 0.875rem;
-    font-size: 0.6875rem; /* 11px */
+    font-size: 0.8125rem; /* 13px */
+    border-radius: 14px;
   }
   
   .large {

@@ -32,13 +32,13 @@
   display: flex;
   gap: 16px;
   scroll-snap-type: x mandatory;
+  padding: 4px 0 16px;
 }
 
 .cardWrapper {
   flex-shrink: 0;
   scroll-snap-align: start;
-  width: 54.55vw;
-  max-width: 240px;
+  width: min(54.55vw, 240px);
 }
 
 .cardWrapper:first-child {

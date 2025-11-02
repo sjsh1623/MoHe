@@ -573,6 +573,10 @@
   margin: 0;
   opacity: 0.9;
   color: white;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .bannerImage {
@@ -588,19 +592,19 @@
   margin: 2vh 0;
   position: absolute;
   bottom: max(60px, 8vh);
-  left: 5vw;
-  right: 5vw;
+  left: calc(var(--app-shell-offset, 0px) + var(--app-shell-horizontal-gutter, 16px));
+  right: calc(var(--app-shell-offset, 0px) + var(--app-shell-horizontal-gutter, 16px));
 }
 
 .moodCard {
   background: #F6F6F6;
   border-radius: 16px;
-  padding: min(24px, 3vw);
+  padding: clamp(20px, 3vw, 24px);
   display: flex;
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  max-width: min(384px, 90vw);
+  max-width: min(384px, 100%);
   height: min(98px, 12vh);
   margin: 0 auto;
 }

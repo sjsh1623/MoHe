@@ -1,17 +1,19 @@
 /* Global Message Input - Fixed to viewport bottom */
 .messageContainer {
   position: fixed;
-  bottom: 28px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: #e5e7eb;
+  bottom: calc(var(--app-shell-safe-bottom, 0px) + 20px);
+  left: calc(var(--app-shell-offset, 0px) + var(--app-shell-safe-left, 0px) + var(--app-shell-horizontal-gutter, 16px));
+  right: calc(var(--app-shell-offset, 0px) + var(--app-shell-safe-right, 0px) + var(--app-shell-horizontal-gutter, 16px));
+  margin: 0 auto;
+  background: rgba(229, 231, 235, 0.95);
   overflow: hidden;
-  z-index: 10000; /* Very high z-index to ensure it stays on top of everything */
+  z-index: 10000; /* Ensure it stays on top of everything */
   pointer-events: all;
-  /* Ensure it's truly fixed to viewport */
   will-change: transform;
-  /* Ensure centering within constrained page width */
-  max-width: 400px;
+  border-radius: 16px;
+  backdrop-filter: blur(18px);
+  max-width: min(100%, var(--app-shell-max-width, 428px));
+  box-shadow: 0 16px 32px rgba(15, 23, 42, 0.12);
 }
 
 .messageInputWrapper {
@@ -65,10 +67,7 @@
 /* Mobile optimizations */
 @media (max-width: 480px) {
   .messageContainer {
-    left: 20px;
-    right: 20px;
-    transform: none;
-    max-width: calc(100vw - 40px);
+    border-radius: 12px;
   }
 }
 
