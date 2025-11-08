@@ -29,7 +29,7 @@ npm run dev
 
 **Docker 개발 환경 (HMR 지원):**
 ```bash
-docker-compose -f docker-compose.dev.yml up --build
+http://localhost:3000/places
 ```
 
 Docker를 사용하면 볼륨 마운트를 통해 소스 코드 수정사항이 실시간으로 반영됩니다. 개발 서버는 http://localhost:3000 에서 접속할 수 있습니다.

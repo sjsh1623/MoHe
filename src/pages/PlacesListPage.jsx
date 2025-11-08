@@ -165,10 +165,10 @@ export default function PlacesListPage() {
                 {places.map((place) => (
                   <GridPlaceCard
                     key={place.id}
-                    title={place.title}
+                    title={place.title || place.name}
                     rating={place.rating}
-                    location={place.location}
-                    image={place.image}
+                    location={place.location || place.category}
+                    image={place.image || place.imageUrl}
                     isBookmarked={place.isBookmarked || false}
                     onClick={() => handlePlaceClick(place.id)}
                     onBookmarkToggle={(isBookmarked) => handleBookmarkToggle(place.id, isBookmarked)}

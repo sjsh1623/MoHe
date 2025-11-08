@@ -11,7 +11,6 @@ import ErrorMessage from '@/components/ui/alerts/ErrorMessage';
 import { useGeolocation, useLocationStorage } from '@/hooks/useGeolocation';
 import { weatherService, contextualRecommendationService, bookmarkService, addressService, guestRecommendationService, placeService, homeService, categoryService } from '@/services/apiService';
 import { authService } from '@/services/authService';
-import { withAuthCheck } from '@/hooks/useAuthGuard';
 import bannerLeft from '@/assets/image/banner_left.png';
 import { buildImageUrl, normalizePlaceImages } from '@/utils/image';
 import { HomeSection, HomeHorizontalScroller, HomeBanner } from '@/components/ui/home';
@@ -697,39 +696,44 @@ export default function HomePage() {
     navigate('/profile-settings');
   };
 
-  const handleBookmarkToggle = withAuthCheck(
-    async (placeId, isBookmarked) => {
-      try {
-        console.log(`Place ${placeId} bookmark toggled:`, isBookmarked);
-
-        let response;
-        if (isBookmarked) {
-          response = await bookmarkService.addBookmark(placeId);
-        } else {
-          response = await bookmarkService.removeBookmark(placeId);
-        }
-
-        if (response.success) {
-          setRecommendations(prevRecommendations =>
-            prevRecommendations.map(place =>
-              place.id === placeId 
-                ? { ...place, isBookmarked }
-                : place
-            )
-          );
-        } else {
-          console.error('Failed to toggle bookmark:', response.message);
-        }
-      } catch (error) {
-        console.error('Error toggling bookmark:', error);
+  const handleBookmarkToggle = async (placeId, isBookmarked) => {
+    try {
+      // Check if user is guest
+      if (!user || user.isGuest) {
+        console.log('Guest user redirected to login for bookmarking');
+        navigate('/login', {
+          state: {
+            from: '/home',
+            message: '북마크 기능을 사용하려면 로그인이 필요합니다.'
+          }
+        });
+        return;
       }
-    },
-    {
-      onRequireAuth: () => navigate('/login', { 
-        state: { from: '/home', message: '북마크 기능을 사용하려면 로그인이 필요합니다.' }
-      })
+
+      console.log(`Place ${placeId} bookmark toggled:`, isBookmarked);
+
+      let response;
+      if (isBookmarked) {
+        response = await bookmarkService.addBookmark(placeId);
+      } else {
+        response = await bookmarkService.removeBookmark(placeId);
+      }
+
+      if (response.success) {
+        setRecommendations(prevRecommendations =>
+          prevRecommendations.map(place =>
+            place.id === placeId
+              ? { ...place, isBookmarked }
+              : place
+          )
+        );
+      } else {
+        console.error('Failed to toggle bookmark:', response.message);
+      }
+    } catch (error) {
+      console.error('Error toggling bookmark:', error);
     }
-  );
+  };
 
   const handleSeeMore = () => {
     console.log('See more places clicked');

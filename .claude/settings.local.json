@@ -40,7 +40,8 @@
       "Bash(/dev/null)",
       "Bash(docker-compose:*)",
       "Bash(git log:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(git remote set-url:*)"
     ],
     "deny": []
   }
