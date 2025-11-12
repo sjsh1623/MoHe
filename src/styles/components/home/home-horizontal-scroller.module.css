@@ -13,8 +13,8 @@
 
 .track {
   display: flex;
-  gap: 16px;
-  padding: 4px var(--app-shell-horizontal-gutter, 16px) 16px;
+  gap: clamp(12px, 3vw, 16px);
+  padding: 0 var(--home-horizontal-padding, var(--app-shell-horizontal-gutter, 16px)) 12px;
   scroll-snap-type: x mandatory;
 }
 
@@ -26,5 +26,6 @@
 @media (max-width: 480px) {
   .track {
     gap: 12px;
+    padding-bottom: 10px;
   }
 }

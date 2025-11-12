@@ -1,16 +1,18 @@
 .banner {
   width: 100%;
   margin: 0;
-  padding: 16px var(--app-shell-horizontal-gutter, 16px);
+  padding: clamp(16px, 3.5vw, 20px) clamp(18px, 4vw, 24px);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
-  background: #f6f6f6;
-  border: none;
-  border-radius: 20px;
+  gap: 12px;
+  background: linear-gradient(145deg, #f9fbff 0%, #eef9ff 100%);
+  border: 1px solid rgba(111, 130, 255, 0.08);
+  border-radius: 16px;
+  box-shadow: 0 6px 14px rgba(23, 26, 33, 0.03);
   cursor: pointer;
   text-align: left;
+  transition: transform 150ms ease, box-shadow 150ms ease;
 }
 
 .banner:focus-visible {
@@ -18,36 +20,45 @@
   outline-offset: 4px;
 }
 
+.banner:hover,
+.banner:active {
+  transform: translateY(-0.5px);
+  box-shadow: 0 8px 16px rgba(23, 26, 33, 0.06);
+}
+
 .content {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
   flex: 1;
 }
 
 .title {
-  font-family: 'Inter', system-ui, sans-serif;
-  font-size: 0.9375rem;
+  font-family: inherit;
+  font-size: clamp(1rem, 2.5vw, 1.125rem);
   font-weight: 600;
-  color: #1b1e28;
+  letter-spacing: -0.02em;
+  color: #171c29;
+  line-height: 1.35;
 }
 
 .description {
-  font-family: 'Inter', system-ui, sans-serif;
-  font-size: 0.8125rem;
+  font-family: inherit;
+  font-size: clamp(0.8125rem, 2.2vw, 0.9375rem);
   font-weight: 400;
-  color: #1b1e28;
-  line-height: 1.4;
+  color: #4c5669;
+  line-height: 1.45;
   white-space: pre-line;
 }
 
 .imageWrapper {
-  width: 96px;
-  height: 96px;
+  width: clamp(64px, 14vw, 88px);
+  height: clamp(64px, 14vw, 88px);
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  padding: 4px;
 }
 
 .image {
@@ -58,13 +69,21 @@
 
 @media (max-width: 480px) {
   .banner {
-    padding: 14px var(--app-shell-horizontal-gutter, 16px);
-    border-radius: 18px;
+    padding: 16px 18px;
+    border-radius: 14px;
     gap: 12px;
   }
 
+  .title {
+    font-size: 1rem;
+  }
+
+  .description {
+    font-size: 0.8125rem;
+  }
+
   .imageWrapper {
-    width: 80px;
-    height: 80px;
+    width: 68px;
+    height: 68px;
   }
 }

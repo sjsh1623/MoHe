@@ -26,22 +26,32 @@ export default function EmailSignupPage() {
 
     setIsLoading(true);
     setError('');
-    
+
     try {
       const result = await authService.signup(email.trim());
       console.log('Signup successful:', result);
-      
+
       // Store email for verification step
       sessionStorage.setItem('signup_email', email.trim());
       if (result?.tempUserId) {
         sessionStorage.setItem('temp_user_id', result.tempUserId);
       }
-      
+
       // Navigate to email verification
       navigate('/verify-email');
     } catch (error) {
       console.error('Signup failed:', error);
-      setError(error.message || '회원가입에 실패했습니다. 다시 시도해주세요.');
+      // Show specific error message from server
+      const errorMessage = error.message || '회원가입에 실패했습니다. 다시 시도해주세요.';
+
+      // Handle specific error cases
+      if (errorMessage.includes('already') || errorMessage.includes('이미') || errorMessage.includes('exists')) {
+        setError('이미 가입된 이메일입니다.');
+      } else if (errorMessage.includes('invalid') || errorMessage.includes('유효하지')) {
+        setError('유효하지 않은 이메일 주소입니다.');
+      } else {
+        setError(errorMessage);
+      }
     } finally {
       setIsLoading(false);
     }
