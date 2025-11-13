@@ -1,10 +1,11 @@
 import React, {useState} from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import styles from '@/styles/pages/auth/login-page.module.css';
 
 import {Stack} from '@/components/ui/layout';
 import FormInput from '@/components/ui/inputs/FormInput';
 import PrimaryButton from '@/components/ui/buttons/PrimaryButton';
+import TextLink from '@/components/ui/links/TextLink';
 import {AuthContainer, AuthTitle} from '@/components/auth';
 import {useAuthNavigation} from '@/hooks/useAuthNavigation';
 import { authService } from '@/services/authService';
@@ -121,18 +122,9 @@ export default function LoginPage() {
                         {isLoading ? '로그인 중...' : '로그인'}
                     </PrimaryButton>
 
-                    <div className={styles.linksContainer}>
-                        <Link to="/signup" className={styles.link}>
-                            회원가입
-                        </Link>
-                        <span className={styles.separator}>|</span>
-                        <button
-                            onClick={goToForgotPassword}
-                            className={styles.link}
-                        >
-                            비밀번호를 잊으셨나요?
-                        </button>
-                    </div>
+                    <TextLink onClick={goToForgotPassword}>
+                        비밀번호를 잊으셨나요?
+                    </TextLink>
                 </Stack>
         </AuthContainer>
     );

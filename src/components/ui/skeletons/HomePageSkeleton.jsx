@@ -8,10 +8,10 @@ const cardPlaceholders = Array.from({ length: 3 });
 export default function HomePageSkeleton() {
   return (
     <div className={styles.contentContainer}>
-      <section className={styles.section}>
-        <div className={styles.headerRow}>
-          <h2 className={styles.sectionTitle}>지금 가기 좋은 플레이스</h2>
-        </div>
+      <section className={`${styles.section}`}>
+        <h2 className={`${styles.sectionTitle} container-padding`}>
+          지금 가기 좋은 플레이스
+        </h2>
         <div className={styles.horizontalScroll}>
           <div className={styles.cardsContainer}>
             {cardPlaceholders.map((_, index) => (
@@ -23,7 +23,7 @@ export default function HomePageSkeleton() {
         </div>
       </section>
 
-      <section className={styles.moodSection}>
+      <section className={`${styles.moodSection} container-padding`}>
         <div className={styles.moodCard}>
           <div className={styles.moodContent}>
             <h3 className={styles.moodTitle}>지금 뭐하지?</h3>
@@ -39,9 +39,9 @@ export default function HomePageSkeleton() {
       </section>
 
       <section className={styles.section}>
-        <div className={styles.headerRow}>
-          <h2 className={styles.sectionTitle}>지금 이 시간 추천</h2>
-        </div>
+        <h2 className={`${styles.sectionTitle} container-padding`}>
+          지금 이 시간 추천
+        </h2>
         <div className={styles.horizontalScroll}>
           <div className={styles.cardsContainer}>
             {cardPlaceholders.map((_, index) => (
@@ -54,9 +54,9 @@ export default function HomePageSkeleton() {
       </section>
 
       <section className={styles.section}>
-        <div className={styles.headerRow}>
-          <h2 className={styles.sectionTitle}>오늘은 이런 곳 어떠세요?</h2>
-        </div>
+        <h2 className={`${styles.sectionTitle} container-padding`}>
+          오늘은 이런 곳 어떠세요?
+        </h2>
         <div className={styles.horizontalScroll}>
           <div className={styles.cardsContainer}>
             {cardPlaceholders.map((_, index) => (

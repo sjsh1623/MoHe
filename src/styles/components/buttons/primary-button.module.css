@@ -1,22 +1,20 @@
 /* Primary button with variants */
 .button {
   width: 100%;
-  padding: 0.875rem 1.5rem; /* 14px 24px */
+  padding: 1rem 2rem; /* 16px 32px */
   border: none;
-  border-radius: 12px;
-  font-size: 0.9375rem; /* 15px */
+  border-radius: 100px;
+  font-size: 1rem; /* 16px */
   font-family: 'Inter', system-ui, sans-serif;
   font-weight: 600;
-  letter-spacing: -0.01em;
-  line-height: 1.4;
   text-align: center;
   cursor: pointer;
   transition: all 0.2s ease;
-
+  
   /* Improve touch target */
-  min-height: 48px;
+  min-height: 44px;
   touch-action: manipulation;
-
+  
   /* Remove default button styles */
   -webkit-appearance: none;
   -moz-appearance: none;

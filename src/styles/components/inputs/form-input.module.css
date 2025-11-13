@@ -6,12 +6,11 @@
 
 .label {
   display: block;
-  font-size: 0.8125rem; /* 13px */
+  font-size: 0.75rem; /* 12px */
   font-family: 'Inter', system-ui, sans-serif;
   font-weight: 500;
-  letter-spacing: -0.01em;
   color: #000000;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.5rem; /* Match login page tight spacing */
 }
 
 .inputWrapper {
@@ -21,19 +20,17 @@
 
 .input {
   width: 100%;
-  padding: 0.625rem 0; /* 10px 0 */
-  font-size: 0.9375rem; /* 15px */
+  padding: 0.5rem 0;
+  font-size: 1rem; /* 16px */
   font-family: 'Inter', system-ui, sans-serif;
   font-weight: 500;
-  letter-spacing: -0.01em;
-  line-height: 1.4;
   color: #000000;
   background: transparent;
   border: none;
   outline: none;
-
-  /* Prevent zoom on iOS - minimum 16px */
-  min-font-size: 16px;
+  
+  /* Prevent zoom on iOS */
+  font-size: 16px;
 }
 
 .input::placeholder {
