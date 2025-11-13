@@ -5,10 +5,17 @@ import GlobalBackButton from './GlobalBackButton';
 export default function GlobalBackButtonWrapper() {
   const { showBackButton, onBackClick } = useBackButton();
 
+  const handleClick = () => {
+    const handler = onBackClick();
+    if (handler) {
+      handler();
+    }
+  };
+
   return (
-    <GlobalBackButton 
+    <GlobalBackButton
       show={showBackButton}
-      onClick={onBackClick}
+      onClick={handleClick}
     />
   );
 }
