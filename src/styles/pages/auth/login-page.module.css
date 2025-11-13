@@ -27,6 +27,39 @@
   max-width: 280px;
 }
 
+/* Links container */
+.linksContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.link {
+  font-family: inherit;
+  font-size: 0.875rem; /* 14px */
+  font-weight: 500;
+  color: #6b7280;
+  text-decoration: none;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  transition: color 0.2s ease;
+  letter-spacing: -0.01em;
+}
+
+.link:hover {
+  color: #1f2937;
+}
+
+.separator {
+  font-family: inherit;
+  font-size: 0.875rem;
+  color: #d1d5db;
+  user-select: none;
+}
 
 /* Mobile WebView optimizations */
 @media (max-width: 480px) {
@@ -38,6 +71,14 @@
   .title {
     font-size: 1.25rem; /* 20px */
     max-width: 100%;
+  }
+
+  .link {
+    font-size: 0.8125rem; /* 13px */
+  }
+
+  .separator {
+    font-size: 0.8125rem;
   }
 }
 
