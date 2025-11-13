@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
 import PropTypes from 'prop-types';
 
@@ -53,19 +53,19 @@ export function BackButtonProvider({ children }) {
     setShowBackButton(!shouldHideButton && (isDynamicRoute || currentPath !== '/'));
   }, [location.pathname]);
 
-  const hideBackButton = () => setShowBackButton(false);
-  const showBackButtonForced = () => setShowBackButton(true);
-  const setBackClickHandler = (handler) => setOnBackClick(() => handler);
-  const clearBackClickHandler = () => setOnBackClick(null);
+  const hideBackButton = useCallback(() => setShowBackButton(false), []);
+  const showBackButtonForced = useCallback(() => setShowBackButton(true), []);
+  const setBackClickHandler = useCallback((handler) => setOnBackClick(() => handler), []);
+  const clearBackClickHandler = useCallback(() => setOnBackClick(null), []);
 
-  const value = {
+  const value = useMemo(() => ({
     showBackButton,
     onBackClick,
     hideBackButton,
     showBackButtonForced,
     setBackClickHandler,
     clearBackClickHandler,
-  };
+  }), [showBackButton, onBackClick, hideBackButton, showBackButtonForced, setBackClickHandler, clearBackClickHandler]);
 
   return (
     <BackButtonContext.Provider value={value}>

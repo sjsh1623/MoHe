@@ -4,32 +4,34 @@
   top: calc(var(--app-shell-safe-top, 0px) + 12px);
   left: calc(var(--app-shell-offset, 0px) + var(--app-shell-safe-left, 0px) + 12px);
   z-index: 9999;
-  padding: 8px;
-  background: none;
+  width: 30px;
+  height: 30px;
+  background: transparent;
   border: none;
-  border-radius: 0;
   display: flex;
-  align-items: center;
-  justify-content: center;
   cursor: pointer;
-  transition: transform 0.15s ease;
+  transition: background-color 0.2s ease, transform 0.1s ease;
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
   color: #1C1B1F;
+  /* Improve touch target */
+  min-width: 44px;
+  min-height: 44px;
 }
 
 .globalBackButton:hover {
-  transform: translateX(-2px);
+  background: #CCCCCC;
 }
 
 .globalBackButton:active {
-  transform: translateX(0);
+  transform: scale(0.95);
+  background: #BBBBBB;
 }
 
 .icon {
-  color: currentColor;
-  width: 20px;
-  height: 20px;
+  color: #1C1B1F;
+  width: 26px;
+  height: 26px;
   flex-shrink: 0;
 }
 
