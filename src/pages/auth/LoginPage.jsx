@@ -1,5 +1,5 @@
-import React, {useState} from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import React, {useState, useEffect, useRef} from 'react';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import styles from '@/styles/pages/auth/login-page.module.css';
 
 import {Stack} from '@/components/ui/layout';
@@ -8,17 +8,22 @@ import PrimaryButton from '@/components/ui/buttons/PrimaryButton';
 import TextLink from '@/components/ui/links/TextLink';
 import {AuthContainer, AuthTitle} from '@/components/auth';
 import {useAuthNavigation} from '@/hooks/useAuthNavigation';
+import { useBackButton } from '@/contexts/BackButtonContext';
+import { PROTECTED_ROUTES } from '@/hooks/useAuthGuard';
 import { authService } from '@/services/authService';
 
 export default function LoginPage() {
     const {goToForgotPassword} = useAuthNavigation();
     const navigate = useNavigate();
+    const location = useLocation();
+    const { setBackClickHandler, clearBackClickHandler } = useBackButton();
     const [formData, setFormData] = useState({
         email: '',
         password: ''
     });
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
+    const handlerSetRef = useRef(false);
 
     const handleInputChange = (field) => (e) => {
         setFormData(prev => ({
@@ -60,6 +65,38 @@ export default function LoginPage() {
         }
     };
 
+    useEffect(() => {
+        const fromPath = location.state?.from;
+        const isProtectedRoute = typeof fromPath === 'string' && PROTECTED_ROUTES.some(route => fromPath.startsWith(route));
+
+        if (!isProtectedRoute) {
+            if (handlerSetRef.current) {
+                clearBackClickHandler();
+                handlerSetRef.current = false;
+            }
+            return;
+        }
+
+        // Only set handler once per mount to prevent infinite loops
+        if (!handlerSetRef.current) {
+            // Force back button to go home (replace entry) instead of retrying protected route
+            const handleBackToHome = () => {
+                navigate('/home', { replace: true });
+            };
+
+            setBackClickHandler(handleBackToHome);
+            handlerSetRef.current = true;
+        }
+
+        return () => {
+            if (handlerSetRef.current) {
+                clearBackClickHandler();
+                handlerSetRef.current = false;
+            }
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [location.state?.from]);
+
     const isFormValid = formData.email.trim() && formData.password.trim();
 
     return (
@@ -97,22 +134,13 @@ export default function LoginPage() {
                         onKeyPress={handleKeyPress}
                         disabled={isLoading}
                     />
-                </Stack>
 
-                {error && (
-                    <div style={{ 
-                        color: '#dc2626', 
-                        fontSize: '14px', 
-                        textAlign: 'center',
-                        margin: '10px 0',
-                        padding: '10px',
-                        backgroundColor: '#fef2f2',
-                        border: '1px solid #fecaca',
-                        borderRadius: '6px'
-                    }}>
-                        {error}
-                    </div>
-                )}
+                    {error && (
+                        <p className={styles.errorMessage} role="alert">
+                            {error}
+                        </p>
+                    )}
+                </Stack>
 
                 <Stack spacing="sm" align="center" className={styles.actions}>
                     <PrimaryButton

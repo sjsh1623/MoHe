@@ -1,5 +1,34 @@
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
+const AUTH_ERROR_MESSAGES = {
+  login: '로그인에 실패했습니다. 잠시 후 다시 시도해주세요.',
+  signup: '회원가입에 실패했습니다. 잠시 후 다시 시도해주세요.',
+};
+
+const getLocalizedAuthError = (type, originalMessage = '') => {
+  const fallback = AUTH_ERROR_MESSAGES[type] || AUTH_ERROR_MESSAGES.login;
+  if (!originalMessage) return fallback;
+
+  const normalized = originalMessage.toLowerCase();
+  if (
+    normalized.includes('login failed') ||
+    normalized.includes('login error') ||
+    normalized.includes('invalid credentials')
+  ) {
+    return AUTH_ERROR_MESSAGES.login;
+  }
+
+  if (
+    normalized.includes('signup failed') ||
+    normalized.includes('signup error') ||
+    normalized.includes('registration failed')
+  ) {
+    return AUTH_ERROR_MESSAGES.signup;
+  }
+
+  return originalMessage;
+};
+
 /**
  * Authentication service for handling login, signup, and token management
  */
@@ -85,17 +114,17 @@ class AuthService {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || 'Login failed');
+        throw new Error(getLocalizedAuthError('login', data.message));
       }
 
       if (data.success) {
         this.setAuthData(data.data);
         return data.data;
       } else {
-        throw new Error(data.message || 'Login failed');
+        throw new Error(getLocalizedAuthError('login', data.message));
       }
     } catch (error) {
-      throw error;
+      throw new Error(getLocalizedAuthError('login', error.message));
     }
   }
 
@@ -114,13 +143,13 @@ class AuthService {
     const data = await response.json();
 
     if (!response.ok) {
-      throw new Error(data.message || 'Signup failed');
+      throw new Error(getLocalizedAuthError('signup', data.message));
     }
 
     if (data.success) {
       return data.data;
     } else {
-      throw new Error(data.message || 'Signup failed');
+      throw new Error(getLocalizedAuthError('signup', data.message));
     }
   }
 

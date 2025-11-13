@@ -60,6 +60,14 @@
   user-select: none;
 }
 
+.errorMessage {
+  color: #ef4444;
+  font-size: 0.875rem;
+  margin: 0.15rem 0 0.85rem;
+  text-align: left;
+  line-height: 1.4;
+}
+
 /* Mobile WebView optimizations */
 @media (max-width: 480px) {
   .pageContainer {

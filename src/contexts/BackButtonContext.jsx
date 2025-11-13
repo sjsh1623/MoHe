@@ -35,27 +35,34 @@ const ROUTES_WITH_BACK_BUTTON = [
 
 export function BackButtonProvider({ children }) {
   const location = useLocation();
-  const [showBackButton, setShowBackButton] = useState(true);
+  const [manualVisibility, setManualVisibility] = useState(null); // null = follow route rules
   const [onBackClick, setOnBackClick] = useState(null);
 
-  useEffect(() => {
+  const shouldShowFromRoute = useMemo(() => {
     const currentPath = location.pathname;
-    
-    // Check if current route should not show back button
     const shouldHideButton = ROUTES_WITHOUT_BACK_BUTTON.includes(currentPath);
-    
-    // Check if it's a dynamic route that should show back button
-    const isDynamicRoute = ROUTES_WITH_BACK_BUTTON.some(route => 
+    const matchesBackRoute = ROUTES_WITH_BACK_BUTTON.some(route =>
       route.endsWith('/') ? currentPath.startsWith(route) : currentPath === route
     );
-    
-    // Show back button unless explicitly hidden
-    setShowBackButton(!shouldHideButton && (isDynamicRoute || currentPath !== '/'));
+    return !shouldHideButton && (matchesBackRoute || currentPath !== '/');
   }, [location.pathname]);
 
-  const hideBackButton = useCallback(() => setShowBackButton(false), []);
-  const showBackButtonForced = useCallback(() => setShowBackButton(true), []);
-  const setBackClickHandler = useCallback((handler) => setOnBackClick(() => handler), []);
+  // Manual override takes priority; otherwise fall back to route-based visibility
+  const showBackButton = manualVisibility ?? shouldShowFromRoute;
+
+  useEffect(() => {
+    // Reset overrides and handlers whenever the route changes
+    setManualVisibility(null);
+    setOnBackClick(null);
+  }, [location.pathname]);
+
+  const hideBackButton = useCallback(() => setManualVisibility(false), []);
+  const showBackButtonForced = useCallback(() => setManualVisibility(true), []);
+  const setBackClickHandler = useCallback((handler) => {
+    // Store handler directly instead of wrapping in a function
+    // This prevents creating new function references on every call
+    setOnBackClick(handler ? () => handler : null);
+  }, []);
   const clearBackClickHandler = useCallback(() => setOnBackClick(null), []);
 
   const value = useMemo(() => ({
@@ -65,7 +72,7 @@ export function BackButtonProvider({ children }) {
     showBackButtonForced,
     setBackClickHandler,
     clearBackClickHandler,
-  }), [showBackButton, onBackClick, hideBackButton, showBackButtonForced, setBackClickHandler, clearBackClickHandler]);
+  }), [showBackButton, onBackClick]);
 
   return (
     <BackButtonContext.Provider value={value}>

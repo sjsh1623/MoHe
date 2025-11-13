@@ -93,18 +93,9 @@ export default function EmailSignupPage() {
           />
 
           {error && (
-            <div style={{ 
-              color: '#dc2626', 
-              fontSize: '14px', 
-              textAlign: 'center',
-              margin: '10px 0',
-              padding: '10px',
-              backgroundColor: '#fef2f2',
-              border: '1px solid #fecaca',
-              borderRadius: '6px'
-            }}>
+            <p className={styles.errorMessage} role="alert">
               {error}
-            </div>
+            </p>
           )}
 
           <PrimaryButton 

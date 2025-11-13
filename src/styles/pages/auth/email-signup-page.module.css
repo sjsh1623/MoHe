@@ -33,6 +33,14 @@
   margin-top: 0; /* No extra margin like login page */
 }
 
+.errorMessage {
+  color: #ef4444;
+  font-size: 0.875rem;
+  margin: 0.15rem 0 0.85rem;
+  text-align: left;
+  line-height: 1.4;
+}
+
 /* Mobile WebView optimizations - LOGIN PAGE STANDARD */
 @media (max-width: 480px) {
   .pageContainer {

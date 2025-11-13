@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { authService } from '@/services/authService';
 
@@ -6,11 +6,12 @@ import { authService } from '@/services/authService';
  * Protected routes that require authentication
  * Guest users will be redirected to login when trying to access these
  */
-const PROTECTED_ROUTES = [
+export const PROTECTED_ROUTES = [
   '/profile-settings',
-  '/profile-edit', 
+  '/profile-edit',
   '/bookmarks',
-  '/my-places'
+  '/my-places',
+  '/recent-view'
 ];
 
 /**
@@ -22,26 +23,34 @@ export function useAuthGuard(requireAuth = false) {
   const location = useLocation();
   const currentUser = authService.getCurrentUser();
   const isGuest = currentUser?.isGuest;
+  const hasNavigatedRef = useRef(false);
 
   useEffect(() => {
     // Check if current route is protected
-    const isProtectedRoute = PROTECTED_ROUTES.some(route => 
+    const isProtectedRoute = PROTECTED_ROUTES.some(route =>
       location.pathname.startsWith(route)
     );
 
-    // Redirect guest users trying to access protected routes
-    if ((requireAuth || isProtectedRoute) && isGuest) {
-      navigate('/login', { 
-        replace: true,
-        state: { from: location.pathname }
-      });
+    // Only navigate once per component lifecycle
+    if ((requireAuth || isProtectedRoute) && isGuest && !hasNavigatedRef.current) {
+      hasNavigatedRef.current = true;
+
+      // Use setTimeout to prevent navigation during render
+      const timer = setTimeout(() => {
+        navigate('/login', {
+          replace: true,
+          state: { from: location.pathname }
+        });
+      }, 0);
+
+      return () => clearTimeout(timer);
     }
   }, [requireAuth, isGuest, location.pathname, navigate]);
 
   return {
     isGuest,
     currentUser,
-    isProtectedRoute: PROTECTED_ROUTES.some(route => 
+    isProtectedRoute: PROTECTED_ROUTES.some(route =>
       location.pathname.startsWith(route)
     )
   };
