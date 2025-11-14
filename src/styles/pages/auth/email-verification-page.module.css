@@ -31,52 +31,121 @@
 }
 
 .description {
-  font-size: 0.875rem; /* 14px */
+  font-size: 0.925rem;
   font-family: 'Inter', system-ui, sans-serif;
   font-weight: 400;
-  line-height: 1.2; /* 16.8px / 14px */
+  line-height: 1.3;
   color: #363636;
-  margin: 0.5rem 0 0 0; /* Minimal margin like login page */
+  margin: 0.15rem 0 0 0;
+}
+
+.emailHighlight {
+  font-weight: 600;
+  color: #1d4ed8;
+}
+
+.descriptionAccent {
+  color: #111827;
+  font-weight: 500;
+}
+
+.timerRow {
+  margin-top: 0.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 0.875rem;
+  color: #4b5563;
+}
+
+.timerLabel {
+  font-weight: 500;
+  color: inherit;
+}
+
+.timerValue {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #111827;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+
+.timerRowWarning {
+  color: #b91c1c;
+}
+
+.timerRowWarning .timerValue {
+  color: inherit;
 }
 
 .otpSection {
-  margin-top: 1.5rem; /* Space before OTP input */
+  margin-top: 0.65rem;
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
-.errorState {
-  animation: shake 0.5s ease-in-out;
+.buttonSection {
+  margin-top: 0.65rem;
+  padding-bottom: 0.85rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  width: 100%;
 }
 
 .errorMessage {
   color: #FF3B30;
-  font-size: 0.875rem; /* 14px */
+  font-size: 0.875rem;
   font-family: 'Inter', system-ui, sans-serif;
-  font-weight: 400;
-  text-align: center;
-  margin-top: 0.5rem;
+  font-weight: 500;
+  text-align: left;
+  align-self: flex-start;
+  width: 100%;
+  margin-top: 0.2rem;
 }
 
-
-.buttonSection {
-  margin-top: 2rem; /* Space before button */
-  padding-bottom: 2rem; /* Bottom padding for mobile */
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1rem;
+.statusMessage {
+  color: #2563eb;
+  font-size: 0.875rem;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-weight: 500;
+  align-self: flex-start;
+  width: 100%;
+  margin-top: 0.15rem;
 }
 
-/* Shake animation for error state */
+.resendButton {
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #6b7280;
+  background: none;
+  border: none;
+  padding: 0.2rem 0.4rem;
+  cursor: pointer;
+  transition: color 0.2s ease;
+  letter-spacing: -0.01em;
+}
+
+.resendButton:hover:not(:disabled) {
+  color: #1f2937;
+}
+
+.resendButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 @keyframes shake {
   0%, 100% { transform: translateX(0); }
   25% { transform: translateX(-10px); }
   75% { transform: translateX(10px); }
 }
 
-/* Mobile WebView optimizations - LOGIN PAGE STANDARD */
 @media (max-width: 480px) {
   .pageContainer {
     padding: var(--auth-padding-mobile);
@@ -84,16 +153,15 @@
   }
   
   .title {
-    font-size: 1.25rem; /* LOGIN PAGE STANDARD */
+    font-size: 1.375rem; /* Unified mobile title scale */
     max-width: 100%;
   }
   
-  .description {
-    font-size: 0.8125rem; /* 13px */
+  .resendButton {
+    font-size: 0.8125rem;
   }
 }
 
-/* Improve touch interactions */
 * {
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;

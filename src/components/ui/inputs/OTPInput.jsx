@@ -1,16 +1,21 @@
 import React, { useState, useRef, useEffect } from 'react';
 import styles from '@/styles/components/inputs/otp-input.module.css';
 
+const SHAKE_DURATION_MS = 350;
+
 export default function OTPInput({ 
   length = 5, 
   value = '', 
   onChange, 
   onComplete,
   className = '',
+  hasError = false,
+  focusResetKey = 0,
   ...props 
 }) {
   const [otp, setOtp] = useState(Array(length).fill(''));
   const inputRefs = useRef([]);
+  const [isShaking, setIsShaking] = useState(false);
 
   // Initialize refs array
   useEffect(() => {
@@ -27,6 +32,19 @@ export default function OTPInput({
       setOtp(newOtp);
     }
   }, [value, length]);
+
+  useEffect(() => {
+    if (!hasError) return undefined;
+
+    setIsShaking(true);
+    const timer = setTimeout(() => setIsShaking(false), SHAKE_DURATION_MS);
+    return () => clearTimeout(timer);
+  }, [hasError]);
+
+  useEffect(() => {
+    if (focusResetKey === 0) return;
+    inputRefs.current[0]?.focus();
+  }, [focusResetKey]);
 
   const handleChange = (index, inputValue) => {
     // Only allow single digit
@@ -114,8 +132,14 @@ export default function OTPInput({
     }
   };
 
+  const containerClasses = [
+    styles.container,
+    isShaking ? styles.shake : '',
+    className,
+  ].filter(Boolean).join(' ');
+
   return (
-    <div className={`${styles.container} ${className}`}>
+    <div className={containerClasses}>
       {otp.map((digit, index) => (
         <input
           key={index}
@@ -128,7 +152,12 @@ export default function OTPInput({
           onChange={(e) => handleChange(index, e.target.value)}
           onKeyDown={(e) => handleKeyDown(index, e)}
           onPaste={handlePaste}
-          className={`${styles.input} ${digit ? styles.filled : ''}`}
+          className={[
+            styles.input,
+            digit ? styles.filled : '',
+            hasError ? styles.inputError : '',
+          ].join(' ')}
+          aria-invalid={hasError}
           {...props}
         />
       ))}

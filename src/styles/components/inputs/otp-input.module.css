@@ -1,7 +1,7 @@
 /* Mobile-optimized OTP input component */
 .container {
   display: flex;
-  gap: 1rem; /* 12px gap between inputs */
+  gap: 0.5rem; /* 8px gap between inputs */
   justify-content: center;
   align-items: center;
   margin: 1rem 0;
@@ -47,9 +47,10 @@
 }
 
 /* Error state (can be added via className) */
-.input.error {
-  border-color: #FF3B30;
-  box-shadow: 0 0 0 3px rgba(255, 59, 48, 0.1);
+.inputError {
+  border-color: #FF3B30 !important;
+  background: rgba(255, 59, 48, 0.05);
+  box-shadow: 0 0 0 2px rgba(255, 59, 48, 0.2);
 }
 
 /* Hide number input spinners */
@@ -75,11 +76,17 @@
 
 /* Animation for invalid input */
 @keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  25% { transform: translateX(-5px); }
-  75% { transform: translateX(5px); }
+  0% { transform: translateX(0); }
+  12% { transform: translateX(-6px); }
+  25% { transform: translateX(6px); }
+  37% { transform: translateX(-5px); }
+  50% { transform: translateX(5px); }
+  62% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+  88% { transform: translateX(-2px); }
+  100% { transform: translateX(0); }
 }
 
-.container.shake {
-  animation: shake 0.5s ease-in-out;
+.shake {
+  animation: shake 0.35s ease-in-out;
 }

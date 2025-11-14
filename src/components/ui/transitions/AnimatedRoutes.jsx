@@ -119,7 +119,7 @@ export default function AnimatedRoutes() {
 
   const slideVariants = {
     initial: (direction) => ({
-      x: direction === 'forward' ? '-100%' : '100%',
+      x: direction === 'forward' ? '100%' : '-100%',
       opacity: 1,
       zIndex: 1
     }),
@@ -129,7 +129,7 @@ export default function AnimatedRoutes() {
       zIndex: 2
     },
     exit: (direction) => ({
-      x: direction === 'forward' ? '100%' : '-100%',
+      x: direction === 'forward' ? '-100%' : '100%',
       opacity: 1,
       zIndex: 0
     })

@@ -76,7 +76,7 @@
   }
 
   .title {
-    font-size: 1.25rem; /* Slightly smaller on very small screens */
+    font-size: 1.375rem; /* Unified mobile title scale */
   }
 
   .link {
