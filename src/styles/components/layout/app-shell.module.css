@@ -12,6 +12,10 @@
   isolation: isolate;
 }
 
+.edgeToEdge {
+  background: linear-gradient(45.44deg, #5b5fef 40.08%, #343689 99.25%);
+}
+
 .contentArea {
   position: relative;
   flex: 1;

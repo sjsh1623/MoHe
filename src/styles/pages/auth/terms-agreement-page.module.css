@@ -1,6 +1,5 @@
 /* Mobile-optimized terms agreement page */
 .pageContainer {
-  min-height: 100vh;
   min-height: 100dvh;
   background: white;
   padding: var(--auth-padding-desktop);
@@ -9,7 +8,7 @@
 }
 
 .header {
-  margin-bottom: 1rem; /* LOGIN PAGE STANDARD */
+  margin-bottom: 0.5rem;
 }
 
 .content {
@@ -21,20 +20,20 @@
 }
 
 .title {
-  font-size: 1.5rem; /* 24px */
-  font-family: 'Inter', system-ui, sans-serif;
-  font-weight: 600;
-  line-height: 1.2; /* 28.8px / 24px */
+  font-size: var(--font-size-title);
+  font-family: var(--font-family-base);
+  font-weight: var(--font-weight-title);
+  line-height: var(--line-height-tight);
   color: black;
-  margin: 0; /* LOGIN PAGE STANDARD */
-  max-width: 212px; /* Match Figma width */
+  margin: 0;
+  max-width: 100%;
 }
 
 .description {
-  font-size: 0.875rem; /* 14px */
-  font-family: 'Inter', system-ui, sans-serif;
+  font-size: var(--font-size-body);
+  font-family: var(--font-family-base);
   font-weight: 400;
-  line-height: 1.2; /* 16.8px / 14px */
+  line-height: var(--line-height-regular);
   color: #363636;
   margin: 0.5rem 0 0 0; /* Minimal margin like login page */
 }
@@ -56,12 +55,7 @@
   }
   
   .title {
-    font-size: 1.375rem; /* Unified mobile title scale */
     max-width: 100%;
-  }
-  
-  .description {
-    font-size: 0.8125rem; /* 13px */
   }
 }
 

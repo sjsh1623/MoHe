@@ -31,7 +31,7 @@ docker build -t mohe-frontend:latest .
 # 2. 컨테이너 실행 (3002번 포트)
 docker run -d \
   --name mohe-react-app \
-  -p 3002:80 \
+  -p 3000:80 \
   --restart unless-stopped \
   mohe-frontend:latest
 

@@ -24,17 +24,17 @@ export default function EmailVerificationPage() {
   useEffect(() => {
     // Get email from session storage
     const signupEmail = sessionStorage.getItem('signup_email');
-    if (signupEmail) {
-      setEmail(signupEmail);
-    } else {
-      // If no email, redirect back to signup
+    const storedTempUserId = sessionStorage.getItem('temp_user_id');
+
+    if (!signupEmail || !storedTempUserId) {
+      // If no email or tempUserId, redirect back to signup
+      console.error('Missing signup data:', { signupEmail, storedTempUserId });
       navigate('/signup');
+      return;
     }
 
-    const storedTempUserId = sessionStorage.getItem('temp_user_id');
-    if (storedTempUserId) {
-      setTempUserId(storedTempUserId);
-    }
+    setEmail(signupEmail);
+    setTempUserId(storedTempUserId);
   }, [navigate]);
 
   // Timer countdown
@@ -98,7 +98,11 @@ export default function EmailVerificationPage() {
     }
 
     if (!tempUserId) {
-      setError('인증 정보가 없습니다. 다시 회원가입을 시도해주세요.');
+      setError('인증 정보가 없습니다. 처음부터 다시 시도해주세요.');
+      setTimeout(() => {
+        sessionStorage.clear();
+        navigate('/signup');
+      }, 2000);
       return;
     }
 
@@ -124,9 +128,24 @@ export default function EmailVerificationPage() {
       navigate('/nickname-setup');
     } catch (error) {
       console.error('Verification failed:', error);
-      setError('인증 코드가 일치하지 않습니다. 다시 확인해주세요.');
-      setVerificationCode('');
-      setOtpResetKey((prev) => prev + 1);
+
+      // Parse error message for better UX
+      const errorMsg = error.message || '인증에 실패했습니다';
+      if (errorMsg.includes('유효하지 않은 인증 요청')) {
+        setError('인증 시간이 만료되었습니다. 처음부터 다시 시도해주세요.');
+        setTimeout(() => {
+          sessionStorage.clear();
+          navigate('/signup');
+        }, 2000);
+      } else if (errorMsg.includes('일치하지 않습니다')) {
+        setError('인증 코드가 일치하지 않습니다. 다시 확인해주세요.');
+        setVerificationCode('');
+        setOtpResetKey((prev) => prev + 1);
+      } else {
+        setError(errorMsg);
+        setVerificationCode('');
+        setOtpResetKey((prev) => prev + 1);
+      }
     } finally {
       setIsVerifying(false);
     }

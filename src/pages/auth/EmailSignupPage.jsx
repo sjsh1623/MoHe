@@ -27,21 +27,22 @@ export default function EmailSignupPage() {
     setIsLoading(true);
     setError('');
 
-    // Store email and navigate immediately
-    sessionStorage.setItem('signup_email', email.trim());
-    navigate('/verify-email');
-
-    // Send verification code in background
     try {
+      // Wait for API response before navigating
       const result = await authService.signup(email.trim());
       console.log('Signup successful:', result);
 
+      // Store email and tempUserId
+      sessionStorage.setItem('signup_email', email.trim());
       if (result?.tempUserId) {
         sessionStorage.setItem('temp_user_id', result.tempUserId);
       }
+
+      // Navigate after successful signup
+      navigate('/verify-email');
     } catch (error) {
       console.error('Signup failed:', error);
-      // Error will be handled on verification page
+      setError(error.message || '회원가입에 실패했습니다. 다시 시도해주세요.');
     } finally {
       setIsLoading(false);
     }

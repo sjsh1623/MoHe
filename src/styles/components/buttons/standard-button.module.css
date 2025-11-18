@@ -1,18 +1,18 @@
 .btn {
     width: 100%;
     max-width: 19.375rem;        /* 310px */
-    padding: 1rem 2rem;          /* 16px 32px */
+    padding: var(--button-padding-y) var(--button-padding-x);
     background: #f5f5f5;
     border: none;
-    border-radius: 3.125rem;     /* 50px */
-    font-size: 1rem;             /* 16px */
+    border-radius: var(--button-radius);
+    font-size: var(--button-font-size);
+    font-family: var(--font-family-base);
     font-weight: 600;
     color: #1e1e1e;
     cursor: pointer;
     transition: background-color 0.2s ease, transform 0.1s ease;
-    
-    /* Improve touch target */
-    min-height: 44px; /* iOS recommended minimum */
+    line-height: 1.1;
+    min-height: var(--button-height);
     touch-action: manipulation;
 }
 

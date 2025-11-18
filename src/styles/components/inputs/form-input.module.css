@@ -6,8 +6,8 @@
 
 .label {
   display: block;
-  font-size: 0.75rem; /* 12px */
-  font-family: 'Inter', system-ui, sans-serif;
+  font-size: var(--font-size-caption);
+  font-family: var(--font-family-base);
   font-weight: 500;
   color: #000000;
   margin-bottom: 0.5rem; /* Match login page tight spacing */
@@ -21,16 +21,13 @@
 .input {
   width: 100%;
   padding: 0.5rem 0;
-  font-size: 1rem; /* 16px */
-  font-family: 'Inter', system-ui, sans-serif;
+  font-size: max(var(--font-size-body), 16px);
+  font-family: var(--font-family-base);
   font-weight: 500;
   color: #000000;
   background: transparent;
   border: none;
   outline: none;
-  
-  /* Prevent zoom on iOS */
-  font-size: 16px;
 }
 
 .input::placeholder {

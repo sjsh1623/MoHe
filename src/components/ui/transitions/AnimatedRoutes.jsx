@@ -55,6 +55,17 @@ const ROUTE_HIERARCHY = {
   '/place': 15
 };
 
+// Routes that only render standalone auth/onboarding screens.
+const AUTH_ROUTES = new Set([
+  '/',
+  '/login',
+  '/forgot-password',
+  '/signup',
+  '/verify-email',
+  '/nickname-setup',
+  '/terms',
+  '/password-setup'
+]);
 
 export default function AnimatedRoutes() {
   const location = useLocation();
@@ -135,6 +146,11 @@ export default function AnimatedRoutes() {
     })
   };
 
+  const isAuthRoute = AUTH_ROUTES.has(location.pathname);
+  const shellPaddingBottom = isAuthRoute
+    ? 'var(--app-shell-safe-bottom, 0px)'
+    : 'calc(var(--app-shell-safe-bottom, 0px) + 24px)';
+
   return (
     <div style={{
       position: 'relative',
@@ -173,7 +189,7 @@ export default function AnimatedRoutes() {
             WebkitTransform: 'translate3d(0,0,0)',
             transform: 'translate3d(0,0,0)',
             WebkitOverflowScrolling: 'touch',
-            paddingBottom: 'calc(var(--app-shell-safe-bottom, 0px) + 24px)'
+            paddingBottom: shellPaddingBottom
           }}
           ref={containerRef}
           onScroll={handleScroll}

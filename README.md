@@ -27,12 +27,24 @@ npm run dev
 
 개발 서버는 http://localhost:3000 에서 실행됩니다.
 
-**Docker 개발 환경 (HMR 지원):**
+**Docker 개발 환경 (Hot Reload 지원):**
+
+포그라운드 실행 (로그 확인):
 ```bash
-http://localhost:3000/places
+docker-compose -f docker-compose.dev.yml up
+```
+
+백그라운드 실행:
+```bash
+docker-compose -f docker-compose.dev.yml up -d
 ```
 
 Docker를 사용하면 볼륨 마운트를 통해 소스 코드 수정사항이 실시간으로 반영됩니다. 개발 서버는 http://localhost:3000 에서 접속할 수 있습니다.
+
+로그 확인:
+```bash
+docker-compose -f docker-compose.dev.yml logs -f
+```
 
 중지:
 ```bash

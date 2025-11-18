@@ -11,6 +11,7 @@ services:
     environment:
       - NODE_ENV=development
       - VITE_HOST=0.0.0.0
+      - VITE_API_BASE_URL=http://localhost:8000
     volumes:
       # 소스 코드 볼륨 마운트 (실시간 반영)
       - ./src:/app/src
@@ -18,6 +19,7 @@ services:
       - ./index.html:/app/index.html
       - ./vite.config.js:/app/vite.config.js
       - ./package.json:/app/package.json
+      - ./.env:/app/.env
       # node_modules는 컨테이너 것을 사용 (성능 향상)
       - /app/node_modules
     restart: unless-stopped

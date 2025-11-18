@@ -20,34 +20,29 @@
     height: auto;
 }
 
-.signupLink {
-    font-size: 0.8125rem; /* 13px */
-    color: #1e1e1e;
+.signupLink,
+.skipLink,
+.guestBrowseLink {
+    font-size: var(--font-size-caption);
+    font-family: var(--font-family-base);
+    line-height: var(--line-height-regular);
     text-decoration: underline;
     display: block;
     text-align: center;
     background: none;
     border: none;
     cursor: pointer;
-    font-family: inherit;
     padding: 0.5rem;
     min-height: 44px;
     touch-action: manipulation;
 }
 
+.signupLink {
+    color: #1e1e1e;
+}
+
 .skipLink {
-    font-size: 0.8125rem; /* 13px */
     color: #7D848D;
-    text-decoration: underline;
-    display: block;
-    text-align: center;
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-family: inherit;
-    padding: 0.5rem;
-    min-height: 44px;
-    touch-action: manipulation;
 }
 
 .skipLink:hover {
@@ -59,18 +54,7 @@
 }
 
 .guestBrowseLink {
-    font-size: 0.8125rem; /* 13px */
     color: #3b82f6;
-    text-decoration: underline;
-    display: block;
-    text-align: center;
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-family: inherit;
-    padding: 0.5rem;
-    min-height: 44px;
-    touch-action: manipulation;
     font-weight: 500;
 }
 

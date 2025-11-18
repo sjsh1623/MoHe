@@ -1,7 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import styles from '@/styles/components/preference-page-base.module.css';
-import BackButton from '@/components/ui/buttons/BackButton';
 
 export default function PreferencePageLayout({
   title,
@@ -28,9 +27,7 @@ export default function PreferencePageLayout({
     <div className={getClassName('container')}>
       <div className={getClassName('content')}>
         {/* Header */}
-        <header className={getClassName('header')}>
-          <BackButton />
-        </header>
+        <header className={getClassName('header')} aria-hidden="true" />
 
         {/* Main Content Area */}
         <div className={getClassName('mainContent')}>
