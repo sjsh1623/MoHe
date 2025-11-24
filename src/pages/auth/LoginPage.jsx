@@ -1,5 +1,6 @@
 import React, {useState, useEffect, useRef} from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import styles from '@/styles/pages/auth/login-page.module.css';
 
 import {Stack} from '@/components/ui/layout';
@@ -12,8 +13,10 @@ import {useAuthNavigation} from '@/hooks/useAuthNavigation';
 import { useBackButton } from '@/contexts/BackButtonContext';
 import { PROTECTED_ROUTES } from '@/hooks/useAuthGuard';
 import { authService } from '@/services/authService';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
 
 export default function LoginPage() {
+    const { t } = useTranslation();
     const {goToForgotPassword} = useAuthNavigation();
     const navigate = useNavigate();
     const location = useLocation();
@@ -68,7 +71,7 @@ export default function LoginPage() {
             navigate('/home', { replace: true });
         } catch (error) {
             console.error('Login failed:', error);
-            setError(error.message || '로그인에 실패했습니다. 다시 시도해주세요.');
+            setError(error.message || t('auth.login.errors.loginFailed'));
         } finally {
             setIsLoading(false);
         }
@@ -115,25 +118,24 @@ export default function LoginPage() {
     const isFormValid = formData.email.trim() && formData.password.trim();
 
     return (
-        <AuthContainer 
+        <AuthContainer
             pageClassName={styles.pageContainer}
             contentClassName={styles.content}
         >
-            <AuthTitle 
+            <AuthTitle
                 title={
-                    <>
-                        MOHE 계정으로<br/>
-                        로그인
-                    </>
+                    <span dangerouslySetInnerHTML={{ __html: t('auth.login.title') }} />
                 }
                 titleClassName={styles.title}
             />
 
+            <LanguageSwitcher className={styles.languageSwitcher} />
+
                 <Stack spacing="sm">
                     <FormInput
-                        label="이메일 주소"
+                        label={t('auth.login.emailLabel')}
                         type="email"
-                        placeholder="example@mohe.com"
+                        placeholder={t('auth.login.emailPlaceholder')}
                         value={formData.email}
                         onChange={handleInputChange('email')}
                         onKeyPress={handleKeyPress}
@@ -141,9 +143,9 @@ export default function LoginPage() {
                     />
 
                     <FormInput
-                        label="비밀번호"
+                        label={t('auth.login.passwordLabel')}
                         type="password"
-                        placeholder="영문, 숫자, 특수문자"
+                        placeholder={t('auth.login.passwordPlaceholder')}
                         value={formData.password}
                         onChange={handleInputChange('password')}
                         onKeyPress={handleKeyPress}
@@ -153,7 +155,7 @@ export default function LoginPage() {
                     <Checkbox
                         checked={rememberMe}
                         onChange={setRememberMe}
-                        label="다음에도 기억하기"
+                        label={t('auth.login.rememberMe')}
                         variant="minimal"
                         className={styles.rememberMeCheckbox}
                     />
@@ -170,19 +172,19 @@ export default function LoginPage() {
                         disabled={!isFormValid || isLoading}
                         onClick={handleLogin}
                     >
-                        {isLoading ? '로그인 중...' : '로그인'}
+                        {isLoading ? t('auth.login.loggingIn') : t('auth.login.loginButton')}
                     </PrimaryButton>
 
                     <div className={styles.linksContainer}>
                         <Link to="/signup" className={styles.link}>
-                            회원가입
+                            {t('auth.login.signup')}
                         </Link>
                         <span className={styles.separator}>|</span>
                         <button
                             onClick={goToForgotPassword}
                             className={styles.link}
                         >
-                            비밀번호를 잊으셨나요?
+                            {t('auth.login.forgotPassword')}
                         </button>
                     </div>
                 </Stack>

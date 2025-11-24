@@ -1,5 +1,6 @@
 import {createRoot} from 'react-dom/client'
 import '@/styles/global.css'
+import '@/i18n'; // i18n 초기화
 import AnimatedRoutes from '@/components/ui/transitions/AnimatedRoutes.jsx';
 import React from 'react';
 import {BrowserRouter} from 'react-router-dom';

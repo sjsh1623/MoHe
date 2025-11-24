@@ -1,0 +1,74 @@
+{
+  "common": {
+    "appName": "MOHE",
+    "loading": "Loading...",
+    "retry": "Retry",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "search": "Search",
+    "filter": "Filter",
+    "seeMore": "See More",
+    "close": "Close"
+  },
+  "auth": {
+    "login": {
+      "title": "Sign in with<br/>MOHE Account",
+      "emailLabel": "Email Address",
+      "emailPlaceholder": "example@mohe.com",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "Letters, Numbers, Special Characters",
+      "rememberMe": "Remember me",
+      "loginButton": "Sign In",
+      "loggingIn": "Signing in...",
+      "signup": "Sign Up",
+      "forgotPassword": "Forgot your password?",
+      "errors": {
+        "invalidCredentials": "Email or password is incorrect.",
+        "accountNotFound": "Account not found.",
+        "loginFailed": "Login failed. Please try again."
+      }
+    },
+    "signup": {
+      "title": "Sign Up",
+      "errors": {
+        "signupFailed": "Sign up failed. Please try again later."
+      }
+    }
+  },
+  "home": {
+    "header": {
+      "location": "Location",
+      "loading": "Loading location..."
+    },
+    "recommendations": {
+      "goodToVisit": "Good Places to Visit Now",
+      "forYou": "Recommended for You",
+      "thisTime": "This Time Recommendations",
+      "popular": "How about these places today?",
+      "emptyRecommendations": "Loading recommended places...",
+      "emptyPopular": "Loading popular places..."
+    },
+    "banner": {
+      "title": "What to do now?",
+      "description": "We've picked places that suit you\nbased on time, mood, and preferences."
+    },
+    "errors": {
+      "loadFailed": "Failed to load data.",
+      "locationFailed": "Unable to load location information.",
+      "authRequired": "Authentication required. Please login again."
+    }
+  },
+  "profile": {
+    "settings": "Settings",
+    "logout": "Logout",
+    "myPage": "My Page"
+  },
+  "errors": {
+    "networkError": "A network error occurred.",
+    "serverError": "A server error occurred.",
+    "unknownError": "An unknown error occurred."
+  }
+}

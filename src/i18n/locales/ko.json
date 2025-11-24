@@ -1,0 +1,74 @@
+{
+  "common": {
+    "appName": "MOHE",
+    "loading": "로딩 중...",
+    "retry": "다시 시도",
+    "cancel": "취소",
+    "confirm": "확인",
+    "save": "저장",
+    "delete": "삭제",
+    "edit": "수정",
+    "search": "검색",
+    "filter": "필터",
+    "seeMore": "더 보기",
+    "close": "닫기"
+  },
+  "auth": {
+    "login": {
+      "title": "MOHE 계정으로<br/>로그인",
+      "emailLabel": "이메일 주소",
+      "emailPlaceholder": "example@mohe.com",
+      "passwordLabel": "비밀번호",
+      "passwordPlaceholder": "영문, 숫자, 특수문자",
+      "rememberMe": "다음에도 기억하기",
+      "loginButton": "로그인",
+      "loggingIn": "로그인 중...",
+      "signup": "회원가입",
+      "forgotPassword": "비밀번호를 잊으셨나요?",
+      "errors": {
+        "invalidCredentials": "이메일 또는 비밀번호가 일치하지 않습니다.",
+        "accountNotFound": "존재하지 않는 계정입니다.",
+        "loginFailed": "로그인에 실패했습니다. 다시 시도해주세요."
+      }
+    },
+    "signup": {
+      "title": "회원가입",
+      "errors": {
+        "signupFailed": "회원가입에 실패했습니다. 잠시 후 다시 시도해주세요."
+      }
+    }
+  },
+  "home": {
+    "header": {
+      "location": "위치",
+      "loading": "위치 정보 불러오는 중..."
+    },
+    "recommendations": {
+      "goodToVisit": "지금 가기 좋은 플레이스",
+      "forYou": "당신을 위한 추천",
+      "thisTime": "지금 이 시간 추천",
+      "popular": "오늘은 이런 곳 어떠세요?",
+      "emptyRecommendations": "현재 추천 장소를 불러오고 있습니다.",
+      "emptyPopular": "현재 인기 장소를 불러오고 있습니다."
+    },
+    "banner": {
+      "title": "지금 뭐하지?",
+      "description": "시간, 기분, 취향을 반영해서\n당신에게 어울리는 곳을 골라봤어요."
+    },
+    "errors": {
+      "loadFailed": "데이터를 불러오는데 실패했습니다.",
+      "locationFailed": "위치 정보를 불러올 수 없습니다.",
+      "authRequired": "인증이 필요합니다. 다시 로그인해주세요."
+    }
+  },
+  "profile": {
+    "settings": "설정",
+    "logout": "로그아웃",
+    "myPage": "마이페이지"
+  },
+  "errors": {
+    "networkError": "네트워크 오류가 발생했습니다.",
+    "serverError": "서버 오류가 발생했습니다.",
+    "unknownError": "알 수 없는 오류가 발생했습니다."
+  }
+}

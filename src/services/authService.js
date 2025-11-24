@@ -1,14 +1,13 @@
+import i18n from '@/i18n';
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
-const AUTH_ERROR_MESSAGES = {
-  login: '이메일 또는 비밀번호가 일치하지 않습니다.',
-  accountNotFound: '존재하지 않는 계정입니다.',
-  signup: '회원가입에 실패했습니다. 잠시 후 다시 시도해주세요.',
-};
-
 const getLocalizedAuthError = (type, originalMessage = '') => {
-  const fallback = AUTH_ERROR_MESSAGES[type] || AUTH_ERROR_MESSAGES.login;
-  if (!originalMessage) return fallback;
+  if (!originalMessage) {
+    return type === 'login'
+      ? i18n.t('auth.login.errors.invalidCredentials')
+      : i18n.t('auth.signup.errors.signupFailed');
+  }
 
   const normalized = originalMessage.toLowerCase();
 
@@ -23,7 +22,7 @@ const getLocalizedAuthError = (type, originalMessage = '') => {
     normalized.includes('비밀번호') ||
     normalized.includes('인증')
   ) {
-    return AUTH_ERROR_MESSAGES.login;
+    return i18n.t('auth.login.errors.invalidCredentials');
   }
 
   if (
@@ -31,12 +30,12 @@ const getLocalizedAuthError = (type, originalMessage = '') => {
     normalized.includes('signup error') ||
     normalized.includes('registration failed')
   ) {
-    return AUTH_ERROR_MESSAGES.signup;
+    return i18n.t('auth.signup.errors.signupFailed');
   }
 
   // Default to unified login error message for any unhandled auth errors
   if (type === 'login') {
-    return AUTH_ERROR_MESSAGES.login;
+    return i18n.t('auth.login.errors.invalidCredentials');
   }
 
   return originalMessage;
