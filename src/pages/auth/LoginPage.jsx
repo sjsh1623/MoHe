@@ -4,6 +4,7 @@ import styles from '@/styles/pages/auth/login-page.module.css';
 
 import {Stack} from '@/components/ui/layout';
 import FormInput from '@/components/ui/inputs/FormInput';
+import Checkbox from '@/components/ui/inputs/Checkbox';
 import PrimaryButton from '@/components/ui/buttons/PrimaryButton';
 import TextLink from '@/components/ui/links/TextLink';
 import {AuthContainer, AuthTitle} from '@/components/auth';
@@ -21,9 +22,19 @@ export default function LoginPage() {
         email: '',
         password: ''
     });
+    const [rememberMe, setRememberMe] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
     const handlerSetRef = useRef(false);
+
+    // Load saved email on mount
+    useEffect(() => {
+        const savedEmail = localStorage.getItem('rememberedEmail');
+        if (savedEmail) {
+            setFormData(prev => ({ ...prev, email: savedEmail }));
+            setRememberMe(true);
+        }
+    }, []);
 
     const handleInputChange = (field) => (e) => {
         setFormData(prev => ({
@@ -39,18 +50,22 @@ export default function LoginPage() {
 
         setIsLoading(true);
         setError('');
-        
+
         try {
             const result = await authService.login(formData.email.trim(), formData.password);
             console.log('Login successful:', result);
-            
-            // Check if user has completed profile setup
-            if (result.user && result.user.isProfileComplete) {
-                navigate('/home');
+
+            // Save or remove email based on rememberMe checkbox
+            if (rememberMe) {
+                localStorage.setItem('rememberedEmail', formData.email.trim());
             } else {
-                // User needs to complete profile setup
-                navigate('/age-range');
+                localStorage.removeItem('rememberedEmail');
             }
+
+            // Clear history and navigate to home
+            // This prevents users from going back to login page
+            window.history.replaceState(null, '', '/home');
+            navigate('/home', { replace: true });
         } catch (error) {
             console.error('Login failed:', error);
             setError(error.message || '로그인에 실패했습니다. 다시 시도해주세요.');
@@ -133,6 +148,14 @@ export default function LoginPage() {
                         onChange={handleInputChange('password')}
                         onKeyPress={handleKeyPress}
                         disabled={isLoading}
+                    />
+
+                    <Checkbox
+                        checked={rememberMe}
+                        onChange={setRememberMe}
+                        label="다음에도 기억하기"
+                        variant="minimal"
+                        className={styles.rememberMeCheckbox}
                     />
 
                     {error && (

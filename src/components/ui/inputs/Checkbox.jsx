@@ -7,6 +7,7 @@ export default function Checkbox({
   label,
   required = false,
   showArrow = false,
+  variant = 'default',
   onArrowClick,
   className = '',
   ...props 
@@ -24,8 +25,14 @@ export default function Checkbox({
     }
   };
 
+  const containerClasses = [
+    styles.container,
+    variant === 'minimal' ? styles.minimal : '',
+    className
+  ].filter(Boolean).join(' ');
+
   return (
-    <div className={`${styles.container} ${className}`}>
+    <div className={containerClasses}>
       <div className={styles.checkboxWrapper}>
         <label className={styles.label}>
           <input

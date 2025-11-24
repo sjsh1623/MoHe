@@ -15,6 +15,23 @@
   touch-action: manipulation;
 }
 
+.minimal {
+  padding: 0.15rem 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  min-height: auto;
+  justify-content: flex-start;
+}
+
+.minimal .checkboxWrapper {
+  margin: 0;
+}
+
+.minimal .customCheckbox {
+  margin-right: 0.5rem;
+}
+
 /* Style for items inside the connected container */
 .container.inGroup {
   background: transparent;

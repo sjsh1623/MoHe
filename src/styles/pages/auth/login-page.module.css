@@ -60,6 +60,11 @@
   user-select: none;
 }
 
+.rememberMeCheckbox {
+  margin: 0.25rem 0 0.1rem;
+  padding: 0;
+}
+
 .errorMessage {
   color: #ef4444;
   font-size: var(--font-size-caption);

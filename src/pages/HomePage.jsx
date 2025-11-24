@@ -74,6 +74,22 @@ export default function HomePage() {
   const [categories, setCategories] = useState([]);
   const [categoriesPlaces, setCategoriesPlaces] = useState({});
 
+  // Prevent back navigation to login page
+  useEffect(() => {
+    const preventBackToLogin = (e) => {
+      // Push current state to prevent going back
+      window.history.pushState(null, '', window.location.pathname);
+    };
+
+    // Add state to history to block back navigation
+    window.history.pushState(null, '', window.location.pathname);
+    window.addEventListener('popstate', preventBackToLogin);
+
+    return () => {
+      window.removeEventListener('popstate', preventBackToLogin);
+    };
+  }, []);
+
   // Initialize app only once on mount
   useEffect(() => {
     let isMounted = true; // Cleanup flag

@@ -1,7 +1,8 @@
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
 const AUTH_ERROR_MESSAGES = {
-  login: '로그인에 실패했습니다. 잠시 후 다시 시도해주세요.',
+  login: '이메일 또는 비밀번호가 일치하지 않습니다.',
+  accountNotFound: '존재하지 않는 계정입니다.',
   signup: '회원가입에 실패했습니다. 잠시 후 다시 시도해주세요.',
 };
 
@@ -10,10 +11,17 @@ const getLocalizedAuthError = (type, originalMessage = '') => {
   if (!originalMessage) return fallback;
 
   const normalized = originalMessage.toLowerCase();
+
+  // Handle all login-related errors with a unified message
   if (
     normalized.includes('login failed') ||
     normalized.includes('login error') ||
-    normalized.includes('invalid credentials')
+    normalized.includes('invalid credentials') ||
+    normalized.includes('bad credentials') ||
+    normalized.includes('사용자를 찾을 수 없습니다') ||
+    normalized.includes('사용자') ||
+    normalized.includes('비밀번호') ||
+    normalized.includes('인증')
   ) {
     return AUTH_ERROR_MESSAGES.login;
   }
@@ -24,6 +32,11 @@ const getLocalizedAuthError = (type, originalMessage = '') => {
     normalized.includes('registration failed')
   ) {
     return AUTH_ERROR_MESSAGES.signup;
+  }
+
+  // Default to unified login error message for any unhandled auth errors
+  if (type === 'login') {
+    return AUTH_ERROR_MESSAGES.login;
   }
 
   return originalMessage;
