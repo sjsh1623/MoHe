@@ -15,7 +15,15 @@
       "Bash(docker inspect:*)",
       "Bash(docker restart:*)",
       "Bash(TEMP_USER_ID=04fd97c2-8376-4dfb-9c3a-491e9e4945df echo 'Step 1: Verify Email...' curl -X POST http://localhost:8000/api/auth/verify-email -H 'Content-Type: application/json' -d {tempUserId:$TEMP_USER_ID,otpCode:00000})",
-      "Bash(jq -r .success echo echo 'Step 2: Setup Password...' curl -X POST http://localhost:8000/api/auth/setup-password -H 'Content-Type: application/json' -d {tempUserId:$TEMP_USER_ID,nickname:completeuser,password:Test1234,termsAgreed:true})"
+      "Bash(jq -r .success echo echo 'Step 2: Setup Password...' curl -X POST http://localhost:8000/api/auth/setup-password -H 'Content-Type: application/json' -d {tempUserId:$TEMP_USER_ID,nickname:completeuser,password:Test1234,termsAgreed:true})",
+      "Bash(npm install:*)",
+      "Bash(npx cap init:*)",
+      "Bash(npm run build:*)",
+      "Bash(npx cap add ios)",
+      "Bash(npx cap:*)",
+      "Bash(pod install)",
+      "Bash(sudo gem install:*)",
+      "Bash(open:*)"
     ],
     "deny": [],
     "ask": []
