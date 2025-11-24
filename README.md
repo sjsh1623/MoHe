@@ -9,6 +9,7 @@ React 기반 장소 추천 모바일 웹 애플리케이션입니다.
 - **Animations**: Framer Motion 12.23.12 + React Transition Group 4.4.5
 - **Styling**: CSS Modules
 - **State Management**: React Context API
+- **Mobile**: Capacitor 7.4.4 (iOS/Android)
 
 ## 시작하기
 
@@ -76,6 +77,34 @@ npm run preview
 ```bash
 npm run lint
 ```
+
+## 모바일 앱 빌드 (iOS/Android)
+
+이 프로젝트는 Capacitor를 사용하여 iOS 및 Android 네이티브 앱으로 빌드할 수 있습니다.
+
+**📱 상세한 모바일 빌드 및 실행 가이드는 [MOBILE_BUILD.md](./MOBILE_BUILD.md)를 참조하세요.**
+
+### 빠른 시작
+
+```bash
+# 1. 웹 앱 빌드 및 동기화
+npm run cap:build
+
+# 2. iOS 실행 (macOS만 가능)
+npm run cap:ios
+# Xcode에서 시뮬레이터 선택 후 Cmd+R로 실행
+
+# 3. Android 실행
+npm run cap:android
+# Android Studio에서 에뮬레이터 선택 후 실행 버튼 클릭
+```
+
+### 사전 요구사항
+
+- **iOS**: macOS, Xcode, CocoaPods
+- **Android**: Android Studio, JDK 17+
+
+자세한 설치 방법과 문제 해결은 [MOBILE_BUILD.md](./MOBILE_BUILD.md) 참조
 
 ## 주요 기능
 

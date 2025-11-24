@@ -25,3 +25,8 @@ dist-ssr
 .env
 .env.*
 !.env.example
+
+# Capacitor
+ios/
+android/
+.capacitor
