@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import styles from '@/styles/pages/recent-view-page.module.css';
 
 import { Container } from '@/components/ui/layout';
@@ -12,6 +13,7 @@ import { buildImageUrl } from '@/utils/image';
 
 export default function RecentViewPage() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [recentPlaces, setRecentPlaces] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -21,7 +23,7 @@ export default function RecentViewPage() {
       try {
         setIsLoading(true);
         setError(null);
-        
+
         const user = authService.getCurrentUser();
         if (!user || user.isGuest) {
           setRecentPlaces([]);
@@ -43,11 +45,11 @@ export default function RecentViewPage() {
           }));
           setRecentPlaces(mapped);
         } else {
-          setError('최근 본 장소를 불러오는데 실패했습니다.');
+          setError(t('recentPlaces.errors.loadFailed'));
         }
       } catch (err) {
         console.error('Failed to load recent views:', err);
-        setError('최근 본 장소를 불러오는 중 오류가 발생했습니다.');
+        setError(t('recentPlaces.errors.loadError'));
       } finally {
         setIsLoading(false);
       }
@@ -63,8 +65,8 @@ export default function RecentViewPage() {
       selectedPlace?.image || selectedPlace?.imageUrl || selectedPlace?.images?.[0]
     );
 
-    navigate(`/place/${placeId}`, { 
-      state: { preloadedImage, preloadedData: selectedPlace } 
+    navigate(`/place/${placeId}`, {
+      state: { preloadedImage, preloadedData: selectedPlace }
     });
   };
 
@@ -81,10 +83,10 @@ export default function RecentViewPage() {
       } else {
         await bookmarkService.removeBookmark(placeId);
       }
-      
+
       // Update local state
-      setRecentPlaces(prevPlaces => 
-        prevPlaces.map(place => 
+      setRecentPlaces(prevPlaces =>
+        prevPlaces.map(place =>
           place.id === placeId ? { ...place, isBookmarked } : place
         )
       );
@@ -102,7 +104,7 @@ export default function RecentViewPage() {
     <div className={styles.pageContainer}>
       {/* Header */}
       <header className={styles.header}>
-        <h1 className={styles.pageTitle}>최근 본 장소</h1>
+        <h1 className={styles.pageTitle}>{t('recentPlaces.title')}</h1>
       </header>
 
       {error && (
@@ -112,12 +114,13 @@ export default function RecentViewPage() {
       {/* Main content */}
       <div className={styles.contentContainer}>
         <div className={styles.contentWrapper}>
-          <h2 className={styles.sectionTitle}>최근에 확인한 곳들이에요</h2>
-          
+          <h2 className={styles.sectionTitle}>{t('recentPlaces.sectionTitle')}</h2>
+
           {recentPlaces.length === 0 ? (
             <div className={styles.emptyState}>
-              <p>최근에 본 장소가 없습니다.</p>
-              <p>새로운 장소를 탐색해보세요!</p>
+              {t('recentPlaces.emptyState').split('\n').map((line, i) => (
+                <p key={i}>{line}</p>
+              ))}
             </div>
           ) : (
             <div className={styles.placesGrid}>

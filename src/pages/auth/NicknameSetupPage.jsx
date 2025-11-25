@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import styles from '@/styles/pages/auth/nickname-setup-page.module.css';
 
 import { Stack } from '@/components/ui/layout';
@@ -10,6 +11,7 @@ import PrimaryButton from '@/components/ui/buttons/PrimaryButton';
 import { authService } from '@/services/authService';
 
 export default function NicknameSetupPage() {
+  const { t } = useTranslation();
   const { goToTerms } = useAuthNavigation();
   const navigate = useNavigate();
   const [nickname, setNickname] = useState('');
@@ -38,10 +40,10 @@ export default function NicknameSetupPage() {
 
   const handleDuplicateCheck = async () => {
     if (!nickname.trim()) return;
-    
+
     console.log('Checking nickname duplicate for:', nickname);
     setIsCheckingDuplicate(true);
-    
+
     try {
       const response = await authService.checkNickname(nickname.trim());
       const isAvailable = response?.isAvailable ?? response?.available;
@@ -78,16 +80,13 @@ export default function NicknameSetupPage() {
   const canProceed = isValidNickname && duplicateCheckResult === 'available';
 
   return (
-    <AuthContainer 
+    <AuthContainer
       pageClassName={styles.pageContainer}
       contentClassName={styles.content}
     >
       <AuthTitle
         title={
-          <>
-            MOHE에 사용할<br />
-            닉네임을 입력해주세요
-          </>
+          <span dangerouslySetInnerHTML={{ __html: t('auth.nickname.title') }} />
         }
         titleClassName={styles.title}
         wrapperClassName={styles.titleSection}
@@ -96,22 +95,22 @@ export default function NicknameSetupPage() {
         <Stack spacing="sm" className={styles.form}>
           <div className={styles.inputContainer}>
             <FormInput
-              label="닉네임"
+              label={t('auth.nickname.nicknameLabel')}
               type="text"
-              placeholder="닉네임을 입력하세요"
+              placeholder={t('auth.nickname.nicknamePlaceholder')}
               value={nickname}
               onChange={handleNicknameChange}
               onKeyPress={handleKeyPress}
               className={styles.nicknameInput}
             />
-            <button 
+            <button
               className={`${styles.duplicateCheckButton} ${
                 isValidNickname ? styles.enabled : styles.disabled
               }`}
               onClick={handleDuplicateCheck}
               disabled={!isValidNickname || isCheckingDuplicate}
             >
-              {isCheckingDuplicate ? '확인중...' : '중복확인'}
+              {isCheckingDuplicate ? t('auth.nickname.checking') : t('auth.nickname.checkButton')}
             </button>
           </div>
 
@@ -119,24 +118,24 @@ export default function NicknameSetupPage() {
             <div className={`${styles.resultMessage} ${
               duplicateCheckResult === 'available' ? styles.success : styles.error
             }`}>
-              {duplicateCheckResult === 'available' 
-                ? '사용 가능한 닉네임입니다.' 
-                : '이미 사용중인 닉네임입니다.'}
+              {duplicateCheckResult === 'available'
+                ? t('auth.nickname.available')
+                : t('auth.nickname.taken')}
             </div>
           )}
 
           {duplicateCheckResult === 'error' && (
             <div className={`${styles.resultMessage} ${styles.error}`}>
-              닉네임 중복 확인 중 오류가 발생했습니다.
+              {t('auth.nickname.checkError')}
             </div>
           )}
 
-          <PrimaryButton 
+          <PrimaryButton
             disabled={!canProceed}
             onClick={handleNext}
             variant={!canProceed ? 'disabled' : 'primary'}
           >
-            다음
+            {t('auth.nickname.nextButton')}
           </PrimaryButton>
         </Stack>
     </AuthContainer>

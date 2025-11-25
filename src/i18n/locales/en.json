@@ -11,7 +11,10 @@
     "search": "Search",
     "filter": "Filter",
     "seeMore": "See More",
-    "close": "Close"
+    "close": "Close",
+    "next": "Next",
+    "skip": "Skip",
+    "back": "Back"
   },
   "auth": {
     "login": {
@@ -32,10 +35,160 @@
       }
     },
     "signup": {
-      "title": "Sign Up",
+      "title": "Enter your email<br />to use MOHE",
+      "emailLabel": "Email Address",
+      "emailPlaceholder": "example@mohe.com",
+      "submitButton": "Verify Email",
+      "processing": "Processing...",
       "errors": {
-        "signupFailed": "Sign up failed. Please try again later."
+        "signupFailed": "Sign up failed. Please try again."
       }
+    },
+    "verification": {
+      "title": "Verify your code",
+      "description": " sent verification code.",
+      "descriptionNoEmail": "Verification code sent.",
+      "descriptionAccent": "Please check your inbox for the verification code.",
+      "timerLabel": "Time remaining",
+      "expired": "Expired",
+      "nextButton": "Next",
+      "verifying": "Verifying...",
+      "resendButton": "Resend Code",
+      "resending": "Resending...",
+      "statusResent": "Verification code has been resent. Please check your inbox.",
+      "errors": {
+        "invalidCode": "Please enter all 5 digits of the verification code.",
+        "noAuthInfo": "Authentication information not found. Please start over.",
+        "codeExpired": "Verification code expired and resent. Please check again.",
+        "resendFailed": "Failed to resend verification code. Please try again.",
+        "verificationFailed": "Verification failed",
+        "sessionExpired": "Verification session expired. Please start over.",
+        "codeMismatch": "Verification code does not match. Please check again."
+      }
+    },
+    "nickname": {
+      "title": "Enter your nickname<br />for MOHE",
+      "nicknameLabel": "Nickname",
+      "nicknamePlaceholder": "Enter your nickname",
+      "checkButton": "Check availability",
+      "checking": "Checking...",
+      "nextButton": "Next",
+      "available": "This nickname is available.",
+      "taken": "This nickname is already in use.",
+      "checkError": "An error occurred while checking nickname availability."
+    },
+    "terms": {
+      "title": "MOHE<br />Terms Agreement",
+      "subtitle": "Please agree to provide information<br />to start using MOHE service",
+      "nextButton": "Next",
+      "loading": "Confirming terms...",
+      "items": {
+        "serviceTerms": "Service Terms Agreement (Required)",
+        "privacyPolicy": "Privacy Policy Agreement (Optional)",
+        "locationTerms": "Location Information Terms Agreement (Optional)",
+        "ageVerification": "I am 14 years or older"
+      }
+    },
+    "password": {
+      "title": "Enter your password<br />to use MOHE",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "Letters, Numbers, Special Characters",
+      "confirmLabel": "Confirm Password",
+      "confirmPlaceholder": "Enter your password again",
+      "submitButton": "Get Started",
+      "setting": "Setting up...",
+      "errors": {
+        "requirements": "Password requires {requirements}.",
+        "minLength": "8+ characters",
+        "requireLetter": "letters",
+        "requireNumber": "numbers",
+        "requireSpecial": "special characters",
+        "mismatch": "Passwords do not match.",
+        "missingInfo": "User information is missing. Please sign up again.",
+        "setupFailed": "Profile setup failed. Please try again."
+      }
+    },
+    "forgotPassword": {
+      "title": "Forgot your password?",
+      "subtitle": "Enter the email address of the account you want to reset",
+      "emailLabel": "Email Address",
+      "emailPlaceholder": "example@mohe.com",
+      "sendButton": "Send Email",
+      "sent": "Email Sent",
+      "successMessage": "Password reset email has been sent.",
+      "errorMessage": "Failed to send password reset email."
+    }
+  },
+  "onboarding": {
+    "age": {
+      "title": "Tell us your age range,<br />so we can match better",
+      "subtitle": "We'll find places that suit your age",
+      "ranges": {
+        "under20": "Under 20",
+        "20s": "20s",
+        "30s": "30s",
+        "40s": "40s",
+        "over50": "50 and over"
+      }
+    },
+    "mbti": {
+      "title": "Tell us your MBTI,<br/>it helps with recommendations",
+      "subtitle": "Select your MBTI below",
+      "defaultDescription": "Find your own travel style",
+      "descriptions": {
+        "ISFP": "Leaving behind the day's hustle, finding peace in a quiet corner café with a warm cup of tea brings great comfort.\nThe relief of keeping small planned joys becomes the true excitement of travel.\nWhile natural tranquility is nice, the art and stories hidden in city alleys awaken inspiration within.",
+        "ISFJ": "The greatest happiness comes from small conversations with friends in a cozy little café.\nI tend to find peace of mind in familiar, comfortable spaces rather than new places.\nI prefer traveling where I feel genuine satisfaction watching those around me feel comfortable.",
+        "INFP": "I seek spaces where I can organize deep inner thoughts and gain artistic inspiration through solitary time.\nTravel that moves freely according to the moment's emotions feels more meaningful than plans.\nI want to experience deep resonance in places filled with people's sincere stories and culture.",
+        "INFJ": "I prefer quiet, inspiring places where I can have meaningful experiences and deep reflection.\nI enjoy travel that's planned yet flexible, creating my own special moments.\nI want to gain true learning and emotion from places steeped in history and culture.",
+        "ISTP": "I prefer practical, efficient travel and enjoy active places where I can experience things firsthand.\nI enjoy moving spontaneously rather than by plan, trying new skills or experiences.\nI pursue a free travel style that I can fully enjoy alone.",
+        "ISTJ": "I make systematic, safe travel plans and prefer verified attractions and traditional places.\nI enjoy traveling according to prepared schedules, feeling secure.\nI seek in-depth learning experiences in places with historical value and cultural significance.",
+        "INTP": "I find unique places that stimulate intellectual curiosity and take time for solitary exploration.\nI prefer free travel where I can dive deep when discovering something interesting rather than fixed schedules.\nI receive special inspiration from knowledge-gaining spaces like science centers, museums, and libraries.",
+        "INTJ": "I make clear, efficient travel plans and seek experiences that help personal growth.\nI prefer quiet environments where I can think deeply alone and systematic learning opportunities.\nI travel to meaningful places where I can gain vision and insight about the future.",
+        "ESFP": "I seek various experiences and new encounters enjoyed with people in lively atmospheres.\nI prefer travel that moves freely according to the moment's emotions and atmosphere rather than plans.\nI favor active, fun places rich in restaurants, shopping, and entertainment.",
+        "ESFJ": "I look for places where I can spend warm, harmonious time with family or friends.\nI prefer well-planned travel where everyone can be comfortable and enjoy themselves.\nI enjoy traveling that shares traditional, familiar cultural experiences and delicious food.",
+        "ENFP": "I seek travel that gains inspiration through meetings with new people and unexpected adventures.\nI try various experiences with free schedules and prefer places that give creative inspiration.\nI want to gain deep emotion and new ideas from places where art, culture, and nature blend.",
+        "ENFJ": "I enjoy travel that exchanges positive influences through meaningful encounters and cultural exchange.\nI create experiences where people can grow together while being planned.\nI prefer meaningful travel activities connected to volunteer work or local communities.",
+        "ESTP": "I seek dynamic travel filled with spontaneous, adventurous activities.\nI enjoy activities where I can feel new challenges and thrills, and various experiences.\nI prefer adventurous travel where I can physically experience things in vibrant cities or nature.",
+        "ESTJ": "I seek productive travel that achieves goals with efficient, systematic plans.\nI prefer stable travel visiting verified attractions and traditional tourist sites.\nI enjoy practical, productive travel with business or networking opportunities.",
+        "ENTP": "I seek creative, stimulating travel where I can explore new ideas and possibilities.\nI enjoy changing plans spontaneously and experiencing unexpected encounters.\nI prefer cutting-edge cities where I can experience innovative technology or unique culture.",
+        "ENTJ": "I seek travel that achieves maximum results with clear goals and efficient plans.\nI prefer group travel or business-related activities where I can demonstrate leadership.\nI enjoy strategic travel with networking and learning opportunities that help with future vision."
+      },
+      "fallbackDescription": "You have a unique personality type! Find your own travel style through various experiences."
+    },
+    "space": {
+      "title": "Where do you want<br />to spend your time?",
+      "subtitle": "Feel free to choose spaces you like",
+      "options": {
+        "workshop": {
+          "title": "Workshop & Experience Space",
+          "description": "I enjoy time making things"
+        },
+        "exhibition": {
+          "title": "Exhibition & Museum",
+          "description": "I like looking around slowly and appreciating"
+        },
+        "shopping": {
+          "title": "Concept Store & Mall",
+          "description": "I enjoy discovering my preferences"
+        },
+        "nature": {
+          "title": "Walk & Nature Spots",
+          "description": "Walking helps me organize my thoughts"
+        },
+        "lounge": {
+          "title": "Jazz Bar & Lounge",
+          "description": "I want to stay for a while in music and lighting"
+        }
+      }
+    },
+    "transportation": {
+      "title": "How do you travel?",
+      "subtitle": "Recommended places vary by transportation method",
+      "options": {
+        "public": "Public Transit",
+        "car": "Car"
+      },
+      "errorSaving": "An error occurred while saving preferences."
     }
   },
   "home": {
@@ -55,16 +208,122 @@
       "title": "What to do now?",
       "description": "We've picked places that suit you\nbased on time, mood, and preferences."
     },
+    "categorySection": {
+      "prefix": "How about",
+      "suffix": "today?"
+    },
+    "seeMore": "See More Places",
+    "footer": {
+      "copyright": "© 2025 MOHE",
+      "links": "Terms of Service | Privacy Policy | Contact",
+      "email": "hello@mohe.app"
+    },
     "errors": {
       "loadFailed": "Failed to load data.",
       "locationFailed": "Unable to load location information.",
-      "authRequired": "Authentication required. Please login again."
+      "authRequired": "Authentication required. Please login again.",
+      "initFailed": "An error occurred while initializing the app.",
+      "addressFailed": "Failed to load address.",
+      "addressUnavailable": "Unable to load address",
+      "locationUnavailable": "Unable to confirm location information",
+      "noLocation": "No location information"
+    },
+    "bookmarkLoginRequired": "Login required to use bookmark feature.",
+    "featureLoginRequired": "Login required to use this feature."
+  },
+  "places": {
+    "list": {
+      "title": "Great Places to Visit Now",
+      "sectionTitle": "All Places",
+      "sectionSubtitle": "Places sorted by rating and popularity",
+      "loadMore": "Load More Places",
+      "loading": "Loading more places...",
+      "pagination": "{current} / {total} pages",
+      "emptyState": "No places to recommend.\nPlease try again later.",
+      "errors": {
+        "loadFailed": "Failed to load places.",
+        "loadError": "An error occurred while loading places."
+      }
+    },
+    "detail": {
+      "experienceButton": "Experience",
+      "readMore": "Read More",
+      "sectionTitle": "How about today?",
+      "errors": {
+        "idRequired": "Place ID is required.",
+        "notFound": "Place information not found.",
+        "loadFailed": "Failed to load place information."
+      }
     }
+  },
+  "bookmarks": {
+    "title": "Bookmarks",
+    "emptyState": "You haven't bookmarked any places yet.\nBookmark places you like!",
+    "errors": {
+      "loadFailed": "Failed to load bookmarks.",
+      "loadError": "An error occurred while loading bookmarks."
+    },
+    "loginRequired": "Login required to use bookmark feature."
   },
   "profile": {
     "settings": "Settings",
     "logout": "Logout",
-    "myPage": "My Page"
+    "myPage": "My Page",
+    "menu": {
+      "bookmarks": "Bookmarks",
+      "profile": "Profile",
+      "myPlaces": "My Places",
+      "recentPlaces": "Recently Viewed",
+      "version": "Version Info"
+    },
+    "moodSection": {
+      "title": "What to do now?",
+      "description": "We've picked places that suit you\nbased on time, mood, and preferences."
+    },
+    "defaultNickname": "User",
+    "defaultDescription": "Set your preference information.",
+    "mbtiDescription": "User with {mbti} preferences.",
+    "edit": {
+      "title": "Edit Profile",
+      "profileImageAlt": "Profile",
+      "nicknamePlaceholder": "Enter your nickname",
+      "saving": "Saving...",
+      "errors": {
+        "saveFailed": "Failed to update profile."
+      }
+    }
+  },
+  "myPlaces": {
+    "title": "My Places",
+    "emptyState": "You haven't visited any places yet.\nExplore places and create your own list!",
+    "errors": {
+      "loadFailed": "Failed to load my places.",
+      "loadError": "An error occurred while loading my places."
+    }
+  },
+  "recentPlaces": {
+    "title": "Recently Viewed",
+    "sectionTitle": "Places you've checked recently",
+    "emptyState": "You haven't viewed any places recently.\nExplore new places!",
+    "errors": {
+      "loadFailed": "Failed to load recently viewed places.",
+      "loadError": "An error occurred while loading recently viewed places."
+    }
+  },
+  "search": {
+    "title": "\"{query}\" Search Results",
+    "personalizedTitle": "We found places just for you, {userName}!",
+    "subtitle": "Found recommendations based on your current location.",
+    "emptyWithQuery": "No search results found.",
+    "emptyNoQuery": "No places to recommend.",
+    "emptyHelp": "Try searching with different keywords.",
+    "operatingHoursDefault": "No operating hours info",
+    "transportInfoDefault": "No info",
+    "defaultUser": "Guest",
+    "errors": {
+      "loadFailed": "Failed to load search results.",
+      "loadError": "An error occurred during search."
+    }
   },
   "errors": {
     "networkError": "A network error occurred.",

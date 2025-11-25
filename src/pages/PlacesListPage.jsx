@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import styles from '@/styles/pages/places-list-page.module.css';
 
 import { Container } from '@/components/ui/layout';
@@ -13,6 +14,7 @@ import { useGeolocation } from '@/hooks/useGeolocation';
 import { normalizePlaceImages, buildImageUrl } from '@/utils/image';
 
 export default function PlacesListPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [places, setPlaces] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -23,7 +25,7 @@ export default function PlacesListPage() {
   const [totalPages, setTotalPages] = useState(0);
   const [user, setUser] = useState(null);
   const { location, error: locationError } = useGeolocation();
-  
+
   const PLACES_PER_PAGE = 20;
 
   // Initialize user state
@@ -67,11 +69,11 @@ export default function PlacesListPage() {
         setHasMorePlaces(totalPagesValue > 0 && currentPageValue + 1 < totalPagesValue);
         setCurrentPage(currentPageValue);
       } else {
-        setError('장소를 불러오는데 실패했습니다.');
+        setError(t('places.list.errors.loadFailed'));
       }
     } catch (err) {
       console.error('Failed to load places:', err);
-      setError('장소를 불러오는 중 오류가 발생했습니다.');
+      setError(t('places.list.errors.loadError'));
     } finally {
       setIsLoading(false);
       setIsLoadingMore(false);
@@ -89,8 +91,8 @@ export default function PlacesListPage() {
     const preloadedImage = buildImageUrl(
       selectedPlace?.image || selectedPlace?.imageUrl || selectedPlace?.images?.[0]
     );
-    navigate(`/place/${placeId}`, { 
-      state: { preloadedImage, preloadedData: selectedPlace } 
+    navigate(`/place/${placeId}`, {
+      state: { preloadedImage, preloadedData: selectedPlace }
     });
   };
 
@@ -99,9 +101,9 @@ export default function PlacesListPage() {
       if (!user || user.isGuest) {
         console.log('Guest user redirected to login for bookmarking');
         navigate('/login', {
-          state: { 
+          state: {
             from: '/places',
-            message: '북마크 기능을 사용하려면 로그인이 필요합니다.'
+            message: t('bookmarks.loginRequired')
           }
         });
         return;
@@ -115,8 +117,8 @@ export default function PlacesListPage() {
       }
 
       if (response.success) {
-        setPlaces(prevPlaces => 
-          prevPlaces.map(place => 
+        setPlaces(prevPlaces =>
+          prevPlaces.map(place =>
             place.id === placeId ? { ...place, isBookmarked } : place
           )
         );
@@ -138,26 +140,27 @@ export default function PlacesListPage() {
     <div className={styles.pageContainer}>
       {/* Header - Always shown immediately */}
       <header className={styles.header}>
-        <h1 className={styles.pageTitle}>지금 가볼만한 곳</h1>
+        <h1 className={styles.pageTitle}>{t('places.list.title')}</h1>
       </header>
 
       {/* Main content */}
       <div className={styles.contentContainer}>
         <div className={styles.contentWrapper}>
-          <h2 className={styles.sectionTitle}>모든 장소</h2>
-          <p className={styles.sectionSubtitle}>평점과 인기도를 기준으로 정렬된 장소들입니다</p>
-          
+          <h2 className={styles.sectionTitle}>{t('places.list.sectionTitle')}</h2>
+          <p className={styles.sectionSubtitle}>{t('places.list.sectionSubtitle')}</p>
+
           {error && (
             <ErrorMessage message={error} />
           )}
-          
+
           {/* Places Grid - Show skeleton while loading */}
           {isLoading ? (
             <PlacesListSkeleton />
           ) : places.length === 0 ? (
             <div className={styles.emptyState}>
-              <p>추천할 장소가 없습니다.</p>
-              <p>잠시 후 다시 시도해주세요.</p>
+              {t('places.list.emptyState').split('\n').map((line, index) => (
+                <p key={index}>{line}</p>
+              ))}
             </div>
           ) : (
             <>
@@ -175,24 +178,24 @@ export default function PlacesListPage() {
                   />
                 ))}
               </div>
-              
+
               {/* Load More Button */}
               {hasMorePlaces && (
                 <div className={styles.loadMoreContainer}>
-                  <PrimaryButton 
+                  <PrimaryButton
                     onClick={handleLoadMore}
                     disabled={isLoadingMore}
                     className={styles.loadMoreButton}
                   >
-                    {isLoadingMore ? '더 많은 장소를 불러오는 중...' : '더 많은 장소 보기'}
+                    {isLoadingMore ? t('places.list.loading') : t('places.list.loadMore')}
                   </PrimaryButton>
                 </div>
               )}
-              
+
               {/* Show current progress */}
               {totalPages > 1 && (
                 <div className={styles.paginationInfo}>
-                  <p>{currentPage + 1} / {totalPages} 페이지</p>
+                  <p>{t('places.list.pagination', { current: currentPage + 1, total: totalPages })}</p>
                 </div>
               )}
             </>

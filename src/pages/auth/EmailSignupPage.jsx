@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import styles from '@/styles/pages/auth/email-signup-page.module.css';
 
 import { Stack } from '@/components/ui/layout';
@@ -10,6 +11,7 @@ import PrimaryButton from '@/components/ui/buttons/PrimaryButton';
 import { authService } from '@/services/authService';
 
 export default function EmailSignupPage() {
+  const { t } = useTranslation();
   const { goToEmailVerification } = useAuthNavigation();
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
@@ -42,7 +44,7 @@ export default function EmailSignupPage() {
       navigate('/verify-email');
     } catch (error) {
       console.error('Signup failed:', error);
-      setError(error.message || '회원가입에 실패했습니다. 다시 시도해주세요.');
+      setError(error.message || t('auth.signup.errors.signupFailed'));
     } finally {
       setIsLoading(false);
     }
@@ -63,10 +65,7 @@ export default function EmailSignupPage() {
     >
       <AuthTitle
         title={
-          <>
-            MOHE에 사용할<br />
-            이메일을 입력해주세요
-          </>
+          <span dangerouslySetInnerHTML={{ __html: t('auth.signup.title') }} />
         }
         titleClassName={styles.title}
         wrapperClassName={styles.titleSection}
@@ -74,9 +73,9 @@ export default function EmailSignupPage() {
 
         <Stack spacing="sm" className={styles.form}>
           <FormInput
-            label="이메일 주소"
+            label={t('auth.signup.emailLabel')}
             type="email"
-            placeholder="example@mohe.com"
+            placeholder={t('auth.signup.emailPlaceholder')}
             value={email}
             onChange={handleEmailChange}
             onKeyPress={handleKeyPress}
@@ -89,12 +88,12 @@ export default function EmailSignupPage() {
             </p>
           )}
 
-          <PrimaryButton 
+          <PrimaryButton
             disabled={!isValidEmail || isLoading}
             onClick={handleEmailSignup}
             variant={!isValidEmail ? 'disabled' : 'primary'}
           >
-            {isLoading ? '처리 중...' : '이메일 인증하기'}
+            {isLoading ? t('auth.signup.processing') : t('auth.signup.submitButton')}
           </PrimaryButton>
         </Stack>
     </AuthContainer>

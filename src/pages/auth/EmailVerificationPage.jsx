@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import styles from '@/styles/pages/auth/email-verification-page.module.css';
 
 import { AuthContainer, AuthTitle } from '@/components/auth';
@@ -10,6 +11,7 @@ import { authService } from '@/services/authService';
 const TIMER_DURATION = 5 * 60; // 5 minutes in seconds
 
 export default function EmailVerificationPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [verificationCode, setVerificationCode] = useState('');
   const [isVerifying, setIsVerifying] = useState(false);
@@ -73,7 +75,7 @@ export default function EmailVerificationPage() {
   const sendVerificationCode = async () => {
     const normalizedEmail = email?.trim();
     if (!normalizedEmail) {
-      throw new Error('이메일 정보가 없습니다.');
+      throw new Error(t('auth.verification.errors.noAuthInfo'));
     }
 
     const result = await authService.signup(normalizedEmail);
@@ -93,12 +95,12 @@ export default function EmailVerificationPage() {
     }
 
     if (code.length !== 5) {
-      setError('인증번호 5자리를 모두 입력해주세요.');
+      setError(t('auth.verification.errors.invalidCode'));
       return;
     }
 
     if (!tempUserId) {
-      setError('인증 정보가 없습니다. 처음부터 다시 시도해주세요.');
+      setError(t('auth.verification.errors.noAuthInfo'));
       setTimeout(() => {
         sessionStorage.clear();
         navigate('/signup');
@@ -109,10 +111,10 @@ export default function EmailVerificationPage() {
     if (timeLeft <= 0) {
       try {
         await sendVerificationCode();
-        setError('인증코드가 만료되어 다시 보냈습니다. 다시 확인해주세요.');
+        setError(t('auth.verification.errors.codeExpired'));
       } catch (resendError) {
         console.error('Auto resend failed:', resendError);
-        setError('인증번호 재전송에 실패했습니다. 다시 시도해주세요.');
+        setError(t('auth.verification.errors.resendFailed'));
       }
       return;
     }
@@ -130,15 +132,15 @@ export default function EmailVerificationPage() {
       console.error('Verification failed:', error);
 
       // Parse error message for better UX
-      const errorMsg = error.message || '인증에 실패했습니다';
+      const errorMsg = error.message || t('auth.verification.errors.verificationFailed');
       if (errorMsg.includes('유효하지 않은 인증 요청')) {
-        setError('인증 시간이 만료되었습니다. 처음부터 다시 시도해주세요.');
+        setError(t('auth.verification.errors.sessionExpired'));
         setTimeout(() => {
           sessionStorage.clear();
           navigate('/signup');
         }, 2000);
       } else if (errorMsg.includes('일치하지 않습니다')) {
-        setError('인증 코드가 일치하지 않습니다. 다시 확인해주세요.');
+        setError(t('auth.verification.errors.codeMismatch'));
         setVerificationCode('');
         setOtpResetKey((prev) => prev + 1);
       } else {
@@ -154,7 +156,7 @@ export default function EmailVerificationPage() {
   const handleResendCode = () => {
     setIsResending(true);
     setError('');
-    setStatusMessage('인증코드를 재발송했습니다. 메일함을 확인해주세요.');
+    setStatusMessage(t('auth.verification.statusResent'));
     setTimeLeft(TIMER_DURATION);
     setVerificationCode('');
     setOtpResetKey((prev) => prev + 1);
@@ -163,7 +165,7 @@ export default function EmailVerificationPage() {
       .catch((error) => {
         console.error('Resend failed:', error);
         setStatusMessage('');
-        setError('인증번호 재전송에 실패했습니다. 다시 시도해주세요.');
+        setError(t('auth.verification.errors.resendFailed'));
       })
       .finally(() => {
         setIsResending(false);
@@ -185,21 +187,17 @@ export default function EmailVerificationPage() {
       contentClassName={styles.content}
     >
       <AuthTitle
-        title={
-	        <>
-		       인증코드를 확인해주세요
-	        </>
-        }
+        title={t('auth.verification.title')}
         titleClassName={styles.title}
         wrapperClassName={styles.titleSection}
       />
 
         <p className={styles.description}>
           <span className={styles.emailHighlight}>{email}</span>
-          {email && '로 인증 코드를 보냈습니다.'}
-          {!email && '인증 코드를 보냈습니다.'}
+          {email && t('auth.verification.description')}
+          {!email && t('auth.verification.descriptionNoEmail')}
           <br />
-          <span className={styles.descriptionAccent}>메일함에서 인증번호를 확인해주세요.</span>
+          <span className={styles.descriptionAccent}>{t('auth.verification.descriptionAccent')}</span>
         </p>
 
         <div
@@ -208,9 +206,9 @@ export default function EmailVerificationPage() {
             timeLeft <= 60 ? styles.timerRowWarning : '',
           ].join(' ')}
         >
-          <span className={styles.timerLabel}>남은 시간</span>
+          <span className={styles.timerLabel}>{t('auth.verification.timerLabel')}</span>
           <span className={styles.timerValue}>
-            {timeLeft > 0 ? formatTime(timeLeft) : '만료됨'}
+            {timeLeft > 0 ? formatTime(timeLeft) : t('auth.verification.expired')}
           </span>
         </div>
 
@@ -242,7 +240,7 @@ export default function EmailVerificationPage() {
             onClick={() => handleVerification()}
             variant={!isCodeComplete || timeLeft === 0 ? 'disabled' : 'primary'}
           >
-            {isVerifying ? '확인 중...' : '다음'}
+            {isVerifying ? t('auth.verification.verifying') : t('auth.verification.nextButton')}
           </PrimaryButton>
 
           <button
@@ -251,7 +249,7 @@ export default function EmailVerificationPage() {
             disabled={isResending}
             type="button"
           >
-            {isResending ? '재전송 중...' : '인증번호 재전송'}
+            {isResending ? t('auth.verification.resending') : t('auth.verification.resendButton')}
           </button>
         </div>
     </AuthContainer>

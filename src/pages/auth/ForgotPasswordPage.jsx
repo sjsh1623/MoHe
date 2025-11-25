@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import styles from '@/styles/pages/auth/forgot-password-page.module.css';
 
 import { Stack } from '@/components/ui/layout';
@@ -8,6 +9,7 @@ import PrimaryButton from '@/components/ui/buttons/PrimaryButton';
 import { authService } from '@/services/authService';
 
 export default function ForgotPasswordPage() {
+  const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [emailSent, setEmailSent] = useState(false);
 
@@ -20,10 +22,10 @@ export default function ForgotPasswordPage() {
     try {
       await authService.forgotPassword(email.trim());
       setEmailSent(true);
-      alert('비밀번호 재설정 이메일이 전송되었습니다.');
+      alert(t('auth.forgotPassword.successMessage'));
     } catch (error) {
       console.error('Failed to send reset email:', error);
-      alert(error.message || '비밀번호 재설정 이메일 전송에 실패했습니다.');
+      alert(error.message || t('auth.forgotPassword.errorMessage'));
     }
   };
 
@@ -35,8 +37,8 @@ export default function ForgotPasswordPage() {
       contentClassName={styles.content}
     >
       <AuthTitle
-        title="비밀번호를 잊으셨나요?"
-        subtitle="재설정하려는 계정의 이메일 주소를 입력해주세요"
+        title={t('auth.forgotPassword.title')}
+        subtitle={t('auth.forgotPassword.description')}
         titleClassName={styles.title}
         subtitleClassName={styles.description}
         wrapperClassName={styles.titleSection}
@@ -44,19 +46,19 @@ export default function ForgotPasswordPage() {
 
         <Stack spacing="sm" className={styles.form}>
           <FormInput
-            label="이메일 주소"
+            label={t('auth.forgotPassword.emailLabel')}
             type="email"
-            placeholder="example@mohe.com"
+            placeholder={t('auth.forgotPassword.emailPlaceholder')}
             value={email}
             onChange={handleEmailChange}
           />
 
-          <PrimaryButton 
+          <PrimaryButton
             disabled={!isValidEmail || emailSent}
             onClick={handleSendEmail}
             variant={!isValidEmail ? 'disabled' : 'primary'}
           >
-            {emailSent ? '이메일 전송됨' : '이메일 전송'}
+            {emailSent ? t('auth.forgotPassword.emailSent') : t('auth.forgotPassword.submitButton')}
           </PrimaryButton>
         </Stack>
     </AuthContainer>

@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useParams, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import styles from '@/styles/pages/place-detail-page.module.css';
 import PlaceDetailSkeleton from '@/components/ui/skeletons/PlaceDetailSkeleton';
 import ErrorMessage from '@/components/ui/alerts/ErrorMessage';
@@ -11,19 +12,20 @@ export default function PlaceDetailPage({
   place = null, // Allow prop injection for testing/reusability
   onExperience
 }) {
+  const { t } = useTranslation();
   const { id } = useParams();
   const location = useLocation();
   const [placeData, setPlaceData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  
+
   // Get preloaded data from navigation state
   const preloadedImage = buildImageUrl(location.state?.preloadedImage);
   const preloadedData = location.state?.preloadedData
     ? normalizePlaceImages(location.state?.preloadedData)
     : null;
-  
-  
+
+
   useEffect(() => {
     const loadPlaceDetail = async () => {
       try {
@@ -38,7 +40,7 @@ export default function PlaceDetailPage({
         }
 
         if (!id) {
-          setError('장소 ID가 필요합니다.');
+          setError(t('places.detail.errors.idRequired'));
           setIsLoading(false);
           return;
         }
@@ -48,7 +50,7 @@ export default function PlaceDetailPage({
           console.log('Using preloaded place data:', preloadedData);
           setPlaceData({
             ...preloadedData,
-            description: preloadedData.description || preloadedData.reasonWhy || '이 장소에 대한 상세 정보가 준비 중입니다.',
+            description: preloadedData.description || preloadedData.reasonWhy || t('places.detail.errors.notFound'),
             address: preloadedData.address || preloadedData.location,
             location: preloadedData.address || preloadedData.location,
             name: preloadedData.title || preloadedData.name
@@ -71,11 +73,11 @@ export default function PlaceDetailPage({
           }
         } else {
           console.error('Backend place detail not available for id:', id);
-          setError('장소 정보를 찾을 수 없습니다.');
+          setError(t('places.detail.errors.notFound'));
         }
       } catch (err) {
         console.error('Failed to load place details:', err);
-        setError('장소 정보를 불러오는데 실패했습니다.');
+        setError(t('places.detail.errors.loadFailed'));
       } finally {
         setIsLoading(false);
       }
@@ -89,28 +91,28 @@ export default function PlaceDetailPage({
   const [isDragging, setIsDragging] = useState(false);
   const dragStartY = useRef(0);
   const initialOffset = useRef(0);
-  
+
   // Image swiping state
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isImageDragging, setIsImageDragging] = useState(false);
   const startX = useRef(0);
   const DRAG_THRESHOLD = 50; // Minimum drag distance to change image
-  
+
   // Calculate sheet heights based on viewport
   const getSheetHeight = (state) => {
     const vh = window.innerHeight;
     switch (state) {
       case 'half': return vh * 0.55; // 50% of screen
-      case 'large': return vh * 0.8; // 80% of screen  
+      case 'large': return vh * 0.8; // 80% of screen
       case 'expanded': return vh * 1.0; // 100% of screen
       default: return vh * 0.5;
     }
   };
-  
+
   const getCurrentSheetHeight = () => {
     return getSheetHeight(sheetState) + dragOffset;
   };
-  
+
   // Show loading or error state
   if (isLoading) {
     return <PlaceDetailSkeleton />;
@@ -119,7 +121,7 @@ export default function PlaceDetailPage({
   if (error || !placeData) {
     return (
       <div className={styles.errorContainer}>
-        <ErrorMessage message={error || '장소 정보를 찾을 수 없습니다.'} />
+        <ErrorMessage message={error || t('places.detail.errors.notFound')} />
       </div>
     );
   }
@@ -163,18 +165,18 @@ export default function PlaceDetailPage({
 
   const handleDragMove = (e) => {
     if (!isDragging) return;
-    
+
     const clientY = e.type === 'mousemove' ? e.clientY : e.touches[0].clientY;
     const deltaY = dragStartY.current - clientY; // Inverted: positive = drag up
     const newOffset = initialOffset.current + deltaY;
-    
+
     // Limit drag range
     const minHeight = getSheetHeight('half');
     const maxHeight = getSheetHeight('expanded');
     const currentBaseHeight = getSheetHeight(sheetState);
     const maxOffset = maxHeight - currentBaseHeight;
     const minOffset = minHeight - currentBaseHeight;
-    
+
     const clampedOffset = Math.max(minOffset, Math.min(maxOffset, newOffset));
     setDragOffset(clampedOffset);
   };
@@ -182,16 +184,16 @@ export default function PlaceDetailPage({
   const handleDragEnd = () => {
     if (!isDragging) return;
     setIsDragging(false);
-    
+
     const currentHeight = getCurrentSheetHeight();
-    
+
     // Determine which state to snap to based on current height
     const halfHeight = getSheetHeight('half');
     const largeHeight = getSheetHeight('large');
     const expandedHeight = getSheetHeight('expanded');
-    
+
     let newState = sheetState;
-    
+
     if (currentHeight < (halfHeight + largeHeight) / 2) {
       newState = 'half';
     } else if (currentHeight < (largeHeight + expandedHeight) / 2) {
@@ -199,7 +201,7 @@ export default function PlaceDetailPage({
     } else {
       newState = 'expanded';
     }
-    
+
     setSheetState(newState);
     setDragOffset(0);
   };
@@ -227,9 +229,9 @@ export default function PlaceDetailPage({
 
   const handleImageEnd = (e) => {
     if (!isImageDragging) return;
-    
+
     setIsImageDragging(false);
-    
+
     // Get the end position
     let clientX;
     if (e.type === 'mouseup') {
@@ -239,12 +241,12 @@ export default function PlaceDetailPage({
     } else {
       return; // No valid touch data
     }
-    
+
     const distance = clientX - startX.current;
-    
+
     // Use a smaller threshold for more responsive swiping
     const threshold = 30;
-    
+
     // Check if drag distance exceeds threshold
     if (Math.abs(distance) > threshold) {
       if (distance > 0) {
@@ -263,7 +265,7 @@ export default function PlaceDetailPage({
   }
 
   return (
-    <div 
+    <div
       className={styles.pageContainer}
       onMouseMove={(e) => {
         if (!isImageDragging) {
@@ -292,7 +294,7 @@ export default function PlaceDetailPage({
     >
       {/* Header Image Carousel */}
       <div className={styles.heroSection}>
-        <div 
+        <div
           className={styles.imageCarousel}
           style={{
             transform: `translateX(-${currentImageIndex * 20}%)`,
@@ -302,9 +304,9 @@ export default function PlaceDetailPage({
           onTouchStart={handleImageStart}
         >
           {images.map((image, index) => (
-            <img 
+            <img
               key={index}
-              src={image} 
+              src={image}
               alt={`${placeData.name || placeData.title} ${index + 1}`}
               className={styles.heroImage}
               draggable={false}
@@ -312,21 +314,21 @@ export default function PlaceDetailPage({
           ))}
         </div>
         <div className={styles.heroOverlay} />
-        
+
 
         {/* Image Indicators */}
         <div className={styles.imageIndicators}>
           {images.map((_, index) => (
-            <div 
+            <div
               key={index}
               className={`${styles.indicator} ${index === currentImageIndex ? styles.active : ''}`}
             />
           ))}
         </div>
-        
-        
+
+
         {/* Bottom Handle */}
-        <div 
+        <div
           className={styles.bottomHandle}
           onMouseDown={handleDragStart}
           onTouchStart={handleDragStart}
@@ -334,9 +336,9 @@ export default function PlaceDetailPage({
       </div>
 
       {/* Content Section */}
-      <div 
+      <div
         className={styles.contentSection}
-        style={{ 
+        style={{
           height: `${getCurrentSheetHeight()}px`,
           transition: isDragging ? 'none' : 'height 0.3s ease-out'
         }}
@@ -345,7 +347,7 @@ export default function PlaceDetailPage({
       >
         {/* Drag Indicator */}
         <div className={styles.dragIndicator} />
-        
+
         {/* Title and Rating */}
         <div className={styles.header}>
           <h1 className={styles.title}>{placeData.name || placeData.title}</h1>
@@ -375,7 +377,7 @@ export default function PlaceDetailPage({
               </svg>
               <span className={styles.locationText}>{placeData.location || placeData.address}</span>
             </div>
-            
+
             {(placeData.transportationCarTime || placeData.transportationBusTime) && (
             <div className={styles.transportationRow}>
               {placeData.transportationCarTime && (
@@ -390,7 +392,7 @@ export default function PlaceDetailPage({
                   <span className={styles.transportTime}>{placeData.transportationCarTime}</span>
                 </>
               )}
-              
+
               {placeData.transportationBusTime && (
                 <>
                   <svg className={styles.busIcon} width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -427,7 +429,7 @@ export default function PlaceDetailPage({
         {/* Description */}
         {placeData.description && (
           <div className={styles.descriptionSection}>
-            <h2 className={styles.descriptionTitle}>이런 오늘 어때요?</h2>
+            <h2 className={styles.descriptionTitle}>{t('places.detail.sectionTitle')}</h2>
             <div className={styles.description}>
               {placeData.description.split('\n').map((line, index) => (
                 <span key={index}>
@@ -436,7 +438,7 @@ export default function PlaceDetailPage({
                 </span>
               ))}
               <button className={styles.readMore} onClick={handleReadMore}>
-                Read More
+                {t('places.detail.readMore')}
               </button>
             </div>
           </div>
@@ -444,7 +446,7 @@ export default function PlaceDetailPage({
 
         {/* Experience Button */}
         <button className={styles.experienceButton} onClick={handleExperienceClick}>
-          경험하기
+          {t('places.detail.experienceButton')}
         </button>
       </div>
     </div>

@@ -1,24 +1,25 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import styles from '@/styles/pages/profile-settings-page.module.css';
 import ProfileMenuItem from '@/components/ui/items/ProfileMenuItem';
 import ProfileInfoCard from '@/components/ui/cards/ProfileInfoCard';
 import { useAuthGuard } from '@/hooks/useAuthGuard';
-import { 
-  BookmarkIcon, 
-  ProfileIcon, 
-  MyPlacesIcon, 
-  RecentPlacesIcon, 
-  VersionIcon 
+import {
+  BookmarkIcon,
+  ProfileIcon,
+  MyPlacesIcon,
+  RecentPlacesIcon,
+  VersionIcon
 } from '@/components/ui/icons/MenuIcons';
 import { userService, activityService } from '@/services/apiService';
 
-// Menu items configuration with exact CSS class mappings
-const MENU_ITEMS = [
+// Menu items configuration factory function
+const getMenuItems = (t) => [
   {
     id: 'bookmarks',
     icon: <BookmarkIcon />,
-    text: '북마크',
+    text: t('profile.menu.bookmarks'),
     route: '/bookmarks',
     className: styles.group8,
     vectorSrc: '/vector-2526.svg',
@@ -30,7 +31,7 @@ const MENU_ITEMS = [
   {
     id: 'profile',
     icon: <ProfileIcon />,
-    text: '프로필',
+    text: t('profile.menu.profile'),
     route: '/profile-edit',
     className: styles.group11,
     vectorSrc: '/vector-2525.svg',
@@ -42,7 +43,7 @@ const MENU_ITEMS = [
   {
     id: 'myPlaces',
     icon: <MyPlacesIcon />,
-    text: '내 장소',
+    text: t('profile.menu.myPlaces'),
     route: '/my-places',
     className: styles.group11_5,
     vectorSrc: '/vector-2525.svg',
@@ -54,7 +55,7 @@ const MENU_ITEMS = [
   {
     id: 'recentPlaces',
     icon: <RecentPlacesIcon />,
-    text: '최근 본 장소',
+    text: t('profile.menu.recentPlaces'),
     route: '/recent-view',
     className: styles.group12,
     vectorSrc: '/vector-2529-2.svg',
@@ -66,7 +67,7 @@ const MENU_ITEMS = [
   {
     id: 'version',
     icon: <VersionIcon />,
-    text: '버전 정보',
+    text: t('profile.menu.version'),
     route: null,
     className: styles.group14,
     vectorSrc: '/vector-2529.svg',
@@ -81,10 +82,14 @@ const MENU_ITEMS = [
 
 export default function ProfileSettingsPage() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { isGuest } = useAuthGuard(true); // This page requires authentication
   const [profile, setProfile] = useState(null);
   const [myPlacesCount, setMyPlacesCount] = useState(0);
-  const userDescription = profile?.mbti ? `${profile.mbti} 취향의 이용자입니다.` : '취향 정보를 설정해보세요.';
+  const MENU_ITEMS = getMenuItems(t);
+  const userDescription = profile?.mbti
+    ? t('profile.mbtiDescription', { mbti: profile.mbti })
+    : t('profile.defaultDescription');
 
   useEffect(() => {
     const loadData = async () => {
@@ -126,11 +131,11 @@ export default function ProfileSettingsPage() {
         {/* Header - BackButton now handled globally */}
         <header className={styles.header}>
         </header>
-        
+
         {/* Profile Header */}
-        <ProfileInfoCard 
+        <ProfileInfoCard
           styles={styles}
-          userName={profile?.nickname || '이용자'}
+          userName={profile?.nickname || t('profile.defaultNickname')}
           mbtiValue={profile?.mbti || '----'}
           placesCount={myPlacesCount}
           userDescription={userDescription}
@@ -166,10 +171,14 @@ export default function ProfileSettingsPage() {
         <section className={styles.moodSection}>
           <div className={styles.moodCard}>
             <div className={styles.moodContent}>
-              <h3 className={styles.moodTitle}>지금 뭐하지?</h3>
+              <h3 className={styles.moodTitle}>{t('profile.moodSection.title')}</h3>
               <p className={styles.moodDescription}>
-                시간, 기분, 취향을 반영해서<br />
-                당신에게 어울리는 곳을 골라봤어요.
+                {t('profile.moodSection.description').split('\n').map((line, i) => (
+                  <React.Fragment key={i}>
+                    {line}
+                    {i < t('profile.moodSection.description').split('\n').length - 1 && <br />}
+                  </React.Fragment>
+                ))}
               </p>
             </div>
             <div className={styles.moodImage}>

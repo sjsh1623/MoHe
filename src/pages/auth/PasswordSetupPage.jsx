@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import styles from '@/styles/pages/auth/password-setup-page.module.css';
 
 import { Stack } from '@/components/ui/layout';
@@ -10,6 +11,7 @@ import PrimaryButton from '@/components/ui/buttons/PrimaryButton';
 import { authService } from '@/services/authService';
 
 export default function PasswordSetupPage() {
+  const { t } = useTranslation();
   const { goToHome } = useAuthNavigation();
   const navigate = useNavigate();
   const [password, setPassword] = useState('');
@@ -23,7 +25,7 @@ export default function PasswordSetupPage() {
     // Get temp user ID and nickname from session storage
     const tempId = sessionStorage.getItem('temp_user_id');
     const setupNickname = sessionStorage.getItem('setup_nickname');
-    
+
     if (tempId && setupNickname) {
       setTempUserId(tempId);
       setNickname(setupNickname);
@@ -52,61 +54,61 @@ export default function PasswordSetupPage() {
 
   const validatePassword = (password) => {
     const errors = [];
-    
+
     if (password.length < 8) {
-      errors.push('8자 이상');
+      errors.push(t('auth.password.errors.minLength'));
     }
-    
+
     if (!/[A-Za-z]/.test(password)) {
-      errors.push('영문 포함');
+      errors.push(t('auth.password.errors.requireLetter'));
     }
-    
+
     if (!/[0-9]/.test(password)) {
-      errors.push('숫자 포함');
+      errors.push(t('auth.password.errors.requireNumber'));
     }
-    
+
     if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
-      errors.push('특수문자 포함');
+      errors.push(t('auth.password.errors.requireSpecial'));
     }
-    
+
     return errors;
   };
 
   const handleSubmit = async () => {
     const newErrors = {};
-    
+
     // Validate password
     const passwordErrors = validatePassword(password);
     if (passwordErrors.length > 0) {
-      newErrors.password = `비밀번호는 ${passwordErrors.join(', ')}이 필요합니다.`;
+      newErrors.password = t('auth.password.errors.requirements', { requirements: passwordErrors.join(', ') });
     }
-    
+
     // Validate password confirmation
     if (password !== confirmPassword) {
-      newErrors.confirmPassword = '비밀번호가 일치하지 않습니다.';
+      newErrors.confirmPassword = t('auth.password.errors.mismatch');
     }
-    
+
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
     }
 
     if (!tempUserId || !nickname) {
-      setErrors({ submit: '사용자 정보가 부족합니다. 다시 회원가입을 진행해주세요.' });
+      setErrors({ submit: t('auth.password.errors.missingInfo') });
       return;
     }
-    
+
     setIsSubmitting(true);
-    
+
     try {
       const result = await authService.setupProfile(tempUserId, nickname, password);
       console.log('Profile setup successful:', result);
-      
+
       // Clean up session storage
       sessionStorage.removeItem('signup_email');
       sessionStorage.removeItem('temp_user_id');
       sessionStorage.removeItem('setup_nickname');
-      
+
       // Check if user needs to complete preferences or can go straight to home
       if (result.user && result.user.isProfileComplete) {
         navigate('/home');
@@ -116,7 +118,7 @@ export default function PasswordSetupPage() {
       }
     } catch (error) {
       console.error('Profile setup failed:', error);
-      setErrors({ submit: error.message || '프로필 설정에 실패했습니다. 다시 시도해주세요.' });
+      setErrors({ submit: error.message || t('auth.password.errors.setupFailed') });
     } finally {
       setIsSubmitting(false);
     }
@@ -128,12 +130,12 @@ export default function PasswordSetupPage() {
     }
   };
 
-  const isFormValid = password.trim() && confirmPassword.trim() && 
-                     validatePassword(password).length === 0 && 
+  const isFormValid = password.trim() && confirmPassword.trim() &&
+                     validatePassword(password).length === 0 &&
                      password === confirmPassword;
 
   return (
-    <AuthContainer 
+    <AuthContainer
       pageClassName={styles.pageContainer}
       contentClassName={styles.content}
     >
@@ -175,7 +177,7 @@ export default function PasswordSetupPage() {
             </div>
           )}
 
-          <PrimaryButton 
+          <PrimaryButton
             disabled={!isFormValid || isSubmitting}
             onClick={handleSubmit}
             variant={!isFormValid ? 'disabled' : 'primary'}

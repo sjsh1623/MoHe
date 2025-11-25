@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import styles from '@/styles/pages/auth/terms-agreement-page.module.css';
 
 import { AuthContainer, AuthTitle } from '@/components/auth';
@@ -7,39 +8,40 @@ import TermsList from '@/components/ui/lists/TermsList';
 import PrimaryButton from '@/components/ui/buttons/PrimaryButton';
 import { termsService } from '@/services/apiService';
 
-const FALLBACK_TERMS = [
-  {
-    id: 'service-terms',
-    label: '서비스 이용약관 동의 (필수)',
-    required: true,
-    hasDetails: true,
-    checked: false
-  },
-  {
-    id: 'privacy-policy',
-    label: '개인정보 수집 및 이용 동의 (선택)',
-    required: false,
-    hasDetails: true,
-    checked: false
-  },
-  {
-    id: 'location-terms',
-    label: '위치 정보 이용약관 동의 (선택)',
-    required: false,
-    hasDetails: true,
-    checked: false
-  },
-  {
-    id: 'age-verification',
-    label: '만 14세 이상입니다',
-    required: true,
-    hasDetails: false,
-    checked: false
-  }
-];
-
 export default function TermsAgreementPage() {
+  const { t } = useTranslation();
   const { goToPasswordSetup } = useAuthNavigation();
+
+  const FALLBACK_TERMS = [
+    {
+      id: 'service-terms',
+      label: t('auth.terms.items.serviceTerms'),
+      required: true,
+      hasDetails: true,
+      checked: false
+    },
+    {
+      id: 'privacy-policy',
+      label: t('auth.terms.items.privacyPolicy'),
+      required: false,
+      hasDetails: true,
+      checked: false
+    },
+    {
+      id: 'location-terms',
+      label: t('auth.terms.items.locationTerms'),
+      required: false,
+      hasDetails: true,
+      checked: false
+    },
+    {
+      id: 'age-verification',
+      label: t('auth.terms.items.ageVerification'),
+      required: true,
+      hasDetails: false,
+      checked: false
+    }
+  ];
   const [agreements, setAgreements] = useState(FALLBACK_TERMS);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -80,9 +82,9 @@ export default function TermsAgreementPage() {
   }, []);
 
   const handleAgreementChange = (id, checked) => {
-    setAgreements(prev => 
-      prev.map(agreement => 
-        agreement.id === id 
+    setAgreements(prev =>
+      prev.map(agreement =>
+        agreement.id === id
           ? { ...agreement, checked }
           : agreement
       )
@@ -90,7 +92,7 @@ export default function TermsAgreementPage() {
   };
 
   const handleAllAgreeChange = (checked) => {
-    setAgreements(prev => 
+    setAgreements(prev =>
       prev.map(agreement => ({ ...agreement, checked }))
     );
   };
@@ -119,22 +121,16 @@ export default function TermsAgreementPage() {
     .every(term => term.checked);
 
   return (
-    <AuthContainer 
+    <AuthContainer
       pageClassName={styles.pageContainer}
       contentClassName={styles.content}
     >
       <AuthTitle
         title={
-          <>
-            모해<br />
-            약관 동의
-          </>
+          <span dangerouslySetInnerHTML={{ __html: t('auth.terms.title') }} />
         }
         subtitle={
-          <>
-            모해 서비스 시작 가입을 위해<br />
-            정보 제공에 동의해주세요
-          </>
+          <span dangerouslySetInnerHTML={{ __html: t('auth.terms.subtitle') }} />
         }
         titleClassName={styles.title}
         subtitleClassName={styles.description}
@@ -151,12 +147,12 @@ export default function TermsAgreementPage() {
         </div>
 
         <div className={styles.buttonSection}>
-          <PrimaryButton 
+          <PrimaryButton
             disabled={!requiredTermsAgreed || isLoading}
             onClick={handleNext}
             variant={!requiredTermsAgreed ? 'disabled' : 'primary'}
           >
-            {isLoading ? '약관 확인 중...' : '다음'}
+            {isLoading ? t('auth.terms.loading') : t('auth.terms.nextButton')}
           </PrimaryButton>
         </div>
     </AuthContainer>

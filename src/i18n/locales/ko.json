@@ -11,7 +11,10 @@
     "search": "검색",
     "filter": "필터",
     "seeMore": "더 보기",
-    "close": "닫기"
+    "close": "닫기",
+    "next": "다음",
+    "skip": "건너뛰기",
+    "back": "뒤로"
   },
   "auth": {
     "login": {
@@ -32,10 +35,160 @@
       }
     },
     "signup": {
-      "title": "회원가입",
+      "title": "MOHE에 사용할<br />이메일을 입력해주세요",
+      "emailLabel": "이메일 주소",
+      "emailPlaceholder": "example@mohe.com",
+      "submitButton": "이메일 인증하기",
+      "processing": "처리 중...",
       "errors": {
-        "signupFailed": "회원가입에 실패했습니다. 잠시 후 다시 시도해주세요."
+        "signupFailed": "회원가입에 실패했습니다. 다시 시도해주세요."
       }
+    },
+    "verification": {
+      "title": "인증코드를 확인해주세요",
+      "description": "로 인증 코드를 보냈습니다.",
+      "descriptionNoEmail": "인증 코드를 보냈습니다.",
+      "descriptionAccent": "메일함에서 인증번호를 확인해주세요.",
+      "timerLabel": "남은 시간",
+      "expired": "만료됨",
+      "nextButton": "다음",
+      "verifying": "확인 중...",
+      "resendButton": "인증번호 재전송",
+      "resending": "재전송 중...",
+      "statusResent": "인증코드를 재발송했습니다. 메일함을 확인해주세요.",
+      "errors": {
+        "invalidCode": "인증번호 5자리를 모두 입력해주세요.",
+        "noAuthInfo": "인증 정보가 없습니다. 처음부터 다시 시도해주세요.",
+        "codeExpired": "인증코드가 만료되어 다시 보냈습니다. 다시 확인해주세요.",
+        "resendFailed": "인증번호 재전송에 실패했습니다. 다시 시도해주세요.",
+        "verificationFailed": "인증에 실패했습니다",
+        "sessionExpired": "인증 시간이 만료되었습니다. 처음부터 다시 시도해주세요.",
+        "codeMismatch": "인증 코드가 일치하지 않습니다. 다시 확인해주세요."
+      }
+    },
+    "nickname": {
+      "title": "MOHE에 사용할<br />닉네임을 입력해주세요",
+      "nicknameLabel": "닉네임",
+      "nicknamePlaceholder": "닉네임을 입력하세요",
+      "checkButton": "중복확인",
+      "checking": "확인중...",
+      "nextButton": "다음",
+      "available": "사용 가능한 닉네임입니다.",
+      "taken": "이미 사용중인 닉네임입니다.",
+      "checkError": "닉네임 중복 확인 중 오류가 발생했습니다."
+    },
+    "terms": {
+      "title": "모해<br />약관 동의",
+      "subtitle": "모해 서비스 시작 가입을 위해<br />정보 제공에 동의해주세요",
+      "nextButton": "다음",
+      "loading": "약관 확인 중...",
+      "items": {
+        "serviceTerms": "서비스 이용약관 동의 (필수)",
+        "privacyPolicy": "개인정보 수집 및 이용 동의 (선택)",
+        "locationTerms": "위치 정보 이용약관 동의 (선택)",
+        "ageVerification": "만 14세 이상입니다"
+      }
+    },
+    "password": {
+      "title": "MOHE에 사용할<br />비밀번호를 입력해주세요",
+      "passwordLabel": "비밀번호",
+      "passwordPlaceholder": "영문, 숫자, 특수문자",
+      "confirmLabel": "비밀번호 확인",
+      "confirmPlaceholder": "비밀번호를 한번 더 입력해주세요",
+      "submitButton": "시작하기",
+      "setting": "설정 중...",
+      "errors": {
+        "requirements": "비밀번호는 {requirements}이 필요합니다.",
+        "minLength": "8자 이상",
+        "requireLetter": "영문 포함",
+        "requireNumber": "숫자 포함",
+        "requireSpecial": "특수문자 포함",
+        "mismatch": "비밀번호가 일치하지 않습니다.",
+        "missingInfo": "사용자 정보가 부족합니다. 다시 회원가입을 진행해주세요.",
+        "setupFailed": "프로필 설정에 실패했습니다. 다시 시도해주세요."
+      }
+    },
+    "forgotPassword": {
+      "title": "비밀번호를 잊으셨나요?",
+      "subtitle": "재설정하려는 계정의 이메일 주소를 입력해주세요",
+      "emailLabel": "이메일 주소",
+      "emailPlaceholder": "example@mohe.com",
+      "sendButton": "이메일 전송",
+      "sent": "이메일 전송됨",
+      "successMessage": "비밀번호 재설정 이메일이 전송되었습니다.",
+      "errorMessage": "비밀번호 재설정 이메일 전송에 실패했습니다."
+    }
+  },
+  "onboarding": {
+    "age": {
+      "title": "연령대를 알려주시면,<br />더 잘 맞춰드릴 수 있어요",
+      "subtitle": "연령에 어울리는 플레이스를 찾아드릴게요",
+      "ranges": {
+        "under20": "20대 미만",
+        "20s": "20대",
+        "30s": "30대",
+        "40s": "40대",
+        "over50": "50대 이상"
+      }
+    },
+    "mbti": {
+      "title": "MBTI를 알려주면,<br/>추천이 쉬워져요",
+      "subtitle": "아래에서 내 MBTI를 직접 선택해보세요",
+      "defaultDescription": "자신만의 여행 스타일을 찾아보세요",
+      "descriptions": {
+        "ISFP": "하루의 분주함을 뒤로하고, 조용한 카페 구석에서 따뜻한 차 한 잔에 마음의 평온을 느끼는 순간이 큰 위로가 돼요.\n계획으로 쌓아둔 작은 즐거움이 지켜질 때의 안도감이 여행의 진정한 설렘이 되죠.\n자연의 고요함도 좋지만, 도심 골목마다 숨어 있는 예술과 이야기가 제 안의 영감을 깨워줘요.",
+        "ISFJ": "따뜻한 분위기의 작은 카페에서 친구들과 나누는 소소한 이야기가 가장 큰 행복이에요.\n새로운 장소보다는 익숙하고 편안한 공간에서 마음의 안정을 찾는 편이죠.\n주변 사람들이 편안해하는 모습을 보면서 진정한 만족감을 느끼는 여행을 선호해요.",
+        "INFP": "혼자만의 시간을 통해 내면의 깊은 생각을 정리하고, 예술적 영감을 얻는 공간을 찾아요.\n계획보다는 그 순간의 감정에 따라 자유롭게 움직이는 여행이 더 의미있게 느껴져요.\n사람들의 진솔한 이야기와 문화가 담긴 장소에서 깊은 울림을 경험하고 싶어해요.",
+        "INFJ": "의미있는 경험과 깊은 성찰을 할 수 있는 조용하고 영감을 주는 장소를 선호해요.\n계획적이지만 유연하게, 자신만의 특별한 순간을 만들어가는 여행을 좋아해요.\n역사와 문화가 깊이 스며있는 곳에서 진정한 배움과 감동을 얻고 싶어해요.",
+        "ISTP": "실용적이고 효율적인 여행을 선호하며, 직접 체험할 수 있는 활동적인 장소를 좋아해요.\n계획보다는 즉흥적으로 움직이면서 새로운 기술이나 경험을 시도하는 걸 즐겨요.\n혼자서도 충분히 즐길 수 있는 자유로운 여행 스타일을 추구해요.",
+        "ISTJ": "체계적이고 안전한 여행 계획을 세우며, 검증된 명소와 전통적인 장소를 선호해요.\n미리 준비된 일정에 따라 움직이면서 안정감을 느끼는 여행을 좋아해요.\n역사적 가치와 문화적 의미가 있는 곳에서 깊이있는 학습 경험을 추구해요.",
+        "INTP": "독특하고 지적 호기심을 자극하는 장소를 찾아 혼자만의 탐구 시간을 가져요.\n정해진 일정보다는 관심있는 것을 발견했을 때 깊이 파고드는 자유로운 여행을 선호해요.\n과학관, 박물관, 도서관 같은 지식을 얻을 수 있는 공간에서 특별한 영감을 받아요.",
+        "INTJ": "목적이 명확하고 효율적인 여행 계획을 세우며, 개인적 성장에 도움되는 경험을 추구해요.\n혼자서 깊이 사고할 수 있는 조용한 환경과 체계적인 학습 기회를 선호해요.\n미래에 대한 비전과 통찰을 얻을 수 있는 의미있는 장소를 찾아 여행해요.",
+        "ESFP": "활기찬 분위기에서 사람들과 함께 즐기는 다양한 경험과 새로운 만남을 추구해요.\n계획보다는 그 순간의 감정과 분위기에 따라 자유롭게 움직이는 여행을 좋아해요.\n맛집, 쇼핑, 엔터테인먼트가 풍부한 활동적이고 재미있는 장소를 선호해요.",
+        "ESFJ": "가족이나 친구들과 함께 따뜻하고 화목한 시간을 보낼 수 있는 장소를 찾아요.\n모든 사람이 편안하고 즐거워할 수 있는 잘 계획된 여행을 선호해요.\n전통적이고 친숙한 문화 체험과 맛있는 음식을 함께 나누는 여행을 좋아해요.",
+        "ENFP": "새로운 사람들과의 만남과 예상치 못한 모험을 통해 영감을 얻는 여행을 추구해요.\n자유로운 일정으로 다양한 경험을 시도하며, 창의적 영감을 주는 장소를 선호해요.\n예술, 문화, 자연이 어우러진 곳에서 깊은 감동과 새로운 아이디어를 얻고 싶어해요.",
+        "ENFJ": "의미있는 만남과 문화 교류를 통해 서로에게 긍정적 영향을 주고받는 여행을 좋아해요.\n계획적이면서도 사람들이 함께 성장할 수 있는 경험을 만들어가요.\n봉사활동이나 지역사회와 연결된 의미있는 여행 활동을 선호해요.",
+        "ESTP": "즉흥적이고 모험적인 활동으로 가득한 역동적인 여행을 추구해요.\n새로운 도전과 스릴을 느낄 수 있는 액티비티와 다양한 경험을 좋아해요.\n활기찬 도시나 자연에서 몸으로 직접 체험할 수 있는 모험적인 여행을 선호해요.",
+        "ESTJ": "효율적이고 체계적인 계획으로 목표를 달성하는 성과있는 여행을 추구해요.\n검증된 명소와 전통적인 관광지를 방문하며 안정적인 여행을 선호해요.\n비즈니스나 네트워킹 기회가 있는 실용적이고 생산적인 여행을 좋아해요.",
+        "ENTP": "새로운 아이디어와 가능성을 탐구할 수 있는 창의적이고 자극적인 여행을 추구해요.\n즉흥적으로 계획을 바꾸며 예상치 못한 경험과 만남을 즐겨요.\n혁신적인 기술이나 독특한 문화를 경험할 수 있는 최첨단 도시를 선호해요.",
+        "ENTJ": "명확한 목표와 효율적인 계획으로 최대한의 성과를 얻는 여행을 추구해요.\n리더십을 발휘할 수 있는 그룹 여행이나 비즈니스 관련 활동을 선호해요.\n미래 비전에 도움되는 네트워킹과 학습 기회가 있는 전략적인 여행을 좋아해요."
+      },
+      "fallbackDescription": "당신만의 독특한 성격 유형이에요! 다양한 경험을 통해 자신만의 여행 스타일을 찾아보세요."
+    },
+    "space": {
+      "title": "어디에서 시간을<br />보내고 싶으신가요?",
+      "subtitle": "마음 가는 공간을 자유롭게 선택해보세요",
+      "options": {
+        "workshop": {
+          "title": "공방 & 체험 공간",
+          "description": "무언가를 만드는 시간이 좋아요"
+        },
+        "exhibition": {
+          "title": "전시회 & 박물관",
+          "description": "천천히 둘러보며 감상하는 게 좋아요"
+        },
+        "shopping": {
+          "title": "편집숍 & 쇼핑몰",
+          "description": "내 취향을 발견하는 재미가 있어요"
+        },
+        "nature": {
+          "title": "산책 & 자연 명소",
+          "description": "걷다 보면 생각이 정리돼요"
+        },
+        "lounge": {
+          "title": "재즈바 & 라운지",
+          "description": "음악과 조명 속에 잠시 머물고 싶어요"
+        }
+      }
+    },
+    "transportation": {
+      "title": "어떻게 이동하시나요?",
+      "subtitle": "이동 수단에 따라 추천 장소가 달라져요",
+      "options": {
+        "public": "대중교통",
+        "car": "자동차"
+      },
+      "errorSaving": "선호도 저장 중 오류가 발생했습니다."
     }
   },
   "home": {
@@ -55,16 +208,122 @@
       "title": "지금 뭐하지?",
       "description": "시간, 기분, 취향을 반영해서\n당신에게 어울리는 곳을 골라봤어요."
     },
+    "categorySection": {
+      "prefix": "오늘은",
+      "suffix": "어때요?"
+    },
+    "seeMore": "더 많은 장소 보기",
+    "footer": {
+      "copyright": "© 2025 MOHE",
+      "links": "서비스 이용약관 | 개인정보처리방침 | 문의하기",
+      "email": "hello@mohe.app"
+    },
     "errors": {
       "loadFailed": "데이터를 불러오는데 실패했습니다.",
       "locationFailed": "위치 정보를 불러올 수 없습니다.",
-      "authRequired": "인증이 필요합니다. 다시 로그인해주세요."
+      "authRequired": "인증이 필요합니다. 다시 로그인해주세요.",
+      "initFailed": "앱 초기화 중 오류가 발생했습니다.",
+      "addressFailed": "주소를 불러오지 못했습니다.",
+      "addressUnavailable": "주소를 불러올 수 없습니다",
+      "locationUnavailable": "위치 정보를 확인할 수 없습니다",
+      "noLocation": "위치 정보 없음"
+    },
+    "bookmarkLoginRequired": "북마크 기능을 사용하려면 로그인이 필요합니다.",
+    "featureLoginRequired": "이 기능을 사용하려면 로그인이 필요합니다."
+  },
+  "places": {
+    "list": {
+      "title": "지금 가볼만한 곳",
+      "sectionTitle": "모든 장소",
+      "sectionSubtitle": "평점과 인기도를 기준으로 정렬된 장소들입니다",
+      "loadMore": "더 많은 장소 보기",
+      "loading": "더 많은 장소를 불러오는 중...",
+      "pagination": "{current} / {total} 페이지",
+      "emptyState": "추천할 장소가 없습니다.\n잠시 후 다시 시도해주세요.",
+      "errors": {
+        "loadFailed": "장소를 불러오는데 실패했습니다.",
+        "loadError": "장소를 불러오는 중 오류가 발생했습니다."
+      }
+    },
+    "detail": {
+      "experienceButton": "경험하기",
+      "readMore": "Read More",
+      "sectionTitle": "이런 오늘 어때요?",
+      "errors": {
+        "idRequired": "장소 ID가 필요합니다.",
+        "notFound": "장소 정보를 찾을 수 없습니다.",
+        "loadFailed": "장소 정보를 불러오는데 실패했습니다."
+      }
     }
+  },
+  "bookmarks": {
+    "title": "북마크",
+    "emptyState": "아직 북마크한 장소가 없습니다.\n마음에 드는 장소를 북마크해보세요!",
+    "errors": {
+      "loadFailed": "북마크를 불러오는데 실패했습니다.",
+      "loadError": "북마크를 불러오는 중 오류가 발생했습니다."
+    },
+    "loginRequired": "북마크 기능을 사용하려면 로그인이 필요합니다."
   },
   "profile": {
     "settings": "설정",
     "logout": "로그아웃",
-    "myPage": "마이페이지"
+    "myPage": "마이페이지",
+    "menu": {
+      "bookmarks": "북마크",
+      "profile": "프로필",
+      "myPlaces": "내 장소",
+      "recentPlaces": "최근 본 장소",
+      "version": "버전 정보"
+    },
+    "moodSection": {
+      "title": "지금 뭐하지?",
+      "description": "시간, 기분, 취향을 반영해서\n당신에게 어울리는 곳을 골라봤어요."
+    },
+    "defaultNickname": "이용자",
+    "defaultDescription": "취향 정보를 설정해보세요.",
+    "mbtiDescription": "{mbti} 취향의 이용자입니다.",
+    "edit": {
+      "title": "프로필 수정",
+      "profileImageAlt": "프로필",
+      "nicknamePlaceholder": "닉네임을 입력하세요",
+      "saving": "저장 중...",
+      "errors": {
+        "saveFailed": "프로필 수정에 실패했습니다."
+      }
+    }
+  },
+  "myPlaces": {
+    "title": "내 장소",
+    "emptyState": "아직 방문한 장소가 없습니다.\n장소를 둘러보고 나만의 리스트를 만들어보세요!",
+    "errors": {
+      "loadFailed": "내 장소를 불러오는 데 실패했습니다.",
+      "loadError": "내 장소를 불러오는 중 오류가 발생했습니다."
+    }
+  },
+  "recentPlaces": {
+    "title": "최근 본 장소",
+    "sectionTitle": "최근에 확인한 곳들이에요",
+    "emptyState": "최근에 본 장소가 없습니다.\n새로운 장소를 탐색해보세요!",
+    "errors": {
+      "loadFailed": "최근 본 장소를 불러오는데 실패했습니다.",
+      "loadError": "최근 본 장소를 불러오는 중 오류가 발생했습니다."
+    }
+  },
+  "search": {
+    "title": "\"{query}\" 검색 결과",
+    "personalizedTitle": "{userName}님만을 위한 장소들을 찾아봤어요!",
+    "subtitle": "현재 위치 기반으로 추천 장소를 찾았습니다.",
+    "emptyWithQuery": "검색 결과가 없습니다.",
+    "emptyNoQuery": "추천할 장소가 없습니다.",
+    "emptyHelp": "다른 키워드로 검색해보세요.",
+    "operatingHoursDefault": "영업시간 정보 없음",
+    "transportInfoDefault": "정보 없음",
+    "defaultUser": "고객",
+    "errors": {
+      "loadFailed": "검색 결과를 불러오는데 실패했습니다.",
+      "loadError": "검색 중 오류가 발생했습니다."
+    }
   },
   "errors": {
     "networkError": "네트워크 오류가 발생했습니다.",

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import BookmarkPlaceCard from '@/components/ui/cards/BookmarkPlaceCard';
 import BookmarksSkeleton from '@/components/ui/skeletons/BookmarksSkeleton';
 import ErrorMessage from '@/components/ui/alerts/ErrorMessage';
@@ -7,6 +8,7 @@ import { authService } from '@/services/authService';
 import styles from '@/styles/pages/my-places-page.module.css';
 
 export default function MyPlacesPage() {
+  const { t } = useTranslation();
   const [myPlaces, setMyPlaces] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -16,7 +18,7 @@ export default function MyPlacesPage() {
       try {
         setIsLoading(true);
         setError(null);
-        
+
         const user = authService.getCurrentUser();
         if (!user || user.isGuest) {
           setMyPlaces([]);
@@ -36,11 +38,11 @@ export default function MyPlacesPage() {
           }));
           setMyPlaces(mapped);
         } else {
-          setError('내 장소를 불러오는 데 실패했습니다.');
+          setError(t('myPlaces.errors.loadFailed'));
         }
       } catch (err) {
         console.error('Failed to load my places:', err);
-        setError('내 장소를 불러오는 중 오류가 발생했습니다.');
+        setError(t('myPlaces.errors.loadError'));
       } finally {
         setIsLoading(false);
       }
@@ -52,20 +54,21 @@ export default function MyPlacesPage() {
   return (
     <>
       <header className={styles.header}>
-        <h1 className={styles.title}>내 장소</h1>
+        <h1 className={styles.title}>{t('myPlaces.title')}</h1>
       </header>
 
       <main className={styles.main}>
         {error && (
           <ErrorMessage message={error} />
         )}
-        
+
         {isLoading ? (
           <BookmarksSkeleton />
         ) : myPlaces.length === 0 ? (
           <div className={styles.emptyState}>
-            <p>아직 방문한 장소가 없습니다.</p>
-            <p>장소를 둘러보고 나만의 리스트를 만들어보세요!</p>
+            {t('myPlaces.emptyState').split('\n').map((line, i) => (
+              <p key={i}>{line}</p>
+            ))}
           </div>
         ) : (
           <div className={styles.placesList}>

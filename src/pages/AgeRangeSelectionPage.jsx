@@ -1,13 +1,15 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import styles from '@/styles/pages/age-range-selection-page.module.css';
 import PreferencePageLayout from '@/components/layout/PreferencePageLayout';
 import { useUserPreferences } from '@/contexts';
 
 export default function AgeRangeSelectionPage() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { ageRange, setAgeRange } = useUserPreferences();
-  
+
   // Convert context string to number for comparison (backwards compatibility)
   const selectedAge = ageRange ? parseInt(ageRange) : null;
 
@@ -33,8 +35,8 @@ export default function AgeRangeSelectionPage() {
 
   return (
     <PreferencePageLayout
-      title={<>연령대를 알려주시면,<br />더 잘 맞춰드릴 수 있어요</>}
-      subtitle="연령에 어울리는 플레이스를 찾아드릴게요"
+      title={<span dangerouslySetInnerHTML={{ __html: t('onboarding.age.title') }} />}
+      subtitle={t('onboarding.age.subtitle')}
       onNext={handleNext}
       onSkip={handleSkip}
       isReady={isReady()}
@@ -48,7 +50,7 @@ export default function AgeRangeSelectionPage() {
           <div className={styles.ageRow}>
             {/* Under 20 */}
             <div className={styles.ageOption}>
-              <button 
+              <button
                 className={`${styles.ageButton} ${selectedAge === 19 ? styles.selected : ''}`}
                 onClick={() => handleAgeSelect(19)}
               >
@@ -60,29 +62,29 @@ export default function AgeRangeSelectionPage() {
                   </svg>
                 </div>
               </button>
-              <span className={styles.ageLabel}>20대 미만</span>
+              <span className={styles.ageLabel}>{t('onboarding.age.ranges.under20')}</span>
             </div>
 
             {/* 20s */}
             <div className={styles.ageOption}>
-              <button 
+              <button
                 className={`${styles.ageButton} ${selectedAge === 20 ? styles.selected : ''}`}
                 onClick={() => handleAgeSelect(20)}
               >
                 <span className={styles.ageNumber}>20</span>
               </button>
-              <span className={styles.ageLabel}>20대</span>
+              <span className={styles.ageLabel}>{t('onboarding.age.ranges.20s')}</span>
             </div>
 
             {/* 30s */}
             <div className={styles.ageOption}>
-              <button 
+              <button
                 className={`${styles.ageButton} ${selectedAge === 30 ? styles.selected : ''}`}
                 onClick={() => handleAgeSelect(30)}
               >
                 <span className={styles.ageNumber}>30</span>
               </button>
-              <span className={styles.ageLabel}>30대</span>
+              <span className={styles.ageLabel}>{t('onboarding.age.ranges.30s')}</span>
             </div>
           </div>
 
@@ -90,18 +92,18 @@ export default function AgeRangeSelectionPage() {
           <div className={styles.ageRow}>
             {/* 40s */}
             <div className={styles.ageOption}>
-              <button 
+              <button
                 className={`${styles.ageButton} ${selectedAge === 40 ? styles.selected : ''}`}
                 onClick={() => handleAgeSelect(40)}
               >
                 <span className={styles.ageNumber}>40</span>
               </button>
-              <span className={styles.ageLabel}>40대</span>
+              <span className={styles.ageLabel}>{t('onboarding.age.ranges.40s')}</span>
             </div>
 
             {/* 50+ */}
             <div className={styles.ageOption}>
-              <button 
+              <button
                 className={`${styles.ageButton} ${selectedAge === 50 ? styles.selected : ''}`}
                 onClick={() => handleAgeSelect(50)}
               >
@@ -113,7 +115,7 @@ export default function AgeRangeSelectionPage() {
                   </svg>
                 </div>
               </button>
-              <span className={styles.ageLabel}>50대 이상</span>
+              <span className={styles.ageLabel}>{t('onboarding.age.ranges.over50')}</span>
             </div>
           </div>
         </div>

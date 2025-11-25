@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import styles from '@/styles/pages/transportation-selection-page.module.css';
 import PreferencePageLayout from '@/components/layout/PreferencePageLayout';
 import { useUserPreferences } from '@/contexts';
@@ -8,21 +9,22 @@ import { authService } from '@/services/authService';
 import busImage from '@/assets/image/bus.png';
 import carImage from '@/assets/image/car.png';
 
-const TRANSPORTATION_OPTIONS = [
-    {
-        id: 'public',
-        title: '대중교통',
-        image: busImage
-    },
-    {
-        id: 'car',
-        title: '자동차',
-        image: carImage
-    }
-];
-
 export default function TransportationSelectionPage() {
+    const { t } = useTranslation();
     const navigate = useNavigate();
+
+    const TRANSPORTATION_OPTIONS = [
+        {
+            id: 'public',
+            title: t('onboarding.transportation.options.public'),
+            image: busImage
+        },
+        {
+            id: 'car',
+            title: t('onboarding.transportation.options.car'),
+            image: carImage
+        }
+    ];
     const {
         transportationMethod,
         setTransportationMethod,
@@ -87,7 +89,7 @@ export default function TransportationSelectionPage() {
             }
         } catch (err) {
             console.error('Error saving preferences:', err);
-            setError(err.message || '선호도 저장 중 오류가 발생했습니다.');
+            setError(err.message || t('onboarding.transportation.errorSaving'));
             // Still navigate even if backend save fails (preferences are in localStorage)
             setTimeout(() => navigate('/hello'), 2000);
         } finally {
@@ -102,8 +104,8 @@ export default function TransportationSelectionPage() {
 
     return (
         <PreferencePageLayout
-            title="어떻게 이동하시나요?"
-            subtitle="이동 수단에 따라 추천 장소가 달라져요"
+            title={t('onboarding.transportation.title')}
+            subtitle={t('onboarding.transportation.subtitle')}
             onNext={handleNext}
             onSkip={handleSkip}
             isReady={isReady() && !isLoading}

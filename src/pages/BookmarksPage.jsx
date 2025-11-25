@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import BookmarkPlaceCard from '@/components/ui/cards/BookmarkPlaceCard';
 import BookmarksSkeleton from '@/components/ui/skeletons/BookmarksSkeleton';
 import ErrorMessage from '@/components/ui/alerts/ErrorMessage';
@@ -8,6 +9,7 @@ import styles from '@/styles/pages/bookmarks-page.module.css';
 import useAuthGuard from '@/hooks/useAuthGuard';
 
 function BookmarksPage() {
+  const { t } = useTranslation();
   useAuthGuard(true); // Protect this page
   const [bookmarkedPlaces, setBookmarkedPlaces] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -18,7 +20,7 @@ function BookmarksPage() {
       try {
         setIsLoading(true);
         setError(null);
-        
+
         const user = authService.getCurrentUser();
         if (!user || user.isGuest) {
           // No bookmarks for guest users
@@ -32,11 +34,11 @@ function BookmarksPage() {
           const bookmarks = response.data?.bookmarks ?? response.data ?? [];
           setBookmarkedPlaces(bookmarks);
         } else {
-          setError('북마크를 불러오는데 실패했습니다.');
+          setError(t('bookmarks.errors.loadFailed'));
         }
       } catch (err) {
         console.error('Failed to load bookmarks:', err);
-        setError('북마크를 불러오는 중 오류가 발생했습니다.');
+        setError(t('bookmarks.errors.loadError'));
       } finally {
         setIsLoading(false);
       }
@@ -48,20 +50,21 @@ function BookmarksPage() {
   return (
     <>
       <header className={styles.header}>
-        <h1 className={styles.title}>북마크</h1>
+        <h1 className={styles.title}>{t('bookmarks.title')}</h1>
       </header>
 
       <main className={styles.main}>
         {error && (
           <ErrorMessage message={error} />
         )}
-        
+
         {isLoading ? (
           <BookmarksSkeleton />
         ) : bookmarkedPlaces.length === 0 ? (
           <div className={styles.emptyState}>
-            <p>아직 북마크한 장소가 없습니다.</p>
-            <p>마음에 드는 장소를 북마크해보세요!</p>
+            {t('bookmarks.emptyState').split('\n').map((line, index) => (
+              <p key={index}>{line}</p>
+            ))}
           </div>
         ) : (
           <div className={styles.placesList}>

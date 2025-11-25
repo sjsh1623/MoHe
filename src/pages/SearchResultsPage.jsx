@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import styles from '@/styles/pages/search-results-page.module.css';
 
 import { Container } from '@/components/ui/layout';
@@ -16,7 +17,7 @@ export default function SearchResultsPage() {
   const locationState = useLocation().state;
   const query = searchParams.get('q') || locationState?.query || '';
   const debouncedQuery = useDebounce(query, 300);
-  
+
   const [searchResults, setSearchResults] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -50,7 +51,7 @@ export default function SearchResultsPage() {
 
         let lat = 37.5665; // Default Seoul coordinates
         let lon = 126.9780;
-        
+
         if (location) {
           lat = location.latitude;
           lon = location.longitude;
@@ -104,10 +105,10 @@ export default function SearchResultsPage() {
       } else {
         await bookmarkService.removeBookmark(placeId);
       }
-      
+
       // Update local state
-      setSearchResults(prevResults => 
-        prevResults.map(place => 
+      setSearchResults(prevResults =>
+        prevResults.map(place =>
           place.id === placeId ? { ...place, isBookmarked: shouldBookmark } : place
         )
       );
@@ -158,12 +159,12 @@ export default function SearchResultsPage() {
               <div className={styles.horizontalScroll}>
                 <div className={styles.imagesContainer}>
                   <div className={styles.imageWrapper}>
-                    <img 
-                      src={buildImageUrl(place.image || place.imageUrl) || 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=270&h=270&fit=crop&crop=center'} 
-                      alt={place.name || place.title} 
-                      className={styles.placeImage} 
+                    <img
+                      src={buildImageUrl(place.image || place.imageUrl) || 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=270&h=270&fit=crop&crop=center'}
+                      alt={place.name || place.title}
+                      className={styles.placeImage}
                     />
-                    <button 
+                    <button
                       className={styles.bookmarkButton}
                       onClick={() => handleBookmarkToggle(place.id, !(place.isBookmarked || false))}
                     >
@@ -175,7 +176,7 @@ export default function SearchResultsPage() {
                   {place.images && place.images.length > 1 && place.images.slice(1, 3).map((imageUrl, index) => (
                     <div key={index} className={styles.imageWrapper}>
                       <img src={buildImageUrl(imageUrl)} alt={place.name || place.title} className={styles.placeImage} />
-                      <button 
+                      <button
                         className={styles.bookmarkButton}
                         onClick={() => handleBookmarkToggle(place.id, !(place.isBookmarked || false))}
                       >
@@ -187,7 +188,7 @@ export default function SearchResultsPage() {
                   ))}
                 </div>
               </div>
-              
+
               <div className={styles.placeInfo}>
                 <div className={styles.placeHeader}>
                   <h3 className={styles.placeName}>{place.name || place.title}</h3>
@@ -199,7 +200,7 @@ export default function SearchResultsPage() {
                     <span>{place.rating}</span>
                   </div>
                 </div>
-                
+
                 <div className={styles.locationInfo}>
                   <span className={styles.location}>{place.location || place.address}</span>
                   <div className={styles.locationIcon}>
@@ -231,13 +232,13 @@ export default function SearchResultsPage() {
                     </div>
                   </div>
                 </div>
-                
+
                 {place.tags && place.tags.length > 0 && (
                   <div className={styles.tags}>
                     {place.tags.join(', ')}
                   </div>
                 )}
-                
+
                 {place.weatherTags && place.weatherTags.length > 0 && (
                   <div className={styles.badges}>
                     {place.weatherTags.slice(0, 2).map((tag, index) => (
