@@ -13,7 +13,6 @@ import {useAuthNavigation} from '@/hooks/useAuthNavigation';
 import { useBackButton } from '@/contexts/BackButtonContext';
 import { PROTECTED_ROUTES } from '@/hooks/useAuthGuard';
 import { authService } from '@/services/authService';
-import LanguageSwitcher from '@/components/LanguageSwitcher';
 
 export default function LoginPage() {
     const { t } = useTranslation();
@@ -55,6 +54,7 @@ export default function LoginPage() {
         setError('');
 
         try {
+            console.log('Attempting login with:', { email: formData.email.trim(), password: '***' });
             const result = await authService.login(formData.email.trim(), formData.password);
             console.log('Login successful:', result);
 
@@ -71,6 +71,10 @@ export default function LoginPage() {
             navigate('/home', { replace: true });
         } catch (error) {
             console.error('Login failed:', error);
+            console.error('Error details:', {
+                message: error.message,
+                stack: error.stack
+            });
             setError(error.message || t('auth.login.errors.loginFailed'));
         } finally {
             setIsLoading(false);
@@ -129,9 +133,7 @@ export default function LoginPage() {
                 titleClassName={styles.title}
             />
 
-            <LanguageSwitcher className={styles.languageSwitcher} />
-
-                <Stack spacing="sm">
+            <Stack spacing="sm">
                     <FormInput
                         label={t('auth.login.emailLabel')}
                         type="email"

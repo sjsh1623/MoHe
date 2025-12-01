@@ -10,7 +10,7 @@
   font-family: var(--font-family-base);
   font-weight: 500;
   color: #000000;
-  margin-bottom: 0.5rem; /* Match login page tight spacing */
+  margin-bottom: 0.05rem; /* Match login page tight spacing */
 }
 
 .inputWrapper {

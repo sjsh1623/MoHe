@@ -113,6 +113,8 @@ class AuthService {
    * Login with email or id and password
    */
   async login(id, password) {
+    console.log('[AuthService] Login attempt to:', `${this.baseURL}/api/auth/login`);
+    console.log('[AuthService] Request payload:', { email: id, password: '***' });
 
     try {
       const response = await fetch(`${this.baseURL}/api/auth/login`, {
@@ -123,19 +125,25 @@ class AuthService {
         body: JSON.stringify({ email: id, password }),
       });
 
+      console.log('[AuthService] Response status:', response.status);
       const data = await response.json();
+      console.log('[AuthService] Response data:', data);
 
       if (!response.ok) {
+        console.error('[AuthService] Login failed - response not ok:', data);
         throw new Error(getLocalizedAuthError('login', data.message));
       }
 
       if (data.success) {
+        console.log('[AuthService] Login successful');
         this.setAuthData(data.data);
         return data.data;
       } else {
+        console.error('[AuthService] Login failed - success=false:', data.message);
         throw new Error(getLocalizedAuthError('login', data.message));
       }
     } catch (error) {
+      console.error('[AuthService] Login error caught:', error);
       throw new Error(getLocalizedAuthError('login', error.message));
     }
   }

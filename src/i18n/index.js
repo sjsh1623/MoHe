@@ -19,8 +19,7 @@ i18n
   .use(initReactI18next) // React i18next 초기화
   .init({
     resources,
-    fallbackLng: 'ko', // 기본 언어
-    lng: 'ko', // 초기 언어
+    fallbackLng: 'ko', // 기본 언어 (감지 실패 시)
     debug: false,
 
     interpolation: {

@@ -24,6 +24,12 @@
       "Bash(pod install)",
       "Bash(sudo gem install:*)",
       "Bash(open:*)"
+      "Bash(jq -r .success echo echo 'Step 2: Setup Password...' curl -X POST http://localhost:8000/api/auth/setup-password -H 'Content-Type: application/json' -d {tempUserId:$TEMP_USER_ID,nickname:completeuser,password:Test1234,termsAgreed:true})",
+      "Bash(TEMP_USER_ID=\"58613477-6678-487a-90f2-9075aed33d7e\":*)",
+      "Bash(__NEW_LINE__ echo \"\")",
+      "Bash(npm install:*)",
+      "Bash(git restore:*)",
+      "Bash(npm run lint:*)"
     ],
     "deny": [],
     "ask": []
