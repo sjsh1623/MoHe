@@ -31,9 +31,7 @@ export default defineConfig({
       interval: 100, // 폴링 간격 (ms)
     },
     hmr: {
-      protocol: 'ws',
-      host: '0.0.0.0', // Mobile 접근을 위해 0.0.0.0 사용
-      port: 3000,
+      clientPort: 443, // Use HTTPS port for client connection
       overlay: true,
     },
     // MIME type 명시적 설정
