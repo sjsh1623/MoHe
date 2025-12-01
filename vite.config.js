@@ -16,16 +16,20 @@ export default defineConfig({
     }
   },
   server: {
-    host: true, // Allow external connections for mobile testing
+    host: '0.0.0.0', // Allow external connections for mobile testing and Docker
     port: 3000,
+    strictPort: true, // Fail if port is already in use
     allowedHosts: [
       'mohe.today',
       '.mohe.today' // Include all subdomains
     ],
     watch: {
       usePolling: true, // Docker 환경에서 파일 변경 감지를 위해 필요
+      interval: 100, // 폴링 간격 (ms)
     },
     hmr: {
+      host: 'localhost', // HMR WebSocket host
+      port: 3000, // HMR WebSocket port
       overlay: true, // 에러 오버레이 표시
     }
   }
