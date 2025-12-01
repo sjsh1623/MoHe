@@ -1,7 +1,11 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+// Use empty string if VITE_API_BASE_URL is set to empty (for relative API paths)
+// Otherwise use the provided value or default to empty string for relative paths
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL !== undefined
+  ? import.meta.env.VITE_API_BASE_URL
+  : '';
 
 // Debug: Log the API base URL being used
-console.log('🔧 API Base URL:', API_BASE_URL);
+console.log('🔧 API Base URL:', API_BASE_URL || '(empty - using relative paths)');
 
 /**
  * Base API service with common functionality
