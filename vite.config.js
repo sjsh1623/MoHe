@@ -21,16 +21,24 @@ export default defineConfig({
     strictPort: true, // Fail if port is already in use
     allowedHosts: [
       'mohe.today',
-      '.mohe.today' // Include all subdomains
+      '.mohe.today', // Include all subdomains
+      'mohe-react-dev', // Allow Docker internal hostname
+      'localhost',
+      '127.0.0.1'
     ],
     watch: {
       usePolling: true, // Docker 환경에서 파일 변경 감지를 위해 필요
       interval: 100, // 폴링 간격 (ms)
     },
     hmr: {
-      host: 'localhost', // HMR WebSocket host
-      port: 3000, // HMR WebSocket port
-      overlay: true, // 에러 오버레이 표시
+      protocol: 'ws',
+      host: '0.0.0.0', // Mobile 접근을 위해 0.0.0.0 사용
+      port: 3000,
+      overlay: true,
+    },
+    // MIME type 명시적 설정
+    headers: {
+      'Content-Type': 'text/html; charset=utf-8',
     }
   }
 });

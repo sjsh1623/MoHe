@@ -11,7 +11,7 @@ services:
     environment:
       - NODE_ENV=development
       - VITE_HOST=0.0.0.0
-      - VITE_API_BASE_URL=http://localhost:8000
+      - VITE_API_BASE_URL=/api
       - CHOKIDAR_USEPOLLING=true
     volumes:
       # 소스 코드 볼륨 마운트 (실시간 반영)
@@ -26,9 +26,12 @@ services:
     restart: unless-stopped
     networks:
       - mohe-network
+      - proxy_network  # Connect to Caddy proxy network for mohe.today domain
     stdin_open: true
     tty: true
 
 networks:
   mohe-network:
     driver: bridge
+  proxy_network:
+    external: true  # Use existing proxy_network for Caddy communication
