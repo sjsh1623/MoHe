@@ -30,13 +30,6 @@ export default defineConfig({
       usePolling: true, // Docker 환경에서 파일 변경 감지를 위해 필요
       interval: 100, // 폴링 간격 (ms)
     },
-    hmr: {
-      clientPort: 443, // Use HTTPS port for client connection
-      overlay: true,
-    },
-    // MIME type 명시적 설정
-    headers: {
-      'Content-Type': 'text/html; charset=utf-8',
-    }
+    hmr: false, // Disable HMR for production-like environment
   }
 });
