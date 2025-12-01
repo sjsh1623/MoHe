@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useCallback } from 'react';
-import { Routes, Route, useLocation } from 'react-router-dom';
+import { Routes, Route, useLocation, useNavigationType } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 
 // Global scroll position store
@@ -69,20 +69,37 @@ const AUTH_ROUTES = new Set([
 
 export default function AnimatedRoutes() {
   const location = useLocation();
+  const navigationType = useNavigationType();
   const prevLocation = useRef(location.pathname);
   const currentContainerRef = useRef(null);
 
-  // Determine slide direction based on route hierarchy
+  // Determine slide direction based on browser navigation action
   const getSlideDirection = () => {
+    // Use browser navigation type first (handles back/forward buttons)
+    if (navigationType === 'POP') {
+      // Browser back/forward was used - determine direction from hierarchy
+      const getCurrentLevel = (path) => {
+        if (path.startsWith('/place/')) return ROUTE_HIERARCHY['/place'];
+        return ROUTE_HIERARCHY[path] || 0;
+      };
+
+      const currentLevel = getCurrentLevel(location.pathname);
+      const prevLevel = getCurrentLevel(prevLocation.current);
+
+      // If going to lower level, it's backward navigation
+      return currentLevel < prevLevel ? 'backward' : 'forward';
+    }
+
+    // For PUSH/REPLACE navigation (programmatic navigation)
     // Handle dynamic routes like /place/:id
     const getCurrentLevel = (path) => {
       if (path.startsWith('/place/')) return ROUTE_HIERARCHY['/place'];
       return ROUTE_HIERARCHY[path] || 0;
     };
-    
+
     const currentLevel = getCurrentLevel(location.pathname);
     const prevLevel = getCurrentLevel(prevLocation.current);
-    
+
     // If going to a higher level (forward), slide left
     // If going to a lower level (back), slide right
     return currentLevel > prevLevel ? 'forward' : 'backward';
