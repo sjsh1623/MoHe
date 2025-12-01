@@ -1,12 +1,13 @@
 /* Mobile-optimized auth page */
 .pageContainer {
-    min-height: 100dvh; /* Dynamic viewport height for mobile */
+    height: 100dvh; /* Dynamic viewport height for mobile */
     display: flex;
     align-items: center;
     padding: var(--auth-padding-desktop);
     max-width: 440px;
     margin: 0 auto;
     background: white;
+    overflow: auto; /* Enable scroll only when content exceeds container */
 }
 
 .content {

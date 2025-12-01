@@ -18,6 +18,10 @@ export default defineConfig({
   server: {
     host: true, // Allow external connections for mobile testing
     port: 3000,
+    allowedHosts: [
+      'mohe.today',
+      '.mohe.today' // Include all subdomains
+    ],
     watch: {
       usePolling: true, // Docker 환경에서 파일 변경 감지를 위해 필요
     },
