@@ -31,5 +31,13 @@ export default defineConfig({
       interval: 100, // 폴링 간격 (ms)
     },
     hmr: false, // Disable HMR for production-like environment
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+        secure: false,
+        rewrite: (path) => path
+      }
+    }
   }
 });

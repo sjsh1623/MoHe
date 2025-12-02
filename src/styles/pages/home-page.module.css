@@ -5,7 +5,7 @@
   max-width: min(100%, var(--app-shell-max-width, 428px));
   min-height: 100%;
   margin: 0 auto;
-  padding: calc(var(--app-shell-safe-top, 0px) + var(--app-shell-vertical-gutter, 16px)) 0 calc(var(--app-shell-safe-bottom, 0px) + 80px);
+  padding: calc(var(--app-shell-safe-top, 0px) + 16px) 0 calc(var(--app-shell-safe-bottom, 0px) + 24px);
   display: flex;
   flex-direction: column;
   gap: 24px;
