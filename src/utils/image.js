@@ -19,7 +19,11 @@ export const buildImageUrl = (path) => {
   const withoutLeadingSlashes = trimmed.replace(/^\/+/, '');
   const withoutImagesPrefix = withoutLeadingSlashes.replace(/^(images?|Images?)\//, '');
 
-  return `${IMAGE_BASE_URL}${withoutImagesPrefix}`;
+  // Encode URI component to handle Korean characters and special characters
+  // Split by '/' to encode each path segment separately
+  const encodedPath = withoutImagesPrefix.split('/').map(encodeURIComponent).join('/');
+
+  return `${IMAGE_BASE_URL}${encodedPath}`;
 };
 
 export const buildImageUrlList = (paths = []) => {
