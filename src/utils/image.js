@@ -1,4 +1,5 @@
-const IMAGE_BASE_URL = 'http://100.99.236.50:5200/image/';
+// Use environment variable for image server URL, fallback to local development
+const IMAGE_BASE_URL = import.meta.env.VITE_IMAGE_BASE_URL || 'http://100.99.236.50:5200/image/';
 const ABSOLUTE_URL_REGEX = /^https?:\/\//i;
 
 export const buildImageUrl = (path) => {
