@@ -1,6 +1,78 @@
-// Use environment variable for image server URL, fallback to local development
-const IMAGE_BASE_URL = import.meta.env.VITE_IMAGE_BASE_URL || 'http://100.99.236.50:5200/image/';
+// Build the safest available image origin.
+// 1) Prefer explicitly provided VITE_IMAGE_BASE_URL.
+// 2) Fallback to current origin + /image/ so HTTPS deployments don't mix content.
+// 3) Upgrade any http:// base to https:// when the site itself is served over HTTPS.
 const ABSOLUTE_URL_REGEX = /^https?:\/\//i;
+
+const ensureTrailingSlash = (value = '') =>
+  value.endsWith('/') ? value : `${value}/`;
+
+// Default image base URLs - use Caddy proxy path
+const DEFAULT_PROD_IMAGE_BASE = 'https://mohe.today/image/';
+const DEFAULT_DEV_IMAGE_BASE = '/image/';
+
+// Log configuration for debugging
+const logImageConfig = (baseUrl, source) => {
+  if (typeof window !== 'undefined' && !window.__IMAGE_CONFIG_LOGGED__) {
+    console.log(`🖼️ Image Base URL: ${baseUrl} (source: ${source})`);
+    console.log(`🔒 Protocol: ${window.location.protocol}`);
+    console.log(`🌐 Hostname: ${window.location.hostname}`);
+    window.__IMAGE_CONFIG_LOGGED__ = true;
+  }
+};
+
+const buildDefaultBaseUrl = () => {
+  if (typeof window === 'undefined') {
+    return DEFAULT_PROD_IMAGE_BASE;
+  }
+
+  const { hostname, protocol } = window.location;
+
+  // Production domains use Caddy proxy path
+  // This ensures HTTPS images on HTTPS sites (prevents mixed content blocking)
+  if (hostname.endsWith('mohe.today')) {
+    const baseUrl = DEFAULT_PROD_IMAGE_BASE;
+    logImageConfig(baseUrl, 'production domain');
+    return baseUrl;
+  }
+
+  // For all other deployments, use same-origin proxy path
+  // Caddy proxies /image/* to image processor
+  const baseUrl = `${protocol}//${hostname}/image/`;
+  logImageConfig(baseUrl, 'same-origin proxy');
+  return baseUrl;
+};
+
+const upgradeProtocolIfNeeded = (base) => {
+  const normalizedBase = ensureTrailingSlash(base);
+
+  if (typeof window === 'undefined') {
+    return normalizedBase;
+  }
+
+  if (window.location.protocol === 'https:' && normalizedBase.startsWith('http://')) {
+    try {
+      const url = new URL(normalizedBase, window.location.origin);
+      url.protocol = 'https:';
+      return ensureTrailingSlash(url.toString());
+    } catch (error) {
+      console.warn('Failed to normalize image base URL, keeping original value.', error);
+      return ensureTrailingSlash(normalizedBase.replace(/^http:/, 'https:'));
+    }
+  }
+
+  return normalizedBase;
+};
+
+const resolveImageBaseUrl = () => {
+  const envValue = import.meta.env.VITE_IMAGE_BASE_URL?.trim();
+  if (envValue) {
+    return upgradeProtocolIfNeeded(envValue);
+  }
+  return buildDefaultBaseUrl();
+};
+
+const IMAGE_BASE_URL = resolveImageBaseUrl();
 
 export const buildImageUrl = (path) => {
   if (!path || typeof path !== 'string') {
