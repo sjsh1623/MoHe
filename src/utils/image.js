@@ -85,15 +85,30 @@ export const buildImageUrl = (path) => {
   }
 
   if (ABSOLUTE_URL_REGEX.test(trimmed)) {
-    return trimmed;
+    // If it's already a full URL, decode once to fix double encoding
+    try {
+      return decodeURIComponent(trimmed);
+    } catch {
+      return trimmed;
+    }
   }
 
   const withoutLeadingSlashes = trimmed.replace(/^\/+/, '');
   const withoutImagesPrefix = withoutLeadingSlashes.replace(/^(images?|Images?)\//, '');
 
+  // Decode first to handle potentially pre-encoded paths, then encode properly
+  // This fixes double-encoding issues from backend
+  let decodedPath = withoutImagesPrefix;
+  try {
+    decodedPath = decodeURIComponent(withoutImagesPrefix);
+  } catch {
+    // If decode fails, use original path
+    decodedPath = withoutImagesPrefix;
+  }
+
   // Encode URI component to handle Korean characters and special characters
   // Split by '/' to encode each path segment separately
-  const encodedPath = withoutImagesPrefix.split('/').map(encodeURIComponent).join('/');
+  const encodedPath = decodedPath.split('/').map(encodeURIComponent).join('/');
 
   return `${IMAGE_BASE_URL}${encodedPath}`;
 };
