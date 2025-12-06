@@ -30,7 +30,12 @@ export default defineConfig({
       usePolling: true, // Docker 환경에서 파일 변경 감지를 위해 필요
       interval: 100, // 폴링 간격 (ms)
     },
-    hmr: false, // Disable HMR for production-like environment
+    hmr: {
+      // Enable HMR for fast development feedback
+      overlay: true, // Show errors in browser overlay
+      clientPort: 3000, // HMR client port
+      host: 'localhost', // HMR host
+    },
     proxy: {
       '/api': {
         target: 'http://localhost:8000',
