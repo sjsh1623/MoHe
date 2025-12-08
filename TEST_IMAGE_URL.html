@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>이미지 URL 테스트</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h2 {
+            color: #333;
+            border-bottom: 2px solid #007AFF;
+            padding-bottom: 10px;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <h1>🖼️ Mohe 이미지 URL 테스트</h1>
+
+    <div class="test-section">
+        <h2>1. 환경 변수 확인</h2>
+        <div class="status info" id="env-status">로딩 중...</div>
+    </div>
+
+    <div class="test-section">
+        <h2>2. 이미지 로드 테스트</h2>
+        <p>테스트 이미지: <code>10000_파스토보이_월계점_1.jpg</code></p>
+        <div class="status info" id="image-status">테스트 중...</div>
+        <img id="test-image" alt="테스트 이미지" style="display:none;">
+    </div>
+
+    <div class="test-section">
+        <h2>3. buildImageUrl 함수 테스트</h2>
+        <div class="status info" id="build-status">테스트 중...</div>
+        <div id="build-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>4. 네트워크 정보</h2>
+        <div class="status info" id="network-info">확인 중...</div>
+    </div>
+
+    <script type="module">
+        // 환경 변수 확인
+        const envStatus = document.getElementById('env-status');
+        const imageBaseUrl = import.meta.env.VITE_IMAGE_BASE_URL;
+        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+        const mode = import.meta.env.MODE;
+
+        envStatus.className = 'status success';
+        envStatus.innerHTML = `
+            <strong>✅ 환경 변수 로드 성공</strong><br>
+            VITE_IMAGE_BASE_URL: <code>${imageBaseUrl || '(비어있음)'}</code><br>
+            VITE_API_BASE_URL: <code>${apiBaseUrl || '(비어있음)'}</code><br>
+            MODE: <code>${mode}</code><br>
+            Expected: <code>http://100.99.236.50:5200/image/</code>
+        `;
+
+        // 이미지 로드 테스트
+        const testImage = document.getElementById('test-image');
+        const imageStatus = document.getElementById('image-status');
+        const testFileName = '10000_파스토보이_월계점_1.jpg';
+        const testUrl = `${imageBaseUrl}${testFileName}`;
+
+        console.log('🖼️ Testing image URL:', testUrl);
+
+        testImage.onload = () => {
+            imageStatus.className = 'status success';
+            imageStatus.innerHTML = `
+                <strong>✅ 이미지 로드 성공!</strong><br>
+                URL: <code>${testUrl}</code><br>
+                크기: ${testImage.naturalWidth} x ${testImage.naturalHeight}px
+            `;
+            testImage.style.display = 'block';
+        };
+
+        testImage.onerror = () => {
+            imageStatus.className = 'status error';
+            imageStatus.innerHTML = `
+                <strong>❌ 이미지 로드 실패</strong><br>
+                URL: <code>${testUrl}</code><br>
+                가능한 원인:<br>
+                1. 이미지 서버가 실행되지 않음<br>
+                2. URL이 잘못됨<br>
+                3. CORS 문제<br>
+                4. 파일이 존재하지 않음
+            `;
+        };
+
+        testImage.src = testUrl;
+
+        // buildImageUrl 함수 테스트 (image.js에서 가져오기)
+        import { buildImageUrl, buildImageUrlList, IMAGE_BASE_URL } from './src/utils/image.js';
+
+        const buildStatus = document.getElementById('build-status');
+        const buildResults = document.getElementById('build-results');
+
+        const testCases = [
+            'test.jpg',
+            '/test.jpg',
+            'image/test.jpg',
+            '/image/test.jpg',
+            'images/test.jpg',
+            '10000_파스토보이_월계점_1.jpg',
+            'http://external.com/image.jpg'
+        ];
+
+        buildStatus.className = 'status success';
+        buildStatus.innerHTML = `
+            <strong>✅ buildImageUrl 함수 테스트</strong><br>
+            IMAGE_BASE_URL: <code>${IMAGE_BASE_URL}</code>
+        `;
+
+        const results = testCases.map(input => {
+            const output = buildImageUrl(input);
+            return `
+                <div style="margin: 10px 0; padding: 10px; background: #f8f9fa; border-radius: 4px;">
+                    <strong>Input:</strong> <code>${input}</code><br>
+                    <strong>Output:</strong> <code>${output}</code>
+                </div>
+            `;
+        }).join('');
+
+        buildResults.innerHTML = results;
+
+        // 네트워크 정보
+        const networkInfo = document.getElementById('network-info');
+        networkInfo.className = 'status info';
+        networkInfo.innerHTML = `
+            <strong>네트워크 정보</strong><br>
+            Protocol: <code>${window.location.protocol}</code><br>
+            Hostname: <code>${window.location.hostname}</code><br>
+            Port: <code>${window.location.port}</code><br>
+            Full URL: <code>${window.location.href}</code><br>
+            <br>
+            <strong>이미지 서버 접근 가능 여부:</strong><br>
+            ${imageBaseUrl.startsWith('http:') ?
+                '✅ HTTP - 로컬 개발 환경 (Mixed Content 문제 없음)' :
+                '⚠️ HTTPS - Caddy 프록시 필요'}
+        `;
+
+        // 콘솔에도 출력
+        console.log('=== Mohe Image URL Test ===');
+        console.log('VITE_IMAGE_BASE_URL:', imageBaseUrl);
+        console.log('IMAGE_BASE_URL (from image.js):', IMAGE_BASE_URL);
+        console.log('Test Image URL:', testUrl);
+        console.log('Protocol:', window.location.protocol);
+        console.log('===========================');
+    </script>
+</body>
+</html>

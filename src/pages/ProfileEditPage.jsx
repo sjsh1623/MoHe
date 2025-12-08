@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import styles from '@/styles/pages/profile-edit-page.module.css';
@@ -7,11 +7,17 @@ import { userService } from '@/services/apiService';
 export default function ProfileEditPage() {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const fileInputRef = useRef(null);
   const [nickname, setNickname] = useState('');
   const [originalNickname, setOriginalNickname] = useState('');
+  const [profileImage, setProfileImage] = useState('');
+  const [originalProfileImage, setOriginalProfileImage] = useState('');
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState('');
-  const hasChanges = nickname.trim() !== originalNickname.trim() && nickname.trim() !== '';
+  const hasChanges = (nickname.trim() !== originalNickname.trim() && nickname.trim() !== '') || selectedFile !== null;
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -22,6 +28,10 @@ export default function ProfileEditPage() {
           if (user?.nickname) {
             setNickname(user.nickname);
             setOriginalNickname(user.nickname);
+          }
+          if (user?.profileImage) {
+            setProfileImage(user.profileImage);
+            setOriginalProfileImage(user.profileImage);
           }
         }
       } catch (err) {
@@ -41,6 +51,37 @@ export default function ProfileEditPage() {
     setNickname(e.target.value);
   };
 
+  const handleImageClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        setError('이미지 파일만 업로드 가능합니다');
+        return;
+      }
+
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        setError('파일 크기는 5MB 이하여야 합니다');
+        return;
+      }
+
+      setSelectedFile(file);
+
+      // Create preview URL
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreviewUrl(reader.result);
+      };
+      reader.readAsDataURL(file);
+      setError('');
+    }
+  };
+
   const handleSave = async () => {
     if (!hasChanges) {
       return;
@@ -49,18 +90,45 @@ export default function ProfileEditPage() {
     try {
       setIsSaving(true);
       setError('');
-      const response = await userService.updateProfile({ nickname: nickname.trim() });
-      if (response.success) {
-        setOriginalNickname(nickname.trim());
-        navigate(-1);
-      } else {
-        setError(response.message || t('profile.edit.errors.saveFailed'));
+
+      // Upload image first if selected
+      let imageUrl = profileImage;
+      if (selectedFile) {
+        setIsUploading(true);
+        const uploadResponse = await userService.uploadProfileImage(selectedFile);
+        if (uploadResponse.success) {
+          imageUrl = uploadResponse.data.imageUrl;
+        } else {
+          throw new Error(uploadResponse.message || '이미지 업로드 실패');
+        }
+        setIsUploading(false);
+      }
+
+      // Update profile with nickname and image URL
+      const updateData = {};
+      if (nickname.trim() !== originalNickname) {
+        updateData.nickname = nickname.trim();
+      }
+      if (imageUrl !== originalProfileImage) {
+        updateData.profileImage = imageUrl;
+      }
+
+      if (Object.keys(updateData).length > 0) {
+        const response = await userService.updateProfile(updateData);
+        if (response.success) {
+          setOriginalNickname(nickname.trim());
+          setOriginalProfileImage(imageUrl);
+          navigate(-1);
+        } else {
+          setError(response.message || t('profile.edit.errors.saveFailed'));
+        }
       }
     } catch (err) {
       console.error('Failed to save profile:', err);
       setError(err.message || t('profile.edit.errors.saveFailed'));
     } finally {
       setIsSaving(false);
+      setIsUploading(false);
     }
   };
 
@@ -73,11 +141,28 @@ export default function ProfileEditPage() {
 
         {/* Profile Image Section */}
         <div className={styles.profileSection}>
-          <div className={styles.profileImageWrapper}>
+          <div
+            className={styles.profileImageWrapper}
+            onClick={handleImageClick}
+            style={{ cursor: 'pointer', position: 'relative' }}
+          >
             <img
-              src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop&crop=face"
+              src={previewUrl || profileImage || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop&crop=face"}
               alt={t('profile.edit.profileImageAlt')}
               className={styles.profileImage}
+            />
+            <div className={styles.imageOverlay}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M23 19C23 19.5304 22.7893 20.0391 22.4142 20.4142C22.0391 20.7893 21.5304 21 21 21H3C2.46957 21 1.96086 20.7893 1.58579 20.4142C1.21071 20.0391 1 19.5304 1 19V8C1 7.46957 1.21071 6.96086 1.58579 6.58579C1.96086 6.21071 2.46957 6 3 6H7L9 3H15L17 6H21C21.5304 6 22.0391 6.21071 22.4142 6.58579C22.7893 6.96086 23 7.46957 23 8V19Z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M12 17C14.2091 17 16 15.2091 16 13C16 10.7909 14.2091 9 12 9C9.79086 9 8 10.7909 8 13C8 15.2091 9.79086 17 12 17Z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </div>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleFileChange}
+              style={{ display: 'none' }}
             />
           </div>
         </div>
@@ -119,8 +204,8 @@ export default function ProfileEditPage() {
         {/* Save Button - appears when input changes */}
         {hasChanges && (
           <div className={styles.saveButtonContainer}>
-            <button className={styles.saveButton} onClick={handleSave} disabled={isSaving}>
-              {isSaving ? t('profile.edit.saving') : t('common.save')}
+            <button className={styles.saveButton} onClick={handleSave} disabled={isSaving || isUploading}>
+              {isUploading ? '이미지 업로드 중...' : isSaving ? t('profile.edit.saving') : t('common.save')}
             </button>
           </div>
         )}

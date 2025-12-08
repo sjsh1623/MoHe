@@ -126,6 +126,14 @@ export default function ProfileSettingsPage() {
     }
   };
 
+  const handleMBTIClick = () => {
+    navigate('/mbti-edit');
+  };
+
+  const handleMyPlacesClick = () => {
+    navigate('/my-places');
+  };
+
   const handleLogout = async () => {
     try {
       await authService.logout();
@@ -154,6 +162,8 @@ export default function ProfileSettingsPage() {
           placesCount={myPlacesCount}
           userDescription={userDescription}
           profileImage={profile?.profileImage || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop&crop=face'}
+          onMBTIClick={handleMBTIClick}
+          onMyPlacesClick={handleMyPlacesClick}
         />
 
         {/* Menu Section */}

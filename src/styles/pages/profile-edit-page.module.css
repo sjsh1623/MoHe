@@ -85,6 +85,26 @@ a {
     object-fit: cover;
 }
 
+.imageOverlay {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 32px;
+    height: 32px;
+    background: rgba(0, 122, 255, 0.9);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid white;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.imageOverlay svg {
+    width: 18px;
+    height: 18px;
+}
+
 .overlap {
     position: absolute;
     width: 259px;

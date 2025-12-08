@@ -12,6 +12,7 @@ import { useGeolocation, useLocationStorage } from '@/hooks/useGeolocation';
 import { weatherService, contextualRecommendationService, bookmarkService, addressService, guestRecommendationService, placeService, homeService, categoryService } from '@/services/apiService';
 import { authService } from '@/services/authService';
 import bannerLeft from '@/assets/image/banner_left.png';
+import logoHeader from '@/assets/image/logo-header.png';
 import { buildImageUrl, normalizePlaceImages } from '@/utils/image';
 import { HomeSection, HomeHorizontalScroller, HomeBanner } from '@/components/ui/home';
 
@@ -897,7 +898,7 @@ export default function HomePage() {
     <div className={styles.pageContainer}>
       {/* Header - Always shown immediately */}
       <header className={styles.header}>
-        <h1 className={styles.logo}>MOHE</h1>
+        <img src={logoHeader} alt="MOHE" className={styles.logo} />
         <ProfileButton onClick={handleProfileClick} />
       </header>
 

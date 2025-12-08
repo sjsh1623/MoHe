@@ -2,24 +2,34 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { buildImageUrl } from '@/utils/image';
 
-export default function ProfileInfoCard({ 
-  styles, 
-  mbtiValue = 'INFJ', 
+export default function ProfileInfoCard({
+  styles,
+  mbtiValue = 'INFJ',
   placesCount = '5',
   userName = '석현',
   userDescription = '함께 조용히 머무를 수 있는 곳을 좋아해요',
-  profileImage = 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop&crop=face'
+  profileImage = 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop&crop=face',
+  onMBTIClick,
+  onMyPlacesClick
 }) {
   return (
     <div className={styles.group}>
       <div className={styles.groupWrapper}>
         <div className={styles.group2}>
           <img className={styles.rectangle} src="/rectangle-841.svg" alt="" />
-          <div className={styles.group3}>
+          <div
+            className={styles.group3}
+            onClick={onMBTIClick}
+            style={{ cursor: onMBTIClick ? 'pointer' : 'default' }}
+          >
             <div className={styles.textWrapper}>MBTI</div>
             <div className={styles.textWrapper2}>{mbtiValue}</div>
           </div>
-          <div className={styles.group4}>
+          <div
+            className={styles.group4}
+            onClick={onMyPlacesClick}
+            style={{ cursor: onMyPlacesClick ? 'pointer' : 'default' }}
+          >
             <div className={styles.textWrapper3}>내 장소</div>
             <div className={styles.textWrapper4}>{placesCount}</div>
           </div>
@@ -42,5 +52,7 @@ ProfileInfoCard.propTypes = {
   placesCount: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   userName: PropTypes.string,
   userDescription: PropTypes.string,
-  profileImage: PropTypes.string
+  profileImage: PropTypes.string,
+  onMBTIClick: PropTypes.func,
+  onMyPlacesClick: PropTypes.func
 };

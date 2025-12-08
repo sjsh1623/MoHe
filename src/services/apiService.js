@@ -610,6 +610,33 @@ export class UserService extends ApiService {
       requireAuth: true
     });
   }
+
+  /**
+   * Upload profile image
+   * @param {File} file - Image file to upload
+   * @returns {Promise<{success: boolean, data: {imageUrl: string}}>}
+   */
+  async uploadProfileImage(file) {
+    const formData = new FormData();
+    formData.append('image', file);
+
+    const token = localStorage.getItem('authToken');
+    const response = await fetch(`${this.baseURL}/api/user/profile/image`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      },
+      body: formData
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Image upload failed');
+    }
+
+    return data;
+  }
 }
 
 /**
