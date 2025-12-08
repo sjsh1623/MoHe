@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {useNavigate} from 'react-router-dom';
 import styles from '@/styles/pages/auth/auth-page.module.css';
 
@@ -10,6 +10,20 @@ import { authService } from '@/services/authService';
 
 export default function AuthPage() {
     const navigate = useNavigate();
+
+    useEffect(() => {
+        const checkExistingSession = async () => {
+            const isLoggedIn = authService.isAuthenticated();
+            if (isLoggedIn) {
+                const restored = await authService.tryRestoreSession();
+                if (restored) {
+                    navigate('/home', { replace: true });
+                }
+            }
+        };
+
+        checkExistingSession();
+    }, [navigate]);
 
     const handleLogin = (e) => {
         e.preventDefault();
