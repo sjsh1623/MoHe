@@ -13,6 +13,7 @@ import {
   VersionIcon
 } from '@/components/ui/icons/MenuIcons';
 import { userService, activityService } from '@/services/apiService';
+import { authService } from '@/services/authService';
 
 // Menu items configuration factory function
 const getMenuItems = (t) => [
@@ -125,6 +126,19 @@ export default function ProfileSettingsPage() {
     }
   };
 
+  const handleLogout = async () => {
+    try {
+      await authService.logout();
+      // Redirect to landing page after logout
+      navigate('/', { replace: true });
+    } catch (error) {
+      console.error('Logout failed:', error);
+      // Clear local data even if API call fails
+      authService.clearAuthData();
+      navigate('/', { replace: true });
+    }
+  };
+
   return (
     <div className={styles.iphoneProMax}>
       <div className={styles.div}>
@@ -186,6 +200,13 @@ export default function ProfileSettingsPage() {
             </div>
           </div>
         </section>
+
+        {/* Logout button */}
+        <div className={styles.logoutSection}>
+          <button onClick={handleLogout} className={styles.logoutButton}>
+            {t('profile.logout', '로그아웃')}
+          </button>
+        </div>
       </div>
     </div>
   );

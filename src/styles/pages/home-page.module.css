@@ -16,15 +16,13 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 var(--app-shell-horizontal-gutter, 16px);
+  padding: 12px var(--app-shell-horizontal-gutter, 16px);
 }
 
 .logo {
-  font-family: 'Inter', system-ui, sans-serif;
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: #1b1e28;
-  margin: 0;
+  height: 23px;
+  width: auto;
+  object-fit: contain;
 }
 
 .locationSection {

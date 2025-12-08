@@ -283,7 +283,7 @@ class AuthService {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ refresh_token: refreshToken }),
+      body: JSON.stringify({ refreshToken: refreshToken }),
     });
 
     const data = await response.json();
@@ -317,7 +317,7 @@ class AuthService {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ refresh_token: refreshToken }),
+          body: JSON.stringify({ refreshToken: refreshToken }),
         });
       } catch (error) {
         console.warn('Logout API call failed:', error);
@@ -325,6 +325,31 @@ class AuthService {
     }
 
     this.clearAuthData();
+  }
+
+  /**
+   * Try to restore session using refresh token
+   * Returns true if session restored successfully
+   */
+  async tryRestoreSession() {
+    const refreshToken = this.getRefreshToken();
+    if (!refreshToken) {
+      return false;
+    }
+
+    try {
+      console.log('[AuthService] Attempting to restore session with refresh token');
+      await this.refreshAccessToken();
+
+      // Get fresh user profile after token refresh
+      const user = await this.getUserProfile();
+      console.log('[AuthService] Session restored successfully:', user);
+      return true;
+    } catch (error) {
+      console.log('[AuthService] Session restoration failed:', error.message);
+      this.clearAuthData();
+      return false;
+    }
   }
 
   /**

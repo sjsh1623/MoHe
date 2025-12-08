@@ -29,14 +29,30 @@ export default function LoginPage() {
     const [error, setError] = useState('');
     const handlerSetRef = useRef(false);
 
-    // Load saved email on mount
+    // Check if user is already logged in and redirect to home
     useEffect(() => {
+        const checkExistingSession = async () => {
+            const isLoggedIn = authService.isAuthenticated();
+            if (isLoggedIn) {
+                console.log('User already logged in, attempting session restore');
+                const restored = await authService.tryRestoreSession();
+                if (restored) {
+                    console.log('Session restored, redirecting to /home');
+                    navigate('/home', { replace: true });
+                    return;
+                }
+            }
+        };
+
+        checkExistingSession();
+
+        // Load saved email
         const savedEmail = localStorage.getItem('rememberedEmail');
         if (savedEmail) {
             setFormData(prev => ({ ...prev, email: savedEmail }));
             setRememberMe(true);
         }
-    }, []);
+    }, [navigate]);
 
     const handleInputChange = (field) => (e) => {
         setFormData(prev => ({

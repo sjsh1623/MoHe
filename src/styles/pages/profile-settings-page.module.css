@@ -703,17 +703,50 @@
   }
 }
 
+/* Logout section */
+.logoutSection {
+  padding: 24px 20px 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.logoutButton {
+  width: 100%;
+  max-width: 400px;
+  padding: 14px 24px;
+  background-color: transparent;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  color: #666666;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.logoutButton:hover {
+  background-color: #f5f5f5;
+  border-color: #d0d0d0;
+}
+
+.logoutButton:active {
+  background-color: #e8e8e8;
+  transform: scale(0.98);
+}
+
 @media (max-height: 700px) {
   .group {
     height: min(220px, 25vh);
     top: max(60px, 6vh);
   }
-  
+
   .overlap {
     height: min(280px, 32vh);
     top: max(35vh, 320px);
   }
-  
+
   .moodSection {
     bottom: max(40px, 5vh);
   }
