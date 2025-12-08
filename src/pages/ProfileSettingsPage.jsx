@@ -10,7 +10,8 @@ import {
   ProfileIcon,
   MyPlacesIcon,
   RecentPlacesIcon,
-  VersionIcon
+  VersionIcon,
+  LogoutIcon
 } from '@/components/ui/icons/MenuIcons';
 import { userService, activityService } from '@/services/apiService';
 import { authService } from '@/services/authService';
@@ -77,6 +78,20 @@ const getMenuItems = (t) => [
     groupClass: styles.group15,
     innerGroupClass: styles.group16,
     showArrow: false
+  },
+  {
+    id: 'logout',
+    icon: <LogoutIcon />,
+    text: '로그아웃',
+    route: null,
+    action: 'logout',
+    className: styles.group17,
+    vectorSrc: '/vector-2529.svg',
+    directionLeftClass: '',
+    textClass: styles.textWrapper9,
+    groupClass: styles.group18,
+    innerGroupClass: styles.group19,
+    showArrow: false
   }
 ];
 
@@ -118,8 +133,18 @@ export default function ProfileSettingsPage() {
     }
   }, [isGuest]);
 
-  const handleMenuItemClick = (item) => {
-    if (item.route) {
+  const handleMenuItemClick = async (item) => {
+    if (item.action === 'logout') {
+      // Handle logout
+      try {
+        await authService.logout();
+        navigate('/', { replace: true });
+      } catch (error) {
+        console.error('Logout failed:', error);
+        authService.clearAuthData();
+        navigate('/', { replace: true });
+      }
+    } else if (item.route) {
       navigate(item.route);
     } else {
       console.log(`Navigate to ${item.text}`);
@@ -132,19 +157,6 @@ export default function ProfileSettingsPage() {
 
   const handleMyPlacesClick = () => {
     navigate('/my-places');
-  };
-
-  const handleLogout = async () => {
-    try {
-      await authService.logout();
-      // Redirect to landing page after logout
-      navigate('/', { replace: true });
-    } catch (error) {
-      console.error('Logout failed:', error);
-      // Clear local data even if API call fails
-      authService.clearAuthData();
-      navigate('/', { replace: true });
-    }
   };
 
   return (
@@ -210,13 +222,6 @@ export default function ProfileSettingsPage() {
             </div>
           </div>
         </section>
-
-        {/* Logout button */}
-        <div className={styles.logoutSection}>
-          <button onClick={handleLogout} className={styles.logoutButton}>
-            {t('profile.logout', '로그아웃')}
-          </button>
-        </div>
       </div>
     </div>
   );
