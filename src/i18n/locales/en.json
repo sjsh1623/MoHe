@@ -282,7 +282,7 @@
     },
     "defaultNickname": "User",
     "defaultDescription": "Set your preference information.",
-    "mbtiDescription": "User with {mbti} preferences.",
+    "mbtiDescription": "Traveler with {mbti} personality",
     "edit": {
       "title": "Edit Profile",
       "profileImageAlt": "Profile",
