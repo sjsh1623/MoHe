@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import styles from '@/styles/pages/profile-settings-page.module.css';
 import ProfileMenuItem from '@/components/ui/items/ProfileMenuItem';
@@ -98,6 +98,7 @@ const getMenuItems = (t) => [
 
 export default function ProfileSettingsPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { t } = useTranslation();
   const { isGuest } = useAuthGuard(true); // This page requires authentication
   const [profile, setProfile] = useState(null);
@@ -131,7 +132,7 @@ export default function ProfileSettingsPage() {
     if (!isGuest) {
       loadData();
     }
-  }, [isGuest]);
+  }, [isGuest, location.pathname]);
 
   const handleMenuItemClick = async (item) => {
     if (item.action === 'logout') {
