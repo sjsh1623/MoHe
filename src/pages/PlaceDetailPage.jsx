@@ -8,6 +8,42 @@ import { activityService, placeService } from '@/services/apiService';
 import { authService } from '@/services/authService';
 import { buildImageUrl, buildImageUrlList, normalizePlaceImages } from '@/utils/image';
 
+// Parse address to show only up to district/dong/road level
+const parseAddress = (fullAddress) => {
+  if (!fullAddress) return '';
+
+  const parts = fullAddress.split(' ');
+
+  // Find the index of the part that ends with 동, 로, 길, 대로
+  let endIndex = -1;
+  for (let i = 0; i < parts.length; i++) {
+    const part = parts[i];
+    if (part.endsWith('동') || part.endsWith('로') || part.endsWith('길')) {
+      endIndex = i;
+      break;
+    }
+  }
+
+  if (endIndex === -1) {
+    // If no 동/로/길 found, return up to 2-3 parts
+    return parts.slice(0, Math.min(3, parts.length)).join(' ');
+  }
+
+  // Include the district/city part before 동/로/길
+  // Look for 구, 시, 군, 읍, 면
+  let startIndex = endIndex;
+  for (let i = endIndex - 1; i >= 0; i--) {
+    const part = parts[i];
+    if (part.endsWith('구') || part.endsWith('시') || part.endsWith('군') ||
+        part.endsWith('읍') || part.endsWith('면')) {
+      startIndex = i;
+      break;
+    }
+  }
+
+  return parts.slice(startIndex, endIndex + 1).join(' ');
+};
+
 export default function PlaceDetailPage({
   place = null, // Allow prop injection for testing/reusability
   onExperience
@@ -406,7 +442,7 @@ export default function PlaceDetailPage({
                 <circle cx="8" cy="7.33325" r="2" stroke="#7D848D" strokeWidth="1.5"/>
                 <path d="M14 7.25918C14 10.532 10.25 14.6666 8 14.6666C5.75 14.6666 2 10.532 2 7.25918C2 3.98638 4.68629 1.33325 8 1.33325C11.3137 1.33325 14 3.98638 14 7.25918Z" stroke="#7D848D" strokeWidth="1.5"/>
               </svg>
-              <span className={styles.locationText}>{placeData.location || placeData.address}</span>
+              <span className={styles.locationText}>{parseAddress(placeData.location || placeData.address)}</span>
             </div>
 
             {(placeData.transportationCarTime || placeData.transportationBusTime) && (
