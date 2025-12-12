@@ -1,0 +1,25 @@
+services:
+  caddy:
+    image: caddy:2-alpine
+    container_name: proxy-caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - proxy_network
+
+networks:
+  proxy_network:
+    name: proxy_network
+    driver: bridge
+
+volumes:
+  caddy_data:
+    name: caddy_data
+  caddy_config:
+    name: caddy_config

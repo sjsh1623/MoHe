@@ -1,19 +1,41 @@
 version: '3.8'
 
 services:
+  # Caddy Proxy Server
+  caddy:
+    image: caddy:2-alpine
+    container_name: mohe-caddy-proxy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - mohe-network
+    depends_on:
+      - mohe-frontend
+
+  # React Frontend
   mohe-frontend:
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: ./MoheReact
+      dockerfile: ../Dockerfile
     container_name: mohe-react-app
-    ports:
-      - "3002:80"
     environment:
       - NODE_ENV=production
     restart: unless-stopped
     networks:
       - mohe-network
+    expose:
+      - "80"
 
 networks:
   mohe-network:
     driver: bridge
+
+volumes:
+  caddy_data:
+  caddy_config:

@@ -1,0 +1,68 @@
+{
+	email hello@mohe.app
+}
+
+# Block direct IP access
+:80, :443 {
+	respond "Access denied - please use domain name" 403
+}
+
+# Handle mohe.today domain with HTTPS
+mohe.today {
+	# Health check endpoint
+	handle /health {
+		respond "OK" 200
+	}
+
+	# API backend - proxy to Spring Boot
+	handle /api/* {
+		reverse_proxy spring:8080
+	}
+
+	# Image processing server - proxy to Node.js image processor
+	handle /image/* {
+		reverse_proxy moheimageprocessor-app-1:5200 {
+			transport http {
+				dial_timeout 10s
+				response_header_timeout 30s
+			}
+		}
+
+		# CORS headers for all responses
+		header {
+			Access-Control-Allow-Origin "*"
+			Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
+			Access-Control-Allow-Headers "Origin, X-Requested-With, Content-Type, Accept, Authorization, Cache-Control"
+			Access-Control-Expose-Headers "Content-Length, Content-Range, Content-Type"
+			Access-Control-Max-Age "86400"
+		}
+
+		# Handle OPTIONS preflight requests
+		@options method OPTIONS
+		respond @options 204
+
+		# Cache control for images
+		@images path *.jpg *.jpeg *.png *.gif *.webp *.svg *.ico
+		header @images Cache-Control "public, max-age=31536000, immutable"
+
+		# Ensure proper content types
+		@image_routes path /image/*
+		header @image_routes Vary "Accept, Accept-Encoding"
+	}
+
+	# Web application - proxy to React production build
+	handle {
+		reverse_proxy mohe-react-app:80
+	}
+
+	# Security headers
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+		X-Frame-Options "SAMEORIGIN"
+		X-Content-Type-Options "nosniff"
+		X-XSS-Protection "1; mode=block"
+	}
+
+	# Enable gzip compression
+	encode gzip
+}
