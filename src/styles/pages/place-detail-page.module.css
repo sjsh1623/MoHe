@@ -49,15 +49,16 @@
     pointer-events: none;
 }
 
-/* Image Indicators */
+/* Image Indicators - positioned dynamically above modal */
 .imageIndicators {
     position: absolute;
-    bottom: 80px;
+    bottom: 80px; /* Default - overridden by inline style */
     left: 50%;
     transform: translateX(-50%);
     display: flex;
     gap: 8px;
     z-index: 10;
+    pointer-events: none;
 }
 
 .indicator {

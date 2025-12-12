@@ -315,24 +315,28 @@ export default function PlaceDetailPage({
         </div>
         <div className={styles.heroOverlay} />
 
-
-        {/* Image Indicators */}
-        <div className={styles.imageIndicators}>
-          {images.map((_, index) => (
-            <div
-              key={index}
-              className={`${styles.indicator} ${index === currentImageIndex ? styles.active : ''}`}
-            />
-          ))}
-        </div>
-
-
         {/* Bottom Handle */}
         <div
           className={styles.bottomHandle}
           onMouseDown={handleDragStart}
           onTouchStart={handleDragStart}
         />
+      </div>
+
+      {/* Image Indicators - positioned above modal */}
+      <div
+        className={styles.imageIndicators}
+        style={{
+          bottom: `${getCurrentSheetHeight() + 20}px`,
+          transition: isDragging ? 'none' : 'bottom 0.3s ease-out'
+        }}
+      >
+        {images.map((_, index) => (
+          <div
+            key={index}
+            className={`${styles.indicator} ${index === currentImageIndex ? styles.active : ''}`}
+          />
+        ))}
       </div>
 
       {/* Content Section */}
