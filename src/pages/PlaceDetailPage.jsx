@@ -112,24 +112,40 @@ export default function PlaceDetailPage({
           return;
         }
 
-        // Try to use preloaded data first, then load from backend
+        // Use preloaded data for fast initial render
         if (preloadedData) {
-          console.log('Using preloaded place data:', preloadedData);
+          console.log('Using preloaded place data for initial render:', preloadedData);
+
+          // Filter out invalid descriptions (category names, short text)
+          let validDescription = null;
+          if (preloadedData.description &&
+              preloadedData.description.length > 10 &&
+              preloadedData.description !== preloadedData.category) {
+            validDescription = preloadedData.description;
+          } else if (preloadedData.reasonWhy &&
+                     preloadedData.reasonWhy.length > 10 &&
+                     preloadedData.reasonWhy !== preloadedData.category) {
+            validDescription = preloadedData.reasonWhy;
+          }
+
           setPlaceData({
             ...preloadedData,
-            description: preloadedData.description || preloadedData.reasonWhy || t('places.detail.errors.notFound'),
+            description: validDescription,
             address: preloadedData.address || preloadedData.location,
             location: preloadedData.address || preloadedData.location,
             name: preloadedData.title || preloadedData.name
           });
           setIsLoading(false);
-          return;
+          // Don't return - continue to fetch full data from API
         }
 
-        // Load place details from backend
+        // Always load complete data from backend to get DB description
+        console.log('Fetching complete place details from API for id:', id);
         const response = await placeService.getPlaceById(id);
-        if (response.success) {
-          setPlaceData(normalizePlaceImages(response.data));
+        if (response.success && response.data.place) {
+          // API returns { place: SimplePlaceDto, images: [], isBookmarked: false, similarPlaces: [] }
+          console.log('API response place data:', response.data.place);
+          setPlaceData(normalizePlaceImages(response.data.place));
 
           if (authService.isAuthenticated()) {
             try {
@@ -140,11 +156,15 @@ export default function PlaceDetailPage({
           }
         } else {
           console.error('Backend place detail not available for id:', id);
-          setError(t('places.detail.errors.notFound'));
+          if (!preloadedData) {
+            setError(t('places.detail.errors.notFound'));
+          }
         }
       } catch (err) {
         console.error('Failed to load place details:', err);
-        setError(t('places.detail.errors.loadFailed'));
+        if (!preloadedData) {
+          setError(t('places.detail.errors.loadFailed'));
+        }
       } finally {
         setIsLoading(false);
       }
@@ -164,6 +184,10 @@ export default function PlaceDetailPage({
   const [isImageDragging, setIsImageDragging] = useState(false);
   const startX = useRef(0);
   const DRAG_THRESHOLD = 50; // Minimum drag distance to change image
+
+  // Description expansion state
+  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
+  const MAX_DESCRIPTION_LENGTH = 100; // Characters to show before "Read more"
 
   // Calculate sheet heights based on viewport
   const getSheetHeight = (state) => {
@@ -219,8 +243,11 @@ export default function PlaceDetailPage({
   };
 
   const handleReadMore = () => {
-    console.log('Read more clicked');
-    // Handle read more functionality
+    setIsDescriptionExpanded(!isDescriptionExpanded);
+  };
+
+  const handleThumbnailClick = (index) => {
+    setCurrentImageIndex(index);
   };
 
   const handleDragStart = (e) => {
@@ -481,36 +508,48 @@ export default function PlaceDetailPage({
           </div>
         </div>
 
-        {/* Gallery */}
-        {placeData.gallery && placeData.gallery.length > 0 && (
+        {/* Gallery - Thumbnails */}
+        {images && images.length > 0 && (
           <div className={styles.gallery}>
-            {placeData.gallery.map((image, index) => (
-              <div key={index} className={styles.galleryItem}>
-                <img src={image} alt={`Gallery ${index + 1}`} className={styles.galleryImage} />
-                {index === placeData.gallery.length - 1 && placeData.additionalImageCount > 0 && (
-                  <div className={styles.additionalCount}>
-                    +{placeData.additionalImageCount}
-                  </div>
-                )}
+            {images.map((image, index) => (
+              <div
+                key={index}
+                className={`${styles.galleryItem} ${index === currentImageIndex ? styles.active : ''}`}
+                onClick={() => handleThumbnailClick(index)}
+              >
+                <img src={image} alt={`Thumbnail ${index + 1}`} className={styles.galleryImage} />
               </div>
             ))}
           </div>
         )}
 
         {/* Description */}
-        {placeData.description && (
+        {placeData.description && placeData.description.length > 10 && (
           <div className={styles.descriptionSection}>
-            <h2 className={styles.descriptionTitle}>{t('places.detail.sectionTitle')}</h2>
             <div className={styles.description}>
-              {placeData.description.split('\n').map((line, index) => (
-                <span key={index}>
-                  {parseMarkdown(line)}
-                  {index < placeData.description.split('\n').length - 1 && <br />}
-                </span>
-              ))}
-              <button className={styles.readMore} onClick={handleReadMore}>
-                {t('places.detail.readMore')}
-              </button>
+              {(() => {
+                const description = placeData.description;
+                const shouldTruncate = description.length > MAX_DESCRIPTION_LENGTH && !isDescriptionExpanded;
+                const displayText = shouldTruncate
+                  ? description.substring(0, MAX_DESCRIPTION_LENGTH) + '...'
+                  : description;
+
+                return (
+                  <>
+                    {displayText.split('\n').map((line, index) => (
+                      <span key={index}>
+                        {parseMarkdown(line)}
+                        {index < displayText.split('\n').length - 1 && <br />}
+                      </span>
+                    ))}
+                    {description.length > MAX_DESCRIPTION_LENGTH && (
+                      <button className={styles.readMore} onClick={handleReadMore}>
+                        {isDescriptionExpanded ? '접기' : '더보기'}
+                      </button>
+                    )}
+                  </>
+                );
+              })()}
             </div>
           </div>
         )}
