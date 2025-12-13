@@ -5,12 +5,10 @@ import { buildImageUrl } from '@/utils/image';
 export default function ProfileInfoCard({
   styles,
   mbtiValue = 'INFJ',
-  placesCount = '5',
   userName = '석현',
   userDescription = '함께 조용히 머무를 수 있는 곳을 좋아해요',
   profileImage = 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop&crop=face',
-  onMBTIClick,
-  onMyPlacesClick
+  onMBTIClick
 }) {
   return (
     <div className={styles.group}>
@@ -24,14 +22,6 @@ export default function ProfileInfoCard({
           >
             <div className={styles.textWrapper}>MBTI</div>
             <div className={styles.textWrapper2}>{mbtiValue}</div>
-          </div>
-          <div
-            className={styles.group4}
-            onClick={onMyPlacesClick}
-            style={{ cursor: onMyPlacesClick ? 'pointer' : 'default' }}
-          >
-            <div className={styles.textWrapper3}>내 장소</div>
-            <div className={styles.textWrapper4}>{placesCount}</div>
           </div>
         </div>
       </div>
@@ -49,10 +39,8 @@ export default function ProfileInfoCard({
 ProfileInfoCard.propTypes = {
   styles: PropTypes.object.isRequired,
   mbtiValue: PropTypes.string,
-  placesCount: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   userName: PropTypes.string,
   userDescription: PropTypes.string,
   profileImage: PropTypes.string,
-  onMBTIClick: PropTypes.func,
-  onMyPlacesClick: PropTypes.func
+  onMBTIClick: PropTypes.func
 };
