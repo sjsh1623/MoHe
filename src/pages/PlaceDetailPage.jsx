@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useParams, useLocation } from 'react-router-dom';
+import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import styles from '@/styles/pages/place-detail-page.module.css';
 import PlaceDetailSkeleton from '@/components/ui/skeletons/PlaceDetailSkeleton';
@@ -82,6 +82,7 @@ export default function PlaceDetailPage({
   const { t } = useTranslation();
   const { id } = useParams();
   const location = useLocation();
+  const navigate = useNavigate();
   const [placeData, setPlaceData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -409,6 +410,13 @@ export default function PlaceDetailPage({
         </div>
         <div className={styles.heroOverlay} />
 
+        {/* Back Button */}
+        <button className={styles.backButton} onClick={() => navigate(-1)} aria-label="Go back">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M15 18L9 12L15 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </button>
+
         {/* Bottom Handle */}
         <div
           className={styles.bottomHandle}
@@ -446,6 +454,15 @@ export default function PlaceDetailPage({
         {/* Drag Indicator */}
         <div className={styles.dragIndicator} />
 
+        {/* Tags (Hashtags) */}
+        {placeData.tags && placeData.tags.length > 0 && (
+          <div className={styles.hashtags}>
+            {placeData.tags.map((tag, index) => (
+              <span key={index} className={styles.hashtag}>#{tag}</span>
+            ))}
+          </div>
+        )}
+
         {/* Title and Rating */}
         <div className={styles.header}>
           <h1 className={styles.title}>{placeData.name || placeData.title}</h1>
@@ -457,13 +474,6 @@ export default function PlaceDetailPage({
             <span className={styles.reviewCount}>({placeData.reviewCount || placeData.userRatingsTotal || 0})</span>
           </div>
         </div>
-
-        {/* Tags */}
-        {placeData.tags && placeData.tags.length > 0 && (
-          <div className={styles.tags}>
-            {placeData.tags.join(', ')}
-          </div>
-        )}
 
         {/* Location and Transportation */}
         <div className={styles.locationSection}>
@@ -523,9 +533,15 @@ export default function PlaceDetailPage({
           </div>
         )}
 
-        {/* Description */}
+        {/* Mohe AI Note Section */}
         {placeData.description && placeData.description.length > 10 && (
-          <div className={styles.descriptionSection}>
+          <div className={styles.aiNoteSection}>
+            <div className={styles.aiNoteHeader}>
+              <h2 className={styles.aiNoteTitle}>Mohe AI 노트</h2>
+              <p className={styles.aiNoteSubtitle}>
+                막무가내로 읽은 AI가 정리했어요
+              </p>
+            </div>
             <div className={styles.description}>
               {(() => {
                 const description = placeData.description;
@@ -550,6 +566,45 @@ export default function PlaceDetailPage({
                   </>
                 );
               })()}
+            </div>
+
+            {/* AI Comments Section */}
+            <div className={styles.aiCommentsSection}>
+              <div className={styles.aiCommentCard}>
+                <div className={styles.commentHeader}>
+                  <div className={styles.commentAuthor}>
+                    <div className={styles.authorAvatar}>
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                        <circle cx="12" cy="12" r="12" fill="#E8F5FF"/>
+                        <path d="M12 12C14.21 12 16 10.21 16 8C16 5.79 14.21 4 12 4C9.79 4 8 5.79 8 8C8 10.21 9.79 12 12 12ZM12 14C9.33 14 4 15.34 4 18V20H20V18C20 15.34 14.67 14 12 14Z" fill="#0D6EFD"/>
+                      </svg>
+                    </div>
+                    <span className={styles.authorName}>사용자 아이디 명랑하네요</span>
+                  </div>
+                  <span className={styles.commentDate}>25.12.13</span>
+                </div>
+                <p className={styles.commentText}>
+                  여기에는 리뷰가 있을거라며 사용자의 리뷰를 이용 보여지 면… 으로 저리가 되어야 해요
+                </p>
+              </div>
+
+              <div className={styles.aiCommentCard}>
+                <div className={styles.commentHeader}>
+                  <div className={styles.commentAuthor}>
+                    <div className={styles.authorAvatar}>
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                        <circle cx="12" cy="12" r="12" fill="#E8F5FF"/>
+                        <path d="M12 12C14.21 12 16 10.21 16 8C16 5.79 14.21 4 12 4C9.79 4 8 5.79 8 8C8 10.21 9.79 12 12 12ZM12 14C9.33 14 4 15.34 4 18V20H20V18C20 15.34 14.67 14 12 14Z" fill="#0D6EFD"/>
+                      </svg>
+                    </div>
+                    <span className={styles.authorName}>사용자 아이디 명랑하네요</span>
+                  </div>
+                  <span className={styles.commentDate}>25.12.13</span>
+                </div>
+                <p className={styles.commentText}>
+                  여기에는 리뷰가 있을거라며 사용자의 리뷰를 이용 보여지 면… 으로 저리가 되어야 해요
+                </p>
+              </div>
             </div>
           </div>
         )}
