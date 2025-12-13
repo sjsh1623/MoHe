@@ -1,12 +1,14 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { useParams, useLocation } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import styles from '@/styles/pages/place-detail-page.module.css';
 import PlaceDetailSkeleton from '@/components/ui/skeletons/PlaceDetailSkeleton';
 import ErrorMessage from '@/components/ui/alerts/ErrorMessage';
-import { activityService, placeService } from '@/services/apiService';
-import { authService } from '@/services/authService';
-import { buildImageUrl, buildImageUrlList, normalizePlaceImages } from '@/utils/image';
+import ReviewCard from '@/components/ui/cards/ReviewCard';
+import ImageGallery from '@/components/ui/images/ImageGallery';
+import PlaceHeader from '@/components/ui/sections/PlaceHeader';
+import LocationInfo from '@/components/ui/sections/LocationInfo';
+import { placeService } from '@/services/apiService';
+import { buildImageUrl } from '@/utils/image';
 
 // Parse address to show only up to district/dong/road level
 const parseAddress = (fullAddress) => {
@@ -46,6 +48,8 @@ const parseAddress = (fullAddress) => {
 
 // Parse markdown-style bold (**text** or *text*) and convert to React elements
 const parseMarkdown = (text) => {
+  if (!text) return '';
+
   const parts = [];
   let currentIndex = 0;
   let key = 0;
@@ -75,489 +79,148 @@ const parseMarkdown = (text) => {
   return parts.length > 0 ? parts : text;
 };
 
-export default function PlaceDetailPage({
-  place = null, // Allow prop injection for testing/reusability
-  onExperience
-}) {
-  const { t } = useTranslation();
+export default function PlaceDetailPage() {
   const { id } = useParams();
-  const location = useLocation();
-  const [placeData, setPlaceData] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const navigate = useNavigate();
+
+  // State
+  const [place, setPlace] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
-  // Get preloaded data from navigation state
-  const preloadedImage = buildImageUrl(location.state?.preloadedImage);
-  const preloadedData = location.state?.preloadedData
-    ? normalizePlaceImages(location.state?.preloadedData)
-    : null;
-
-
+  // Fetch place data
   useEffect(() => {
-    const loadPlaceDetail = async () => {
+    const fetchPlaceData = async () => {
       try {
-        setIsLoading(true);
+        setLoading(true);
         setError(null);
 
-        // Use prop data if available, or load from backend
-        if (place) {
-          setPlaceData(normalizePlaceImages(place));
-          setIsLoading(false);
-          return;
-        }
-
-        if (!id) {
-          setError(t('places.detail.errors.idRequired'));
-          setIsLoading(false);
-          return;
-        }
-
-        // Use preloaded data for fast initial render
-        if (preloadedData) {
-          console.log('Using preloaded place data for initial render:', preloadedData);
-
-          // Filter out invalid descriptions (category names, short text)
-          let validDescription = null;
-          if (preloadedData.description &&
-              preloadedData.description.length > 10 &&
-              preloadedData.description !== preloadedData.category) {
-            validDescription = preloadedData.description;
-          } else if (preloadedData.reasonWhy &&
-                     preloadedData.reasonWhy.length > 10 &&
-                     preloadedData.reasonWhy !== preloadedData.category) {
-            validDescription = preloadedData.reasonWhy;
-          }
-
-          setPlaceData({
-            ...preloadedData,
-            description: validDescription,
-            address: preloadedData.address || preloadedData.location,
-            location: preloadedData.address || preloadedData.location,
-            name: preloadedData.title || preloadedData.name
-          });
-          setIsLoading(false);
-          // Don't return - continue to fetch full data from API
-        }
-
-        // Always load complete data from backend to get DB description
-        console.log('Fetching complete place details from API for id:', id);
-        const response = await placeService.getPlaceById(id);
-        if (response.success && response.data.place) {
-          // API returns { place: SimplePlaceDto, images: [], isBookmarked: false, similarPlaces: [] }
-          console.log('API response place data:', response.data.place);
-          setPlaceData(normalizePlaceImages(response.data.place));
-
-          if (authService.isAuthenticated()) {
-            try {
-              await activityService.recordRecentView(id);
-            } catch (err) {
-              console.warn('Failed to record recent view:', err);
-            }
-          }
-        } else {
-          console.error('Backend place detail not available for id:', id);
-          if (!preloadedData) {
-            setError(t('places.detail.errors.notFound'));
-          }
-        }
+        const data = await placeService.getPlaceById(id);
+        setPlace(data);
       } catch (err) {
-        console.error('Failed to load place details:', err);
-        if (!preloadedData) {
-          setError(t('places.detail.errors.loadFailed'));
-        }
+        console.error('Failed to fetch place:', err);
+        setError('장소 정보를 불러오는데 실패했습니다.');
       } finally {
-        setIsLoading(false);
+        setLoading(false);
       }
     };
 
-    loadPlaceDetail();
-  }, [id, place]);
-
-  const [sheetState, setSheetState] = useState('half'); // 'half' (50%), 'large' (80%), 'expanded' (100%)
-  const [dragOffset, setDragOffset] = useState(0);
-  const [isDragging, setIsDragging] = useState(false);
-  const dragStartY = useRef(0);
-  const initialOffset = useRef(0);
-
-  // Image swiping state
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [isImageDragging, setIsImageDragging] = useState(false);
-  const startX = useRef(0);
-  const DRAG_THRESHOLD = 50; // Minimum drag distance to change image
-
-  // Description expansion state
-  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
-  const MAX_DESCRIPTION_LENGTH = 100; // Characters to show before "Read more"
-
-  // Calculate sheet heights based on viewport
-  const getSheetHeight = (state) => {
-    const vh = window.innerHeight;
-    switch (state) {
-      case 'half': return vh * 0.55; // 50% of screen
-      case 'large': return vh * 0.8; // 80% of screen
-      case 'expanded': return vh * 1.0; // 100% of screen
-      default: return vh * 0.5;
+    if (id) {
+      fetchPlaceData();
     }
+  }, [id]);
+
+  // Handlers
+  const handleBack = () => {
+    navigate(-1);
   };
 
-  const getCurrentSheetHeight = () => {
-    return getSheetHeight(sheetState) + dragOffset;
+  const handleGalleryImageClick = (index) => {
+    setCurrentImageIndex(index);
   };
 
-  // Show loading or error state
-  if (isLoading) {
+  if (loading) {
     return <PlaceDetailSkeleton />;
   }
 
-  if (error || !placeData) {
+  if (error || !place) {
     return (
-      <div className={styles.errorContainer}>
-        <ErrorMessage message={error || t('places.detail.errors.notFound')} />
+      <div className={styles.pageContainer}>
+        <ErrorMessage message={error || '장소를 찾을 수 없습니다.'} />
       </div>
     );
   }
 
-  const defaultImages = [
-    'https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=440&h=563&fit=crop&crop=center',
-    'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=440&h=563&fit=crop&crop=center',
-    'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=440&h=563&fit=crop&crop=center',
-    'https://images.unsplash.com/photo-1559925393-8be0ec4767c8?w=440&h=563&fit=crop&crop=center',
-    'https://images.unsplash.com/photo-1544918999-6c6b10bdb76f?w=440&h=563&fit=crop&crop=center'
-  ];
-
-  const candidateImages = placeData.images?.length
-    ? placeData.images
-    : placeData.gallery?.length
-      ? buildImageUrlList(placeData.gallery)
-      : [];
-
-  const images = candidateImages.length ? candidateImages : defaultImages;
-
-  const handleExperienceClick = () => {
-    if (onExperience) {
-      onExperience(placeData);
-    } else {
-      console.log('Experience clicked for:', placeData.name || placeData.title);
-      // Default behavior - could navigate to booking page
-    }
-  };
-
-  const handleReadMore = () => {
-    setIsDescriptionExpanded(!isDescriptionExpanded);
-  };
-
-  const handleThumbnailClick = (index) => {
-    setCurrentImageIndex(index);
-  };
-
-  const handleDragStart = (e) => {
-    setIsDragging(true);
-    const clientY = e.type === 'mousedown' ? e.clientY : e.touches[0].clientY;
-    dragStartY.current = clientY;
-    initialOffset.current = dragOffset;
-  };
-
-  const handleDragMove = (e) => {
-    if (!isDragging) return;
-
-    const clientY = e.type === 'mousemove' ? e.clientY : e.touches[0].clientY;
-    const deltaY = dragStartY.current - clientY; // Inverted: positive = drag up
-    const newOffset = initialOffset.current + deltaY;
-
-    // Limit drag range
-    const minHeight = getSheetHeight('half');
-    const maxHeight = getSheetHeight('expanded');
-    const currentBaseHeight = getSheetHeight(sheetState);
-    const maxOffset = maxHeight - currentBaseHeight;
-    const minOffset = minHeight - currentBaseHeight;
-
-    const clampedOffset = Math.max(minOffset, Math.min(maxOffset, newOffset));
-    setDragOffset(clampedOffset);
-  };
-
-  const handleDragEnd = () => {
-    if (!isDragging) return;
-    setIsDragging(false);
-
-    const currentHeight = getCurrentSheetHeight();
-
-    // Determine which state to snap to based on current height
-    const halfHeight = getSheetHeight('half');
-    const largeHeight = getSheetHeight('large');
-    const expandedHeight = getSheetHeight('expanded');
-
-    let newState = sheetState;
-
-    if (currentHeight < (halfHeight + largeHeight) / 2) {
-      newState = 'half';
-    } else if (currentHeight < (largeHeight + expandedHeight) / 2) {
-      newState = 'large';
-    } else {
-      newState = 'expanded';
-    }
-
-    setSheetState(newState);
-    setDragOffset(0);
-  };
-
-  // Simple image navigation functions
-  const nextImage = () => {
-    if (currentImageIndex < images.length - 1) {
-      setCurrentImageIndex(prev => prev + 1);
-    }
-  };
-
-  const prevImage = () => {
-    if (currentImageIndex > 0) {
-      setCurrentImageIndex(prev => prev - 1);
-    }
-  };
-
-  // Image swipe handlers
-  const handleImageStart = (e) => {
-    e.stopPropagation();
-    setIsImageDragging(true);
-    const clientX = e.type === 'mousedown' ? e.clientX : e.touches[0].clientX;
-    startX.current = clientX;
-  };
-
-  const handleImageEnd = (e) => {
-    if (!isImageDragging) return;
-
-    setIsImageDragging(false);
-
-    // Get the end position
-    let clientX;
-    if (e.type === 'mouseup') {
-      clientX = e.clientX;
-    } else if (e.changedTouches && e.changedTouches[0]) {
-      clientX = e.changedTouches[0].clientX;
-    } else {
-      return; // No valid touch data
-    }
-
-    const distance = clientX - startX.current;
-
-    // Use a smaller threshold for more responsive swiping
-    const threshold = 30;
-
-    // Check if drag distance exceeds threshold
-    if (Math.abs(distance) > threshold) {
-      if (distance > 0) {
-        // Dragged right, go to previous image
-        prevImage();
-      } else {
-        // Dragged left, go to next image
-        nextImage();
-      }
-    }
-  };
-
-  // Show skeleton loader while loading (with preloaded image if available)
-  if (isLoading) {
-    return <PlaceDetailSkeleton preloadedImage={preloadedImage} />;
-  }
+  // Prepare data
+  const images = place.images || [];
+  const mainImage = images[currentImageIndex] || images[0] || '';
+  const shortAddress = parseAddress(place.address);
+  const description = place.aiDescription || place.description || '';
 
   return (
-    <div
-      className={styles.pageContainer}
-      onMouseMove={(e) => {
-        if (!isImageDragging) {
-          handleDragMove(e);
-        }
-      }}
-      onMouseUp={(e) => {
-        if (isImageDragging) {
-          handleImageEnd(e);
-        } else {
-          handleDragEnd();
-        }
-      }}
-      onTouchMove={(e) => {
-        if (!isImageDragging) {
-          handleDragMove(e);
-        }
-      }}
-      onTouchEnd={(e) => {
-        if (isImageDragging) {
-          handleImageEnd(e);
-        } else {
-          handleDragEnd();
-        }
-      }}
-    >
-      {/* Header Image Carousel */}
+    <div className={styles.pageContainer}>
+      {/* Hero Section */}
       <div className={styles.heroSection}>
-        <div
-          className={styles.imageCarousel}
-          style={{
-            transform: `translateX(-${currentImageIndex * 20}%)`,
-            transition: 'transform 0.3s ease-out'
-          }}
-          onMouseDown={handleImageStart}
-          onTouchStart={handleImageStart}
-        >
-          {images.map((image, index) => (
-            <img
-              key={index}
-              src={image}
-              alt={`${placeData.name || placeData.title} ${index + 1}`}
-              className={styles.heroImage}
-              draggable={false}
-            />
-          ))}
-        </div>
+        <img
+          src={buildImageUrl(mainImage)}
+          alt={place.name}
+          className={styles.heroImage}
+        />
         <div className={styles.heroOverlay} />
 
-        {/* Bottom Handle */}
-        <div
-          className={styles.bottomHandle}
-          onMouseDown={handleDragStart}
-          onTouchStart={handleDragStart}
-        />
-      </div>
-
-      {/* Image Indicators - positioned above modal */}
-      <div
-        className={styles.imageIndicators}
-        style={{
-          bottom: `${getCurrentSheetHeight() + 20}px`,
-          transition: isDragging ? 'none' : 'bottom 0.3s ease-out'
-        }}
-      >
-        {images.map((_, index) => (
-          <div
-            key={index}
-            className={`${styles.indicator} ${index === currentImageIndex ? styles.active : ''}`}
-          />
-        ))}
-      </div>
-
-      {/* Content Section */}
-      <div
-        className={styles.contentSection}
-        style={{
-          height: `${getCurrentSheetHeight()}px`,
-          transition: isDragging ? 'none' : 'height 0.3s ease-out'
-        }}
-        onMouseDown={handleDragStart}
-        onTouchStart={handleDragStart}
-      >
-        {/* Drag Indicator */}
-        <div className={styles.dragIndicator} />
-
-        {/* Title and Rating */}
-        <div className={styles.header}>
-          <h1 className={styles.title}>{placeData.name || placeData.title}</h1>
-          <div className={styles.ratingContainer}>
-            <svg className={styles.starIcon} width="12.94" height="11.64" viewBox="0 0 13 12" fill="none">
-              <path d="M5.59149 0.345492C5.74042 -0.115164 6.38888 -0.115164 6.53781 0.345491L7.62841 3.71885C7.69501 3.92486 7.88603 4.06434 8.10157 4.06434H11.6308C12.1128 4.06434 12.3132 4.68415 11.9233 4.96885L9.06803 7.0537C8.89366 7.18102 8.82069 7.4067 8.8873 7.61271L9.9779 10.9861C10.1268 11.4467 9.60222 11.8298 9.21232 11.5451L6.35708 9.46024C6.18271 9.33291 5.94659 9.33291 5.77222 9.46024L2.91698 11.5451C2.52708 11.8298 2.00247 11.4467 2.1514 10.9861L3.242 7.61271C3.30861 7.4067 3.23564 7.18102 3.06127 7.0537L0.206033 4.96885C-0.183869 4.68415 0.0165137 4.06434 0.49846 4.06434H4.02773C4.24326 4.06434 4.43428 3.92486 4.50089 3.71885L5.59149 0.345492Z" fill="#FFD336"/>
+        {/* Back Button */}
+        <div className={styles.backButtonContainer}>
+          <button className={styles.backButton} onClick={handleBack} aria-label="뒤로 가기">
+            <svg width="19" height="19" viewBox="0 0 19 19" fill="none">
+              <path d="M11.875 15.4375L5.9375 9.5L11.875 3.5625" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
-            <span className={styles.ratingText}>{placeData.rating}</span>
-            <span className={styles.reviewCount}>({placeData.reviewCount || placeData.userRatingsTotal || 0})</span>
-          </div>
+          </button>
         </div>
 
-        {/* Tags */}
-        {placeData.tags && placeData.tags.length > 0 && (
-          <div className={styles.tags}>
-            {placeData.tags.join(', ')}
-          </div>
-        )}
-
-        {/* Location and Transportation */}
-        <div className={styles.locationSection}>
-          <div className={styles.locationRow}>
-            <div className={styles.locationInfo}>
-              <svg className={styles.locationIcon} width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="8" cy="7.33325" r="2" stroke="#7D848D" strokeWidth="1.5"/>
-                <path d="M14 7.25918C14 10.532 10.25 14.6666 8 14.6666C5.75 14.6666 2 10.532 2 7.25918C2 3.98638 4.68629 1.33325 8 1.33325C11.3137 1.33325 14 3.98638 14 7.25918Z" stroke="#7D848D" strokeWidth="1.5"/>
-              </svg>
-              <span className={styles.locationText}>{parseAddress(placeData.location || placeData.address)}</span>
-            </div>
-
-            {(placeData.transportationCarTime || placeData.transportationBusTime) && (
-            <div className={styles.transportationRow}>
-              {placeData.transportationCarTime && (
-                <>
-                  <svg className={styles.carIcon} width="16" height="16" viewBox="0 0 16 16" fill="none">
-                    <path d="M11.67 1.39C12.67 1.39 13.84 2.56 13.84 3.56V7.84H2.17V3.56C2.17 2.56 3.34 1.39 4.34 1.39H11.67Z" fill="#7D848D"/>
-                    <path d="M0.83 6.83H15.17V11.16C15.17 12.16 14 13.33 13 13.33H3C2 13.33 0.83 12.16 0.83 11.16V6.83Z" fill="#7D848D"/>
-                    <circle cx="4" cy="10.5" r="1" fill="white"/>
-                    <circle cx="12" cy="10.5" r="1" fill="white"/>
-                    <rect x="7" y="2" width="2" height="1" fill="white"/>
-                  </svg>
-                  <span className={styles.transportTime}>{placeData.transportationCarTime}</span>
-                </>
-              )}
-
-              {placeData.transportationBusTime && (
-                <>
-                  <svg className={styles.busIcon} width="16" height="16" viewBox="0 0 16 16" fill="none">
-                    <rect x="2" y="1" width="12" height="13" rx="1.5" fill="#7D848D"/>
-                    <rect x="2.5" y="4.5" width="11" height="4" fill="white"/>
-                    <circle cx="5" cy="11.5" r="1" fill="white"/>
-                    <circle cx="11" cy="11.5" r="1" fill="white"/>
-                    <rect x="6" y="2.5" width="4" height="1" fill="white"/>
-                  </svg>
-                  <span className={styles.transportTime}>{placeData.transportationBusTime}</span>
-                </>
-              )}
-            </div>
-            )}
-          </div>
-        </div>
-
-        {/* Gallery - Thumbnails */}
-        {images && images.length > 0 && (
-          <div className={styles.gallery}>
-            {images.map((image, index) => (
+        {/* Image Indicators */}
+        {images.length > 1 && (
+          <div className={styles.imageIndicators}>
+            {images.map((_, index) => (
               <div
                 key={index}
-                className={`${styles.galleryItem} ${index === currentImageIndex ? styles.active : ''}`}
-                onClick={() => handleThumbnailClick(index)}
-              >
-                <img src={image} alt={`Thumbnail ${index + 1}`} className={styles.galleryImage} />
-              </div>
+                className={`${styles.indicator} ${index === currentImageIndex ? styles.active : ''}`}
+              />
             ))}
           </div>
         )}
+      </div>
 
-        {/* Description */}
-        {placeData.description && placeData.description.length > 10 && (
-          <div className={styles.descriptionSection}>
-            <div className={styles.description}>
-              {(() => {
-                const description = placeData.description;
-                const shouldTruncate = description.length > MAX_DESCRIPTION_LENGTH && !isDescriptionExpanded;
-                const displayText = shouldTruncate
-                  ? description.substring(0, MAX_DESCRIPTION_LENGTH) + '...'
-                  : description;
+      {/* Content Section */}
+      <div className={styles.contentSection}>
+        {/* Header with Title and Rating */}
+        <PlaceHeader
+          name={place.name}
+          rating={place.rating}
+          reviewCount={place.reviewCount}
+        />
 
-                return (
-                  <>
-                    {displayText.split('\n').map((line, index) => (
-                      <span key={index}>
-                        {parseMarkdown(line)}
-                        {index < displayText.split('\n').length - 1 && <br />}
-                      </span>
-                    ))}
-                    {description.length > MAX_DESCRIPTION_LENGTH && (
-                      <button className={styles.readMore} onClick={handleReadMore}>
-                        {isDescriptionExpanded ? '접기' : '더보기'}
-                      </button>
-                    )}
-                  </>
-                );
-              })()}
-            </div>
+        {/* Tags */}
+        {place.tags && place.tags.length > 0 && (
+          <div className={styles.tags}>
+            {place.tags.map(tag => `#${tag}`).join(', ')}
           </div>
         )}
 
-        {/* Experience Button */}
-        <button className={styles.experienceButton} onClick={handleExperienceClick}>
-          {t('places.detail.experienceButton')}
-        </button>
+        {/* Location */}
+        <LocationInfo
+          address={shortAddress}
+          carTime={place.carTime}
+          busTime={place.busTime}
+        />
+
+        {/* Image Gallery */}
+        <ImageGallery
+          images={images}
+          currentIndex={currentImageIndex}
+          onImageClick={handleGalleryImageClick}
+          placeName={place.name}
+        />
+
+        {/* AI Description Section */}
+        {description && (
+          <div className={styles.descriptionSection}>
+            <h2 className={styles.descriptionTitle}>Mohe AI 노트</h2>
+            <p className={styles.description}>
+              {parseMarkdown(description)}
+            </p>
+            <p className={styles.aiNote}>리뷰와 데이터를 읽고 AI가 정리했어요</p>
+          </div>
+        )}
+
+        {/* Reviews Section */}
+        {place.reviews && place.reviews.length > 0 && (
+          <div className={styles.reviewsSection}>
+            {place.reviews.slice(0, 3).map((review, index) => (
+              <ReviewCard key={index} review={review} />
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
