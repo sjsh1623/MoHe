@@ -149,9 +149,12 @@ export default function AnimatedRoutes() {
     }
   }, [location.pathname]);
 
+  // Disable animation for browser back/forward to avoid conflict with native swipe gestures
+  const shouldAnimate = navigationType !== 'POP';
+
   const slideVariants = {
     initial: (direction) => ({
-      x: direction === 'forward' ? '100%' : '-100%',
+      x: shouldAnimate ? (direction === 'forward' ? '100%' : '-100%') : 0,
       opacity: 1,
       zIndex: 1
     }),
@@ -161,7 +164,7 @@ export default function AnimatedRoutes() {
       zIndex: 2
     },
     exit: (direction) => ({
-      x: direction === 'forward' ? '-100%' : '100%',
+      x: shouldAnimate ? (direction === 'forward' ? '-100%' : '100%') : 0,
       opacity: 1,
       zIndex: 0
     })
@@ -191,7 +194,7 @@ export default function AnimatedRoutes() {
           animate="animate"
           exit="exit"
           transition={{
-            duration: 0.25,
+            duration: shouldAnimate ? 0.25 : 0,
             ease: [0.4, 0.0, 0.2, 1], // Material Design easing curve
             type: "tween" // Force tween for better WebView performance
           }}
