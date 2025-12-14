@@ -10,7 +10,8 @@
 /* Hero Section */
 .heroSection {
     width: 100%;
-    height: 563px;
+    height: 40vh;
+    min-height: 250px;
     position: relative;
     overflow: hidden;
 }
@@ -131,17 +132,26 @@
     background: white;
     border-top-left-radius: 30px;
     border-top-right-radius: 30px;
-    padding: 20px 24px 25px 24px;
+    padding: 20px 24px 0 24px;
     box-sizing: border-box;
     z-index: 5;
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    cursor: grab;
 }
 
-.contentSection:active {
-    cursor: grabbing;
+/* Scrollable content area inside contentSection */
+.contentScrollArea {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 0 0 25px 0;
+    -webkit-overflow-scrolling: touch;
+}
+
+.contentScrollArea::-webkit-scrollbar {
+    width: 0;
+    display: none;
 }
 
 /* Drag Indicator */
@@ -153,6 +163,13 @@
     margin: 0 auto 20px auto;
     flex-shrink: 0;
     opacity: 0.8;
+    cursor: grab;
+    padding: 10px;
+    margin: -10px auto 10px auto;
+}
+
+.dragIndicator:active {
+    cursor: grabbing;
 }
 
 /* Header */
@@ -177,7 +194,7 @@
 .ratingContainer {
     display: flex;
     align-items: center;
-    gap: 2px;
+    gap: 4px;
     flex-shrink: 0;
 }
 
@@ -204,6 +221,7 @@
     font-weight: 400;
     line-height: 20px;
     letter-spacing: 0.3px;
+    margin-left: 2px;
 }
 
 /* Hashtags */
@@ -336,8 +354,6 @@
 /* AI Note Section */
 .aiNoteSection {
     margin-bottom: 24px;
-    flex: 1;
-    overflow: hidden;
 }
 
 .aiNoteHeader {
@@ -390,25 +406,57 @@
     text-decoration: underline;
 }
 
-/* AI Comments Section */
+/* AI Comments Section - Horizontal Scroll */
 .aiCommentsSection {
     display: flex;
-    flex-direction: column;
     gap: 12px;
     margin-top: 20px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding-bottom: 8px;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x mandatory;
+}
+
+.aiCommentsSection::-webkit-scrollbar {
+    display: none;
 }
 
 .aiCommentCard {
     background: #F8F9FA;
     border-radius: 12px;
     padding: 16px;
+    min-width: 280px;
+    max-width: 280px;
+    min-height: 140px;
+    flex-shrink: 0;
+    scroll-snap-align: start;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
 }
 
-.commentHeader {
+.commentText {
+    color: #1B1E28;
+    font-size: 13px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 400;
+    line-height: 20px;
+    margin: 0;
+    /* Limit to 4 lines with ellipsis for better readability */
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex: 1;
+}
+
+.commentFooter {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 12px;
+    margin-top: auto;
 }
 
 .commentAuthor {
@@ -441,15 +489,6 @@
     font-family: 'Inter', sans-serif;
     font-weight: 400;
     line-height: 16px;
-}
-
-.commentText {
-    color: #7D848D;
-    font-size: 12px;
-    font-family: 'Inter', sans-serif;
-    font-weight: 400;
-    line-height: 20px;
-    margin: 0;
 }
 
 /* Experience Button */
