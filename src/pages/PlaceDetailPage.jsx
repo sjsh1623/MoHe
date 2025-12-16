@@ -421,15 +421,15 @@ export default function PlaceDetailPage({
           transition: isDragging ? 'none' : 'height 0.3s ease-out'
         }}
       >
-        {/* Drag Indicator */}
+        {/* Draggable Header Area */}
         <div
-          className={styles.dragIndicator}
+          className={styles.draggableHeader}
           onMouseDown={handleDragStart}
           onTouchStart={handleDragStart}
-        />
+        >
+          {/* Drag Indicator */}
+          <div className={styles.dragIndicator} />
 
-        {/* Scrollable Content Area */}
-        <div className={styles.contentScrollArea}>
           {/* Tags (Hashtags) */}
           {placeData.tags && placeData.tags.length > 0 && (
             <div className={styles.hashtags}>
@@ -450,6 +450,10 @@ export default function PlaceDetailPage({
               <span className={styles.reviewCount}>({placeData.reviewCount || placeData.userRatingsTotal || 0})</span>
             </div>
           </div>
+        </div>
+
+        {/* Scrollable Content Area */}
+        <div className={styles.contentScrollArea}>
 
           {/* Location and Transportation */}
           <div className={styles.locationSection}>

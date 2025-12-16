@@ -140,6 +140,19 @@
     flex-direction: column;
 }
 
+/* Draggable Header Area */
+.draggableHeader {
+    cursor: grab;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+    flex-shrink: 0;
+}
+
+.draggableHeader:active {
+    cursor: grabbing;
+}
+
 /* Scrollable content area inside contentSection */
 .contentScrollArea {
     flex: 1;
@@ -163,13 +176,6 @@
     margin: 0 auto 20px auto;
     flex-shrink: 0;
     opacity: 0.8;
-    cursor: grab;
-    padding: 10px;
-    margin: -10px auto 10px auto;
-}
-
-.dragIndicator:active {
-    cursor: grabbing;
 }
 
 /* Header */
