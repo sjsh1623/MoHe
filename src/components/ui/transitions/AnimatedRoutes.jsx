@@ -171,9 +171,7 @@ export default function AnimatedRoutes() {
   };
 
   const isAuthRoute = AUTH_ROUTES.has(location.pathname);
-  const shellPaddingBottom = isAuthRoute
-    ? 'var(--app-shell-safe-bottom, 0px)'
-    : 'calc(var(--app-shell-safe-bottom, 0px) + 24px)';
+  const shellPaddingBottom = 'var(--app-shell-safe-bottom, 0px)';
 
   return (
     <div style={{
