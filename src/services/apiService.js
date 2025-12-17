@@ -19,10 +19,10 @@ class ApiService {
   }
 
   /**
-   * Get auth token from localStorage
+   * Get auth token from storage (checks both localStorage and sessionStorage)
    */
   getAuthToken() {
-    return localStorage.getItem('authToken');
+    return localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
   }
 
   /**
@@ -488,6 +488,20 @@ export class PlaceService extends ApiService {
       requireAuth: false
     });
   }
+
+  /**
+   * Get reviews for a place (crawler-sourced reviews)
+   */
+  async getPlaceReviews(placeId, options = {}) {
+    const params = new URLSearchParams({
+      page: (options.page || 0).toString(),
+      size: (options.size || 10).toString()
+    });
+
+    return this.get(`/api/places/${placeId}/reviews?${params}`, {
+      requireAuth: false
+    });
+  }
 }
 
 /**
@@ -620,7 +634,7 @@ export class UserService extends ApiService {
     const formData = new FormData();
     formData.append('image', file);
 
-    const token = localStorage.getItem('authToken');
+    const token = this.getAuthToken();
     const response = await fetch(`${this.baseURL}/api/user/profile/image`, {
       method: 'POST',
       headers: {
@@ -734,6 +748,7 @@ class GuestRecommendationService extends ApiService {
             id: place.id,
             name: place.name,
             rating: place.rating || 4.0,
+            reviewCount: place.reviewCount || 0,
             location: addressStr,
             image: place.imageUrl || place.images?.[0],
             images: place.images || [],
