@@ -983,14 +983,23 @@ export default function HomePage() {
         </div>
       )}
 
-      {/* Footer moved outside contentWrapper */}
+      {/* Footer */}
       <footer className={styles.footer}>
         <div className={styles.footerContent}>
-          <p className={styles.footerText}>
-            © 2025 MOHE<br />
-            서비스 이용약관 | 개인정보처리방침 | 문의하기<br />
-            hello@mohe.app
-          </p>
+          <span className={styles.footerLogo}>MOHE</span>
+
+          <div className={styles.footerLinks}>
+            <a href="#" className={styles.footerLink}>서비스 이용약관</a>
+            <a href="#" className={styles.footerLink}>개인정보처리방침</a>
+            <a href="#" className={styles.footerLink}>문의하기</a>
+          </div>
+
+          <div className={styles.footerDivider} />
+
+          <div className={styles.footerBottom}>
+            <p className={styles.footerText}>© 2025 MOHE. All rights reserved.</p>
+            <a href="mailto:hello@mohe.app" className={styles.footerEmail}>hello@mohe.app</a>
+          </div>
         </div>
       </footer>
 

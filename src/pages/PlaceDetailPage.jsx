@@ -8,16 +8,40 @@ import { activityService, placeService } from '@/services/apiService';
 import { authService } from '@/services/authService';
 import { buildImageUrl, buildImageUrlList, normalizePlaceImages } from '@/utils/image';
 
-// Format date to Korean format (YY.MM.DD)
-const formatDate = (dateString) => {
-  if (!dateString) return '';
+// Parse address to show only up to district/dong/road level
+const parseAddress = (fullAddress) => {
+  if (!fullAddress) return '';
 
-  const date = new Date(dateString);
-  const year = date.getFullYear().toString().slice(-2);
-  const month = (date.getMonth() + 1).toString().padStart(2, '0');
-  const day = date.getDate().toString().padStart(2, '0');
+  const parts = fullAddress.split(' ');
 
-  return `${year}.${month}.${day}`;
+  // Find the index of the part that ends with 동, 로, 길, 대로
+  let endIndex = -1;
+  for (let i = 0; i < parts.length; i++) {
+    const part = parts[i];
+    if (part.endsWith('동') || part.endsWith('로') || part.endsWith('길')) {
+      endIndex = i;
+      break;
+    }
+  }
+
+  if (endIndex === -1) {
+    // If no 동/로/길 found, return up to 2-3 parts
+    return parts.slice(0, Math.min(3, parts.length)).join(' ');
+  }
+
+  // Include the district/city part before 동/로/길
+  // Look for 구, 시, 군, 읍, 면
+  let startIndex = endIndex;
+  for (let i = endIndex - 1; i >= 0; i--) {
+    const part = parts[i];
+    if (part.endsWith('구') || part.endsWith('시') || part.endsWith('군') ||
+        part.endsWith('읍') || part.endsWith('면')) {
+      startIndex = i;
+      break;
+    }
+  }
+
+  return parts.slice(startIndex, endIndex + 1).join(' ');
 };
 
 // Parse markdown-style bold (**text** or *text*) and convert to React elements
@@ -62,7 +86,6 @@ export default function PlaceDetailPage({
   const [placeData, setPlaceData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [reviews, setReviews] = useState([]);
 
   // Get preloaded data from navigation state
   const preloadedImage = buildImageUrl(location.state?.preloadedImage);
@@ -125,18 +148,6 @@ export default function PlaceDetailPage({
           console.log('API response place data:', response.data.place);
           setPlaceData(normalizePlaceImages(response.data.place));
 
-          // Load reviews for this place (crawler-sourced)
-          try {
-            const reviewsResponse = await placeService.getPlaceReviews(id, { size: 10 });
-            if (reviewsResponse.success && reviewsResponse.data) {
-              console.log('Reviews loaded:', reviewsResponse.data);
-              // API returns data.reviews array
-              setReviews(reviewsResponse.data.reviews || []);
-            }
-          } catch (err) {
-            console.warn('Failed to load reviews:', err);
-          }
-
           if (authService.isAuthenticated()) {
             try {
               await activityService.recordRecentView(id);
@@ -175,12 +186,16 @@ export default function PlaceDetailPage({
   const startX = useRef(0);
   const DRAG_THRESHOLD = 50; // Minimum drag distance to change image
 
-  // Calculate sheet heights based on viewport (ensure image shows at least 40%)
+  // Description expansion state
+  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
+  const MAX_DESCRIPTION_LENGTH = 100; // Characters to show before "Read more"
+
+  // Calculate sheet heights based on viewport
   const getSheetHeight = (state) => {
     const vh = window.innerHeight;
     switch (state) {
-      case 'half': return vh * 0.60; // 60% of screen (image shows 40%)
-      case 'large': return vh * 0.80; // 80% of screen (image shows 20%)
+      case 'half': return vh * 0.55; // 50% of screen
+      case 'large': return vh * 0.8; // 80% of screen
       case 'expanded': return vh * 1.0; // 100% of screen
       default: return vh * 0.5;
     }
@@ -218,6 +233,19 @@ export default function PlaceDetailPage({
       : [];
 
   const images = candidateImages.length ? candidateImages : defaultImages;
+
+  const handleExperienceClick = () => {
+    if (onExperience) {
+      onExperience(placeData);
+    } else {
+      console.log('Experience clicked for:', placeData.name || placeData.title);
+      // Default behavior - could navigate to booking page
+    }
+  };
+
+  const handleReadMore = () => {
+    setIsDescriptionExpanded(!isDescriptionExpanded);
+  };
 
   const handleThumbnailClick = (index) => {
     setCurrentImageIndex(index);
@@ -420,144 +448,171 @@ export default function PlaceDetailPage({
           height: `${getCurrentSheetHeight()}px`,
           transition: isDragging ? 'none' : 'height 0.3s ease-out'
         }}
+        onMouseDown={handleDragStart}
+        onTouchStart={handleDragStart}
       >
-        {/* Draggable Header Area */}
-        <div
-          className={styles.draggableHeader}
-          onMouseDown={handleDragStart}
-          onTouchStart={handleDragStart}
-        >
-          {/* Drag Indicator */}
-          <div className={styles.dragIndicator} />
+        {/* Drag Indicator */}
+        <div className={styles.dragIndicator} />
 
-          {/* Tags (Hashtags) */}
-          {placeData.tags && placeData.tags.length > 0 && (
-            <div className={styles.hashtags}>
-              {placeData.tags.map((tag, index) => (
-                <span key={index} className={styles.hashtag}>#{tag}</span>
-              ))}
-            </div>
-          )}
+        {/* Tags (Hashtags) */}
+        {placeData.tags && placeData.tags.length > 0 && (
+          <div className={styles.hashtags}>
+            {placeData.tags.map((tag, index) => (
+              <span key={index} className={styles.hashtag}>#{tag}</span>
+            ))}
+          </div>
+        )}
 
-          {/* Title and Rating */}
-          <div className={styles.header}>
-            <h1 className={styles.title}>{placeData.name || placeData.title}</h1>
-            <div className={styles.ratingContainer}>
-              <svg className={styles.starIcon} width="12.94" height="11.64" viewBox="0 0 13 12" fill="none">
-                <path d="M5.59149 0.345492C5.74042 -0.115164 6.38888 -0.115164 6.53781 0.345491L7.62841 3.71885C7.69501 3.92486 7.88603 4.06434 8.10157 4.06434H11.6308C12.1128 4.06434 12.3132 4.68415 11.9233 4.96885L9.06803 7.0537C8.89366 7.18102 8.82069 7.4067 8.8873 7.61271L9.9779 10.9861C10.1268 11.4467 9.60222 11.8298 9.21232 11.5451L6.35708 9.46024C6.18271 9.33291 5.94659 9.33291 5.77222 9.46024L2.91698 11.5451C2.52708 11.8298 2.00247 11.4467 2.1514 10.9861L3.242 7.61271C3.30861 7.4067 3.23564 7.18102 3.06127 7.0537L0.206033 4.96885C-0.183869 4.68415 0.0165137 4.06434 0.49846 4.06434H4.02773C4.24326 4.06434 4.43428 3.92486 4.50089 3.71885L5.59149 0.345492Z" fill="#FFD336"/>
-              </svg>
-              <span className={styles.ratingText}>{Number(placeData.rating).toFixed(1)}</span>
-              <span className={styles.reviewCount}>({placeData.reviewCount || placeData.userRatingsTotal || 0})</span>
-            </div>
+        {/* Title and Rating */}
+        <div className={styles.header}>
+          <h1 className={styles.title}>{placeData.name || placeData.title}</h1>
+          <div className={styles.ratingContainer}>
+            <svg className={styles.starIcon} width="12.94" height="11.64" viewBox="0 0 13 12" fill="none">
+              <path d="M5.59149 0.345492C5.74042 -0.115164 6.38888 -0.115164 6.53781 0.345491L7.62841 3.71885C7.69501 3.92486 7.88603 4.06434 8.10157 4.06434H11.6308C12.1128 4.06434 12.3132 4.68415 11.9233 4.96885L9.06803 7.0537C8.89366 7.18102 8.82069 7.4067 8.8873 7.61271L9.9779 10.9861C10.1268 11.4467 9.60222 11.8298 9.21232 11.5451L6.35708 9.46024C6.18271 9.33291 5.94659 9.33291 5.77222 9.46024L2.91698 11.5451C2.52708 11.8298 2.00247 11.4467 2.1514 10.9861L3.242 7.61271C3.30861 7.4067 3.23564 7.18102 3.06127 7.0537L0.206033 4.96885C-0.183869 4.68415 0.0165137 4.06434 0.49846 4.06434H4.02773C4.24326 4.06434 4.43428 3.92486 4.50089 3.71885L5.59149 0.345492Z" fill="#FFD336"/>
+            </svg>
+            <span className={styles.ratingText}>{placeData.rating}</span>
+            <span className={styles.reviewCount}>({placeData.reviewCount || placeData.userRatingsTotal || 0})</span>
           </div>
         </div>
 
-        {/* Scrollable Content Area */}
-        <div className={styles.contentScrollArea}>
+        {/* Location and Transportation */}
+        <div className={styles.locationSection}>
+          <div className={styles.locationRow}>
+            <div className={styles.locationInfo}>
+              <svg className={styles.locationIcon} width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="8" cy="7.33325" r="2" stroke="#7D848D" strokeWidth="1.5"/>
+                <path d="M14 7.25918C14 10.532 10.25 14.6666 8 14.6666C5.75 14.6666 2 10.532 2 7.25918C2 3.98638 4.68629 1.33325 8 1.33325C11.3137 1.33325 14 3.98638 14 7.25918Z" stroke="#7D848D" strokeWidth="1.5"/>
+              </svg>
+              <span className={styles.locationText}>{parseAddress(placeData.location || placeData.address)}</span>
+            </div>
 
-          {/* Location and Transportation */}
-          <div className={styles.locationSection}>
-            <div className={styles.locationRow}>
-              <div className={styles.locationInfo}>
-                <svg className={styles.locationIcon} width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <circle cx="8" cy="7.33325" r="2" stroke="#7D848D" strokeWidth="1.5"/>
-                  <path d="M14 7.25918C14 10.532 10.25 14.6666 8 14.6666C5.75 14.6666 2 10.532 2 7.25918C2 3.98638 4.68629 1.33325 8 1.33325C11.3137 1.33325 14 3.98638 14 7.25918Z" stroke="#7D848D" strokeWidth="1.5"/>
-                </svg>
-                <span className={styles.locationText}>{placeData.location || placeData.address}</span>
-              </div>
+            {(placeData.transportationCarTime || placeData.transportationBusTime) && (
+            <div className={styles.transportationRow}>
+              {placeData.transportationCarTime && (
+                <>
+                  <svg className={styles.carIcon} width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <path d="M11.67 1.39C12.67 1.39 13.84 2.56 13.84 3.56V7.84H2.17V3.56C2.17 2.56 3.34 1.39 4.34 1.39H11.67Z" fill="#7D848D"/>
+                    <path d="M0.83 6.83H15.17V11.16C15.17 12.16 14 13.33 13 13.33H3C2 13.33 0.83 12.16 0.83 11.16V6.83Z" fill="#7D848D"/>
+                    <circle cx="4" cy="10.5" r="1" fill="white"/>
+                    <circle cx="12" cy="10.5" r="1" fill="white"/>
+                    <rect x="7" y="2" width="2" height="1" fill="white"/>
+                  </svg>
+                  <span className={styles.transportTime}>{placeData.transportationCarTime}</span>
+                </>
+              )}
 
-              {(placeData.transportationCarTime || placeData.transportationBusTime) && (
-              <div className={styles.transportationRow}>
-                {placeData.transportationCarTime && (
-                  <>
-                    <svg className={styles.carIcon} width="16" height="16" viewBox="0 0 16 16" fill="none">
-                      <path d="M11.67 1.39C12.67 1.39 13.84 2.56 13.84 3.56V7.84H2.17V3.56C2.17 2.56 3.34 1.39 4.34 1.39H11.67Z" fill="#7D848D"/>
-                      <path d="M0.83 6.83H15.17V11.16C15.17 12.16 14 13.33 13 13.33H3C2 13.33 0.83 12.16 0.83 11.16V6.83Z" fill="#7D848D"/>
-                      <circle cx="4" cy="10.5" r="1" fill="white"/>
-                      <circle cx="12" cy="10.5" r="1" fill="white"/>
-                      <rect x="7" y="2" width="2" height="1" fill="white"/>
-                    </svg>
-                    <span className={styles.transportTime}>{placeData.transportationCarTime}</span>
-                  </>
-                )}
-
-                {placeData.transportationBusTime && (
-                  <>
-                    <svg className={styles.busIcon} width="16" height="16" viewBox="0 0 16 16" fill="none">
-                      <rect x="2" y="1" width="12" height="13" rx="1.5" fill="#7D848D"/>
-                      <rect x="2.5" y="4.5" width="11" height="4" fill="white"/>
-                      <circle cx="5" cy="11.5" r="1" fill="white"/>
-                      <circle cx="11" cy="11.5" r="1" fill="white"/>
-                      <rect x="6" y="2.5" width="4" height="1" fill="white"/>
-                    </svg>
-                    <span className={styles.transportTime}>{placeData.transportationBusTime}</span>
-                  </>
-                )}
-              </div>
+              {placeData.transportationBusTime && (
+                <>
+                  <svg className={styles.busIcon} width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <rect x="2" y="1" width="12" height="13" rx="1.5" fill="#7D848D"/>
+                    <rect x="2.5" y="4.5" width="11" height="4" fill="white"/>
+                    <circle cx="5" cy="11.5" r="1" fill="white"/>
+                    <circle cx="11" cy="11.5" r="1" fill="white"/>
+                    <rect x="6" y="2.5" width="4" height="1" fill="white"/>
+                  </svg>
+                  <span className={styles.transportTime}>{placeData.transportationBusTime}</span>
+                </>
               )}
             </div>
+            )}
           </div>
+        </div>
 
-          {/* Gallery - Thumbnails */}
-          {images && images.length > 0 && (
-            <div className={styles.gallery}>
-              {images.map((image, index) => (
-                <div
-                  key={index}
-                  className={`${styles.galleryItem} ${index === currentImageIndex ? styles.active : ''}`}
-                  onClick={() => handleThumbnailClick(index)}
-                >
-                  <img src={image} alt={`Thumbnail ${index + 1}`} className={styles.galleryImage} />
-                </div>
-              ))}
+        {/* Gallery - Thumbnails */}
+        {images && images.length > 0 && (
+          <div className={styles.gallery}>
+            {images.map((image, index) => (
+              <div
+                key={index}
+                className={`${styles.galleryItem} ${index === currentImageIndex ? styles.active : ''}`}
+                onClick={() => handleThumbnailClick(index)}
+              >
+                <img src={image} alt={`Thumbnail ${index + 1}`} className={styles.galleryImage} />
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Mohe AI Note Section */}
+        {placeData.description && placeData.description.length > 10 && (
+          <div className={styles.aiNoteSection}>
+            <div className={styles.aiNoteHeader}>
+              <h2 className={styles.aiNoteTitle}>Mohe AI 노트</h2>
+              <p className={styles.aiNoteSubtitle}>
+                막무가내로 읽은 AI가 정리했어요
+              </p>
             </div>
-          )}
+            <div className={styles.description}>
+              {(() => {
+                const description = placeData.description;
+                const shouldTruncate = description.length > MAX_DESCRIPTION_LENGTH && !isDescriptionExpanded;
+                const displayText = shouldTruncate
+                  ? description.substring(0, MAX_DESCRIPTION_LENGTH) + '...'
+                  : description;
 
-          {/* Mohe AI Note Section */}
-          {placeData.description && placeData.description.length > 10 && (
-            <div className={styles.aiNoteSection}>
-              <div className={styles.aiNoteHeader}>
-                <h2 className={styles.aiNoteTitle}>Mohe AI 노트</h2>
-                <p className={styles.aiNoteSubtitle}>
-                  리뷰와 데이터를 읽고 AI가 정리했어요
+                return (
+                  <>
+                    {displayText.split('\n').map((line, index) => (
+                      <span key={index}>
+                        {parseMarkdown(line)}
+                        {index < displayText.split('\n').length - 1 && <br />}
+                      </span>
+                    ))}
+                    {description.length > MAX_DESCRIPTION_LENGTH && (
+                      <button className={styles.readMore} onClick={handleReadMore}>
+                        {isDescriptionExpanded ? '접기' : '더보기'}
+                      </button>
+                    )}
+                  </>
+                );
+              })()}
+            </div>
+
+            {/* AI Comments Section */}
+            <div className={styles.aiCommentsSection}>
+              <div className={styles.aiCommentCard}>
+                <div className={styles.commentHeader}>
+                  <div className={styles.commentAuthor}>
+                    <div className={styles.authorAvatar}>
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                        <circle cx="12" cy="12" r="12" fill="#E8F5FF"/>
+                        <path d="M12 12C14.21 12 16 10.21 16 8C16 5.79 14.21 4 12 4C9.79 4 8 5.79 8 8C8 10.21 9.79 12 12 12ZM12 14C9.33 14 4 15.34 4 18V20H20V18C20 15.34 14.67 14 12 14Z" fill="#0D6EFD"/>
+                      </svg>
+                    </div>
+                    <span className={styles.authorName}>사용자 아이디 명랑하네요</span>
+                  </div>
+                  <span className={styles.commentDate}>25.12.13</span>
+                </div>
+                <p className={styles.commentText}>
+                  여기에는 리뷰가 있을거라며 사용자의 리뷰를 이용 보여지 면… 으로 저리가 되어야 해요
                 </p>
               </div>
-              <div className={styles.description}>
-                {placeData.description.split('\n').map((line, index) => (
-                  <span key={index}>
-                    {parseMarkdown(line)}
-                    {index < placeData.description.split('\n').length - 1 && <br />}
-                  </span>
-                ))}
-              </div>
 
-              {/* AI Reviews Section - Horizontal Scroll */}
-              {reviews.length > 0 && (
-                <div className={styles.aiCommentsSection}>
-                  {reviews.map((review) => (
-                    <div key={review.id} className={styles.aiCommentCard}>
-                      <p className={styles.commentText}>
-                        {review.reviewText}
-                      </p>
-                      <div className={styles.commentFooter}>
-                        <div className={styles.commentAuthor}>
-                          <div className={styles.authorAvatar}>
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                              <circle cx="12" cy="12" r="12" fill="#E8F5FF"/>
-                              <path d="M12 12C14.21 12 16 10.21 16 8C16 5.79 14.21 4 12 4C9.79 4 8 5.79 8 8C8 10.21 9.79 12 12 12ZM12 14C9.33 14 4 15.34 4 18V20H20V18C20 15.34 14.67 14 12 14Z" fill="#0D6EFD"/>
-                            </svg>
-                          </div>
-                          <span className={styles.authorName}>크롤링 리뷰</span>
-                        </div>
-                        <span className={styles.commentDate}>{formatDate(review.createdAt)}</span>
-                      </div>
+              <div className={styles.aiCommentCard}>
+                <div className={styles.commentHeader}>
+                  <div className={styles.commentAuthor}>
+                    <div className={styles.authorAvatar}>
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                        <circle cx="12" cy="12" r="12" fill="#E8F5FF"/>
+                        <path d="M12 12C14.21 12 16 10.21 16 8C16 5.79 14.21 4 12 4C9.79 4 8 5.79 8 8C8 10.21 9.79 12 12 12ZM12 14C9.33 14 4 15.34 4 18V20H20V18C20 15.34 14.67 14 12 14Z" fill="#0D6EFD"/>
+                      </svg>
                     </div>
-                  ))}
+                    <span className={styles.authorName}>사용자 아이디 명랑하네요</span>
+                  </div>
+                  <span className={styles.commentDate}>25.12.13</span>
                 </div>
-              )}
+                <p className={styles.commentText}>
+                  여기에는 리뷰가 있을거라며 사용자의 리뷰를 이용 보여지 면… 으로 저리가 되어야 해요
+                </p>
+              </div>
             </div>
-          )}
-        </div>
+          </div>
+        )}
+
+        {/* Experience Button */}
+        <button className={styles.experienceButton} onClick={handleExperienceClick}>
+          {t('places.detail.experienceButton')}
+        </button>
       </div>
     </div>
   );
