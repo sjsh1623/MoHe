@@ -19,6 +19,11 @@ mohe.today {
 		reverse_proxy spring:8080
 	}
 
+	# Batch API - proxy to MoheBatch Spring Boot
+	handle /batch/* {
+		reverse_proxy mohe-batch:8081
+	}
+
 	# Image processing server - proxy to Node.js image processor
 	handle /image/* {
 		reverse_proxy moheimageprocessor-app-1:5200 {
