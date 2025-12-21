@@ -10,8 +10,8 @@
 /* Hero Section */
 .heroSection {
     width: 100%;
-    height: 40vh;
-    min-height: 250px;
+    height: 45vh;
+    min-height: 280px;
     position: relative;
     overflow: hidden;
 }
@@ -386,10 +386,10 @@
 
 .description {
     color: #1B1E28;
-    font-size: 13px;
+    font-size: 15px;
     font-family: 'Inter', sans-serif;
     font-weight: 400;
-    line-height: 22px;
+    line-height: 24px;
     width: 100%;
     margin-bottom: 20px;
 }
@@ -444,14 +444,14 @@
 
 .commentText {
     color: #1B1E28;
-    font-size: 13px;
+    font-size: 14px;
     font-family: 'Inter', sans-serif;
     font-weight: 400;
-    line-height: 20px;
+    line-height: 22px;
     margin: 0;
-    /* Limit to 4 lines with ellipsis for better readability */
+    /* Limit to 3 lines with ellipsis for better readability */
     display: -webkit-box;
-    -webkit-line-clamp: 4;
+    -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -483,7 +483,7 @@
 
 .authorName {
     color: #1B1E28;
-    font-size: 12px;
+    font-size: 13px;
     font-family: 'Inter', sans-serif;
     font-weight: 500;
     line-height: 18px;
@@ -491,10 +491,10 @@
 
 .commentDate {
     color: #7D848D;
-    font-size: 11px;
+    font-size: 12px;
     font-family: 'Inter', sans-serif;
     font-weight: 400;
-    line-height: 16px;
+    line-height: 18px;
 }
 
 /* Experience Button */

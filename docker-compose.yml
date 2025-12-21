@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # Caddy Proxy Server
   caddy:
@@ -15,14 +13,16 @@ services:
       - caddy_config:/config
     networks:
       - mohe-network
+      - mohespring_mohe-network
+      - moheimageprocessor_default
     depends_on:
       - mohe-frontend
 
   # React Frontend
   mohe-frontend:
     build:
-      context: ./MoheReact
-      dockerfile: ../Dockerfile
+      context: .
+      dockerfile: Dockerfile
     container_name: mohe-react-app
     environment:
       - NODE_ENV=production
@@ -35,6 +35,10 @@ services:
 networks:
   mohe-network:
     driver: bridge
+  mohespring_mohe-network:
+    external: true
+  moheimageprocessor_default:
+    external: true
 
 volumes:
   caddy_data:
