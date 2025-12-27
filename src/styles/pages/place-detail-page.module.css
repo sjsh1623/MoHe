@@ -357,6 +357,32 @@
     pointer-events: none;
 }
 
+/* Menu "+" Overlay */
+.moreOverlay {
+    position: relative;
+}
+
+.overlayContent {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+}
+
+.overlayText {
+    color: white;
+    font-size: 16px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    line-height: 20px;
+}
+
 /* AI Note Section */
 .aiNoteSection {
     margin-bottom: 24px;

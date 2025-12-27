@@ -63,6 +63,7 @@ export default function PlaceDetailPage({
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [reviews, setReviews] = useState([]);
+  const [menus, setMenus] = useState([]);
 
   // Get preloaded data from navigation state
   const preloadedImage = buildImageUrl(location.state?.preloadedImage);
@@ -135,6 +136,17 @@ export default function PlaceDetailPage({
             }
           } catch (err) {
             console.warn('Failed to load reviews:', err);
+          }
+
+          // Load menus for this place
+          try {
+            const menusResponse = await placeService.getPlaceMenus(id);
+            if (menusResponse.success && menusResponse.data) {
+              console.log('Menus loaded:', menusResponse.data);
+              setMenus(menusResponse.data.menus || []);
+            }
+          } catch (err) {
+            console.warn('Failed to load menus:', err);
           }
 
           if (authService.isAuthenticated()) {
@@ -491,20 +503,54 @@ export default function PlaceDetailPage({
             </div>
           </div>
 
-          {/* Gallery - Thumbnails */}
-          {images && images.length > 0 && (
-            <div className={styles.gallery}>
-              {images.map((image, index) => (
-                <div
-                  key={index}
-                  className={`${styles.galleryItem} ${index === currentImageIndex ? styles.active : ''}`}
-                  onClick={() => handleThumbnailClick(index)}
-                >
-                  <img src={image} alt={`Thumbnail ${index + 1}`} className={styles.galleryImage} />
-                </div>
-              ))}
-            </div>
-          )}
+          {/* Menu Gallery */}
+          {(() => {
+            // Filter menus with images
+            const menusWithImages = menus.filter(menu => menu.imagePath);
+            const totalMenuImages = menusWithImages.length;
+
+            if (totalMenuImages === 0) return null;
+
+            // If 5 or fewer menus, show all; if more than 5, show 4 + "+" overlay
+            const shouldShowOverlay = totalMenuImages > 5;
+            const displayMenus = shouldShowOverlay
+              ? menusWithImages.slice(0, 4)
+              : menusWithImages.slice(0, 5);
+            const remainingCount = totalMenuImages - 4;
+
+            return (
+              <div className={styles.gallery}>
+                {displayMenus.map((menu, index) => (
+                  <div
+                    key={menu.id || index}
+                    className={styles.galleryItem}
+                    onClick={() => handleThumbnailClick(index)}
+                  >
+                    <img
+                      src={buildImageUrl(menu.imagePath)}
+                      alt={menu.name || `메뉴 ${index + 1}`}
+                      className={styles.galleryImage}
+                    />
+                  </div>
+                ))}
+                {shouldShowOverlay && (
+                  <div
+                    className={`${styles.galleryItem} ${styles.moreOverlay}`}
+                    onClick={() => {/* TODO: Open full menu gallery */}}
+                  >
+                    <img
+                      src={buildImageUrl(menusWithImages[4]?.imagePath)}
+                      alt="더보기"
+                      className={styles.galleryImage}
+                    />
+                    <div className={styles.overlayContent}>
+                      <span className={styles.overlayText}>+{remainingCount}</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
 
           {/* Mohe AI Note Section */}
           {placeData.description && placeData.description.length > 10 && (

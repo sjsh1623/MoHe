@@ -502,6 +502,15 @@ export class PlaceService extends ApiService {
       requireAuth: false
     });
   }
+
+  /**
+   * Get menus for a place
+   */
+  async getPlaceMenus(placeId) {
+    return this.get(`/api/places/${placeId}/menus`, {
+      requireAuth: false
+    });
+  }
 }
 
 /**
