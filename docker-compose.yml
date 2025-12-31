@@ -17,6 +17,7 @@ services:
       - moheimageprocessor_default
     depends_on:
       - mohe-frontend
+      - mohe-admin
 
   # React Frontend
   mohe-frontend:
@@ -24,6 +25,20 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: mohe-react-app
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped
+    networks:
+      - mohe-network
+    expose:
+      - "80"
+
+  # Admin Dashboard
+  mohe-admin:
+    build:
+      context: ../MoheAdmin
+      dockerfile: Dockerfile
+    container_name: mohe-admin-app
     environment:
       - NODE_ENV=production
     restart: unless-stopped
