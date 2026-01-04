@@ -122,20 +122,19 @@ export default function PlaceDetailPage({
         console.log('Fetching complete place details from API for id:', id);
         const response = await placeService.getPlaceById(id);
         if (response.success && response.data.place) {
-          // API returns { place: SimplePlaceDto, images: [], isBookmarked: false, similarPlaces: [] }
+          // API returns { place: SimplePlaceDto, images: [], reviews: [], isBookmarked: false, similarPlaces: [] }
           console.log('API response place data:', response.data.place);
-          setPlaceData(normalizePlaceImages(response.data.place));
+          console.log('API response description:', response.data.place.description);
+          console.log('API response reviews:', response.data.reviews);
 
-          // Load reviews for this place (crawler-sourced)
-          try {
-            const reviewsResponse = await placeService.getPlaceReviews(id, { size: 10 });
-            if (reviewsResponse.success && reviewsResponse.data) {
-              console.log('Reviews loaded:', reviewsResponse.data);
-              // API returns data.reviews array
-              setReviews(reviewsResponse.data.reviews || []);
-            }
-          } catch (err) {
-            console.warn('Failed to load reviews:', err);
+          const normalizedPlace = normalizePlaceImages(response.data.place);
+          console.log('Normalized place description:', normalizedPlace.description);
+          setPlaceData(normalizedPlace);
+
+          // Use reviews from place detail response (already included)
+          if (response.data.reviews && response.data.reviews.length > 0) {
+            console.log('Reviews loaded from place detail:', response.data.reviews.length);
+            setReviews(response.data.reviews);
           }
 
           // Load menus for this place
@@ -519,84 +518,94 @@ export default function PlaceDetailPage({
             const remainingCount = totalMenuImages - 4;
 
             return (
-              <div className={styles.gallery}>
-                {displayMenus.map((menu, index) => (
-                  <div
-                    key={menu.id || index}
-                    className={styles.galleryItem}
-                    onClick={() => handleThumbnailClick(index)}
-                  >
-                    <img
-                      src={buildImageUrl(menu.imagePath)}
-                      alt={menu.name || `메뉴 ${index + 1}`}
-                      className={styles.galleryImage}
-                    />
-                  </div>
-                ))}
-                {shouldShowOverlay && (
-                  <div
-                    className={`${styles.galleryItem} ${styles.moreOverlay}`}
-                    onClick={() => {/* TODO: Open full menu gallery */}}
-                  >
-                    <img
-                      src={buildImageUrl(menusWithImages[4]?.imagePath)}
-                      alt="더보기"
-                      className={styles.galleryImage}
-                    />
-                    <div className={styles.overlayContent}>
-                      <span className={styles.overlayText}>+{remainingCount}</span>
+              <div className={styles.menuGallery}>
+                <h3 className={styles.menuGalleryTitle}>메뉴</h3>
+                <div className={styles.menuGalleryItems}>
+                  {displayMenus.map((menu, index) => (
+                    <div
+                      key={menu.id || index}
+                      className={styles.menuGalleryItem}
+                    >
+                      <img
+                        src={buildImageUrl(menu.imagePath)}
+                        alt={menu.name || `메뉴 ${index + 1}`}
+                        className={styles.menuGalleryImage}
+                      />
+                      {menu.name && (
+                        <span className={styles.menuName}>{menu.name}</span>
+                      )}
                     </div>
-                  </div>
-                )}
+                  ))}
+                  {shouldShowOverlay && (
+                    <div className={`${styles.menuGalleryItem} ${styles.moreOverlay}`}>
+                      <img
+                        src={buildImageUrl(menusWithImages[4]?.imagePath)}
+                        alt="더보기"
+                        className={styles.menuGalleryImage}
+                      />
+                      <div className={styles.overlayContent}>
+                        <span className={styles.overlayText}>+{remainingCount}</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             );
           })()}
 
-          {/* Mohe AI Note Section */}
-          {placeData.description && placeData.description.length > 10 && (
-            <div className={styles.aiNoteSection}>
-              <div className={styles.aiNoteHeader}>
-                <h2 className={styles.aiNoteTitle}>Mohe AI 노트</h2>
-                <p className={styles.aiNoteSubtitle}>
-                  리뷰와 데이터를 읽고 AI가 정리했어요
-                </p>
-              </div>
-              <div className={styles.description}>
-                {placeData.description.split('\n').map((line, index) => (
+          {/* Mohe AI Note Section - Always visible */}
+          <div className={styles.aiNoteSection}>
+            <div className={styles.aiNoteHeader}>
+              <h2 className={styles.aiNoteTitle}>Mohe AI 노트</h2>
+              <p className={styles.aiNoteSubtitle}>
+                리뷰와 데이터를 읽고 AI가 정리했어요
+              </p>
+            </div>
+            <div className={styles.description}>
+              {placeData.description && placeData.description.length > 10 ? (
+                placeData.description.split('\n').map((line, index) => (
                   <span key={index}>
                     {parseMarkdown(line)}
                     {index < placeData.description.split('\n').length - 1 && <br />}
                   </span>
-                ))}
-              </div>
+                ))
+              ) : (
+                <span>이 장소에 대한 AI 분석을 준비 중이에요.</span>
+              )}
+            </div>
+          </div>
 
-              {/* AI Reviews Section - Horizontal Scroll */}
-              <div className={styles.aiCommentsSection}>
-                {reviews.length > 0 ? (
-                  reviews.map((review) => (
-                    <div key={review.id} className={styles.aiCommentCard}>
-                      <p className={styles.commentText}>
-                        {review.reviewText}
-                      </p>
-                      <div className={styles.commentFooter}>
-                        <span className={styles.authorName}>{review.authorName || review.nickname || '익명'}</span>
-                        <span className={styles.commentDate}>{formatDate(review.createdAt)}</span>
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <div className={styles.aiCommentCard}>
+          {/* Reviews Section - Always visible */}
+          <div className={styles.reviewsSection}>
+            <div className={styles.reviewsHeader}>
+              <h2 className={styles.reviewsTitle}>리뷰</h2>
+              <span className={styles.reviewsCount}>{reviews.length}개</span>
+            </div>
+            <div className={styles.aiCommentsSection}>
+              {reviews.length > 0 ? (
+                reviews.map((review) => (
+                  <div key={review.id} className={styles.aiCommentCard}>
                     <p className={styles.commentText}>
-                      아직 리뷰가 없어요. 첫 번째 리뷰를 남겨보세요!
+                      {review.reviewText}
                     </p>
                     <div className={styles.commentFooter}>
-                      <span className={styles.authorName}>Mohe</span>
+                      <span className={styles.authorName}>{review.authorName || review.nickname || '익명'}</span>
+                      <span className={styles.commentDate}>{formatDate(review.createdAt)}</span>
                     </div>
                   </div>
-                )}
-              </div>
+                ))
+              ) : (
+                <div className={styles.aiCommentCard}>
+                  <p className={styles.commentText}>
+                    아직 리뷰가 없어요. 첫 번째 리뷰를 남겨보세요!
+                  </p>
+                  <div className={styles.commentFooter}>
+                    <span className={styles.authorName}>Mohe</span>
+                  </div>
+                </div>
+              )}
             </div>
-          )}
+          </div>
         </div>
       </div>
     </div>
