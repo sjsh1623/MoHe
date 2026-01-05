@@ -30,6 +30,7 @@ import MyPlacesPage from '@/pages/MyPlacesPage.jsx';
 import RecentViewPage from '@/pages/RecentViewPage.jsx';
 import SearchResultsPage from '@/pages/SearchResultsPage.jsx';
 import ImageTestPage from '@/pages/ImageTestPage.jsx';
+import WriteReviewPage from '@/pages/WriteReviewPage.jsx';
 
 // Navigation flow hierarchy (lower = earlier in flow)
 const ROUTE_HIERARCHY = {
@@ -56,7 +57,8 @@ const ROUTE_HIERARCHY = {
   '/places': 14,
   '/search-results': 14,
   '/place': 15,
-  '/image-test': 16
+  '/review/write': 16,
+  '/image-test': 17
 };
 
 // Routes that only render standalone auth/onboarding screens.
@@ -240,6 +242,7 @@ export default function AnimatedRoutes() {
             <Route path="/places" element={<PlacesListPage />} />
             <Route path="/search-results" element={<SearchResultsPage />} />
             <Route path="/place/:id" element={<PlaceDetailPage />} />
+            <Route path="/place/:id/review/write" element={<WriteReviewPage />} />
             <Route path="/image-test" element={<ImageTestPage />} />
           </Routes>
         </motion.div>

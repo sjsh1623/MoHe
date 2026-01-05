@@ -1,0 +1,222 @@
+/* Write Review Page - Toss/Naver Style */
+.pageContainer {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background: #fff;
+}
+
+.loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    color: #7D848D;
+    font-size: 16px;
+}
+
+/* Header */
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    border-bottom: 1px solid #F2F4F6;
+    position: sticky;
+    top: 0;
+    background: #fff;
+    z-index: 10;
+}
+
+.backButton {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    margin-left: -8px;
+}
+
+.headerTitle {
+    font-size: 17px;
+    font-weight: 600;
+    color: #1B1E28;
+    margin: 0;
+}
+
+.headerSpacer {
+    width: 40px;
+}
+
+/* Content */
+.content {
+    flex: 1;
+    padding: 24px 20px;
+    overflow-y: auto;
+}
+
+/* Place Section */
+.placeSection {
+    text-align: center;
+    margin-bottom: 32px;
+}
+
+.placeName {
+    font-size: 20px;
+    font-weight: 600;
+    color: #1B1E28;
+    margin: 0 0 8px 0;
+}
+
+.placeSubtext {
+    font-size: 14px;
+    color: #7D848D;
+    margin: 0;
+}
+
+/* Rating Section */
+.ratingSection {
+    text-align: center;
+    margin-bottom: 32px;
+}
+
+.stars {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.starButton {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    transition: transform 0.15s ease;
+}
+
+.starButton:active {
+    transform: scale(1.1);
+}
+
+.ratingText {
+    font-size: 15px;
+    color: #3182F6;
+    font-weight: 500;
+    margin: 0;
+    min-height: 22px;
+}
+
+/* Review Section */
+.reviewSection {
+    margin-bottom: 24px;
+}
+
+.reviewTextarea {
+    width: 100%;
+    min-height: 180px;
+    padding: 16px;
+    border: 1px solid #E5E8EB;
+    border-radius: 12px;
+    font-size: 15px;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    line-height: 24px;
+    color: #1B1E28;
+    resize: none;
+    box-sizing: border-box;
+    transition: border-color 0.2s ease;
+}
+
+.reviewTextarea:focus {
+    outline: none;
+    border-color: #3182F6;
+}
+
+.reviewTextarea::placeholder {
+    color: #AEB5BC;
+}
+
+.charCount {
+    text-align: right;
+    font-size: 13px;
+    color: #AEB5BC;
+    margin-top: 8px;
+}
+
+.charCountWarning {
+    color: #F04452;
+}
+
+/* Guidelines */
+.guidelines {
+    background: #F8F9FA;
+    border-radius: 12px;
+    padding: 16px;
+}
+
+.guidelineTitle {
+    font-size: 13px;
+    font-weight: 600;
+    color: #4E5968;
+    margin: 0 0 8px 0;
+}
+
+.guidelineList {
+    margin: 0;
+    padding-left: 16px;
+}
+
+.guidelineList li {
+    font-size: 13px;
+    color: #7D848D;
+    line-height: 20px;
+    margin-bottom: 4px;
+}
+
+.guidelineList li:last-child {
+    margin-bottom: 0;
+}
+
+/* Footer */
+.footer {
+    padding: 12px 20px;
+    padding-bottom: calc(12px + env(safe-area-inset-bottom));
+    border-top: 1px solid #F2F4F6;
+    background: #fff;
+}
+
+.submitButton {
+    width: 100%;
+    height: 52px;
+    background: #E5E8EB;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #AEB5BC;
+    cursor: not-allowed;
+    transition: all 0.2s ease;
+}
+
+.submitButton.active {
+    background: #3182F6;
+    color: #fff;
+    cursor: pointer;
+}
+
+.submitButton.active:hover {
+    background: #1B64DA;
+}
+
+.submitButton.active:active {
+    background: #0F4C9E;
+    transform: scale(0.98);
+}
+
+.submitButton:disabled {
+    cursor: not-allowed;
+}

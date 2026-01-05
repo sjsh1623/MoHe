@@ -504,51 +504,65 @@ export default function PlaceDetailPage({
 
           {/* Menu Gallery */}
           {(() => {
-            // Filter menus with images
             const menusWithImages = menus.filter(menu => menu.imagePath);
             const totalMenuImages = menusWithImages.length;
 
             if (totalMenuImages === 0) return null;
 
-            // If 5 or fewer menus, show all; if more than 5, show 4 + "+" overlay
-            const shouldShowOverlay = totalMenuImages > 5;
+            // Show up to 5 images, if more than 5: show 4 + overlay with +N
+            const maxVisible = 5;
+            const shouldShowOverlay = totalMenuImages > maxVisible;
             const displayMenus = shouldShowOverlay
-              ? menusWithImages.slice(0, 4)
-              : menusWithImages.slice(0, 5);
-            const remainingCount = totalMenuImages - 4;
+              ? menusWithImages.slice(0, maxVisible - 1)
+              : menusWithImages.slice(0, maxVisible);
+            const remainingCount = totalMenuImages - (maxVisible - 1);
 
             return (
               <div className={styles.menuGallery}>
-                <h3 className={styles.menuGalleryTitle}>메뉴</h3>
-                <div className={styles.menuGalleryItems}>
-                  {displayMenus.map((menu, index) => (
-                    <div
-                      key={menu.id || index}
-                      className={styles.menuGalleryItem}
-                    >
-                      <img
-                        src={buildImageUrl(menu.imagePath)}
-                        alt={menu.name || `메뉴 ${index + 1}`}
-                        className={styles.menuGalleryImage}
-                      />
-                      {menu.name && (
-                        <span className={styles.menuName}>{menu.name}</span>
-                      )}
+                {displayMenus.map((menu, index) => (
+                  <div
+                    key={menu.id || index}
+                    className={styles.menuGalleryItem}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      console.log('Menu clicked:', menu.name, menu.id);
+                    }}
+                    onMouseDown={(e) => e.stopPropagation()}
+                    onMouseUp={(e) => e.stopPropagation()}
+                    onTouchStart={(e) => e.stopPropagation()}
+                    onTouchEnd={(e) => e.stopPropagation()}
+                  >
+                    <img
+                      src={buildImageUrl(menu.imagePath)}
+                      alt={menu.name || `메뉴 ${index + 1}`}
+                      className={styles.menuGalleryImage}
+                      draggable={false}
+                    />
+                  </div>
+                ))}
+                {shouldShowOverlay && (
+                  <div
+                    className={`${styles.menuGalleryItem} ${styles.moreOverlay}`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      console.log('More menus clicked');
+                    }}
+                    onMouseDown={(e) => e.stopPropagation()}
+                    onMouseUp={(e) => e.stopPropagation()}
+                    onTouchStart={(e) => e.stopPropagation()}
+                    onTouchEnd={(e) => e.stopPropagation()}
+                  >
+                    <img
+                      src={buildImageUrl(menusWithImages[maxVisible - 1]?.imagePath)}
+                      alt="더보기"
+                      className={styles.menuGalleryImage}
+                      draggable={false}
+                    />
+                    <div className={styles.overlayContent}>
+                      <span className={styles.overlayText}>+{remainingCount}</span>
                     </div>
-                  ))}
-                  {shouldShowOverlay && (
-                    <div className={`${styles.menuGalleryItem} ${styles.moreOverlay}`}>
-                      <img
-                        src={buildImageUrl(menusWithImages[4]?.imagePath)}
-                        alt="더보기"
-                        className={styles.menuGalleryImage}
-                      />
-                      <div className={styles.overlayContent}>
-                        <span className={styles.overlayText}>+{remainingCount}</span>
-                      </div>
-                    </div>
-                  )}
-                </div>
+                  </div>
+                )}
               </div>
             );
           })()}
@@ -570,7 +584,12 @@ export default function PlaceDetailPage({
                   </span>
                 ))
               ) : (
-                <span>이 장소에 대한 AI 분석을 준비 중이에요.</span>
+                <div className={styles.aiNotePlaceholder}>
+                  <p>리뷰를 작성하면 Mohe가 리뷰를 기반으로 장소 설명을 생성해요</p>
+                  <p className={styles.aiNotePlaceholderHighlight}>
+                    {placeData.name || placeData.title}의 첫 리뷰어가 되어보세요!
+                  </p>
+                </div>
               )}
             </div>
           </div>
@@ -578,8 +597,24 @@ export default function PlaceDetailPage({
           {/* Reviews Section - Always visible */}
           <div className={styles.reviewsSection}>
             <div className={styles.reviewsHeader}>
-              <h2 className={styles.reviewsTitle}>리뷰</h2>
-              <span className={styles.reviewsCount}>{reviews.length}개</span>
+              <div className={styles.reviewsTitleGroup}>
+                <h2 className={styles.reviewsTitle}>리뷰</h2>
+                <span className={styles.reviewsCount}>{reviews.length}개</span>
+              </div>
+              <button
+                className={styles.writeReviewButton}
+                onClick={() => {
+                  if (authService.isAuthenticated()) {
+                    navigate(`/place/${id}/review/write`);
+                  } else {
+                    navigate('/login', { state: { from: `/place/${id}/review/write` } });
+                  }
+                }}
+              >
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M14.167 2.5C14.3859 2.28113 14.6457 2.10752 14.9316 1.98906C15.2175 1.87061 15.5238 1.80965 15.8332 1.80965C16.1426 1.80965 16.4489 1.87061 16.7348 1.98906C17.0207 2.10752 17.2805 2.28113 17.4993 2.5C17.7182 2.71887 17.8918 2.97871 18.0103 3.26461C18.1287 3.5505 18.1897 3.85679 18.1897 4.16617C18.1897 4.47556 18.1287 4.78184 18.0103 5.06774C17.8918 5.35364 17.7182 5.61348 17.4993 5.83234L6.24935 17.0823L1.66602 18.3323L2.91602 13.749L14.167 2.5Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </button>
             </div>
             <div className={styles.aiCommentsSection}>
               {reviews.length > 0 ? (

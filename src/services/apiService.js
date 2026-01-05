@@ -853,11 +853,68 @@ export class CategoryService extends ApiService {
   }
 }
 
+/**
+ * Review API service for user-generated reviews
+ * Uses the existing Comment API endpoints
+ */
+export class ReviewService extends ApiService {
+  /**
+   * Create a new review for a place
+   */
+  async createReview(placeId, reviewData) {
+    // Map frontend fields to backend Comment API format
+    const commentData = {
+      content: reviewData.reviewText,
+      rating: reviewData.rating
+    };
+    return this.post(`/api/places/${placeId}/comments`, commentData, {
+      requireAuth: true
+    });
+  }
+
+  /**
+   * Get user's reviews
+   */
+  async getMyReviews(options = {}) {
+    const params = new URLSearchParams({
+      page: (options.page || 0).toString(),
+      size: (options.size || 10).toString()
+    });
+
+    return this.get(`/api/user/comments?${params}`, {
+      requireAuth: true
+    });
+  }
+
+  /**
+   * Delete a review
+   */
+  async deleteReview(reviewId) {
+    return this.delete(`/api/comments/${reviewId}`, {
+      requireAuth: true
+    });
+  }
+
+  /**
+   * Update a review
+   */
+  async updateReview(reviewId, reviewData) {
+    const commentData = {
+      content: reviewData.reviewText,
+      rating: reviewData.rating
+    };
+    return this.put(`/api/comments/${reviewId}`, commentData, {
+      requireAuth: true
+    });
+  }
+}
+
 // Export service instances
 export const addressService = new AddressService();
 export const bookmarkService = new BookmarkService();
 export const guestRecommendationService = new GuestRecommendationService();
 export const homeService = new HomeService();
 export const categoryService = new CategoryService();
+export const reviewService = new ReviewService();
 
 export default ApiService;
