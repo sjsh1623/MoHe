@@ -50,6 +50,38 @@ const ChevronRight = () => (
   </svg>
 );
 
+// Gmail-style default avatar with first letter
+const DefaultAvatar = ({ name, size = 96 }) => {
+  const firstChar = (name || '?').charAt(0).toUpperCase();
+
+  // Generate consistent color based on name
+  const colors = [
+    '#4285F4', '#EA4335', '#FBBC05', '#34A853', // Google colors
+    '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4',
+    '#FFEAA7', '#DDA0DD', '#98D8C8', '#F7DC6F'
+  ];
+  const colorIndex = name ? name.charCodeAt(0) % colors.length : 0;
+  const bgColor = colors[colorIndex];
+
+  return (
+    <div style={{
+      width: size,
+      height: size,
+      borderRadius: '50%',
+      backgroundColor: bgColor,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      fontSize: size * 0.45,
+      fontWeight: 600,
+      color: '#fff',
+      flexShrink: 0
+    }}>
+      {firstChar}
+    </div>
+  );
+};
+
 export default function ProfileSettingsPage() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -101,11 +133,17 @@ export default function ProfileSettingsPage() {
     <div className={styles.container}>
       {/* Profile Header */}
       <div className={styles.profileHeader}>
-        <img
-          className={styles.profileImage}
-          src={buildImageUrl(profile?.profileImage) || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop&crop=face'}
-          alt="프로필"
-        />
+        {profile?.profileImage ? (
+          <img
+            className={styles.profileImage}
+            src={buildImageUrl(profile.profileImage)}
+            alt="프로필"
+          />
+        ) : (
+          <div style={{ marginBottom: 16 }}>
+            <DefaultAvatar name={profile?.nickname || profile?.email || t('profile.defaultNickname')} size={96} />
+          </div>
+        )}
         <h1 className={styles.userName}>{profile?.nickname || t('profile.defaultNickname')}</h1>
         <p className={styles.userDescription}>{userDescription}</p>
 

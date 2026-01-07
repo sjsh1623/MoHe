@@ -312,6 +312,7 @@ export class ContextualRecommendationService extends ApiService {
 
   /**
    * Get good-to-visit recommendations based on location
+   * Returns { dynamicMessage, weatherCondition, timeContext, searchKeywords, places }
    */
   async getGoodToVisitRecommendations(latitude, longitude, options = {}) {
     const params = new URLSearchParams({
@@ -326,6 +327,38 @@ export class ContextualRecommendationService extends ApiService {
     return this.get(url, {
       requireAuth: false
     });
+  }
+
+  /**
+   * Parse good-to-visit response to extract dynamic message and places
+   */
+  parseGoodToVisitResponse(response) {
+    if (!response.success || !response.data) {
+      return { dynamicMessage: '지금 가기 좋은 플레이스', places: [] };
+    }
+
+    const data = response.data;
+
+    // New response format with dynamicMessage
+    if (data.dynamicMessage) {
+      return {
+        dynamicMessage: data.dynamicMessage,
+        weatherCondition: data.weatherCondition,
+        timeContext: data.timeContext,
+        searchKeywords: data.searchKeywords || [],
+        places: data.places || []
+      };
+    }
+
+    // Fallback for old response format (array of places)
+    if (Array.isArray(data)) {
+      return {
+        dynamicMessage: '지금 가기 좋은 플레이스',
+        places: data
+      };
+    }
+
+    return { dynamicMessage: '지금 가기 좋은 플레이스', places: [] };
   }
 
 
@@ -720,6 +753,7 @@ class GuestRecommendationService extends ApiService {
 
   /**
    * Get good-to-visit recommendations for guest users
+   * Returns { dynamicMessage, places, ... }
    */
   async getGuestRecommendations(latitude, longitude, options = {}) {
     const { limit = 10 } = options;
@@ -730,28 +764,24 @@ class GuestRecommendationService extends ApiService {
       // Use good-to-visit recommendations API for guest users
       console.log('GuestRecommendationService: Making API call to good-to-visit');
       const response = await contextualRecommendationService.getGoodToVisitRecommendations(latitude, longitude, options);
-      
+
       console.log('GuestRecommendationService: API response success:', response.success);
       console.log('GuestRecommendationService: API response data type:', typeof response.data);
       console.log('GuestRecommendationService: API response:', response);
 
-      // good-to-visit API returns data as direct array
-      if (response.success && response.data && response.data.length > 0) {
-        console.log('GuestRecommendationService: Processing places data, count:', response.data.length);
-        console.log('GuestRecommendationService: Sample place:', response.data[0]);
+      // Parse response using the new helper
+      const parsed = contextualRecommendationService.parseGoodToVisitResponse(response);
+      console.log('GuestRecommendationService: Parsed response:', parsed);
 
-        const mappedPlaces = response.data.map(place => {
+      // Extract places from parsed response
+      const places = parsed.places || [];
+
+      if (places.length > 0) {
+        console.log('GuestRecommendationService: Processing places data, count:', places.length);
+
+        const mappedPlaces = places.map(place => {
           // Use shortAddress field from backend
           const addressStr = place.shortAddress || place.address || place.category || '위치 정보 없음';
-
-          console.log('Place location mapping:', {
-            id: place.id,
-            name: place.name,
-            shortAddress: place.shortAddress,
-            address: place.address,
-            category: place.category,
-            mappedLocation: addressStr
-          });
 
           return {
             id: place.id,
@@ -773,25 +803,26 @@ class GuestRecommendationService extends ApiService {
         });
 
         console.log('GuestRecommendationService: Mapped places count:', mappedPlaces.length);
-        console.log('GuestRecommendationService: Sample mapped place:', mappedPlaces[0]);
 
         return {
           success: true,
-          data: mappedPlaces, // Return array directly for HomePage compatibility
+          data: mappedPlaces,
+          dynamicMessage: parsed.dynamicMessage || '지금 가기 좋은 플레이스',
+          weatherCondition: parsed.weatherCondition,
+          timeContext: parsed.timeContext,
           message: `${mappedPlaces.length}개의 추천 장소를 찾았습니다`
         };
       } else {
-        console.log('GuestRecommendationService: No places in response or invalid response');
-        console.log('GuestRecommendationService: Response success:', response.success);
-        console.log('GuestRecommendationService: Response data structure:', response.data);
+        console.log('GuestRecommendationService: No places in response');
       }
-      
+
       return {
         success: true,
         data: [],
+        dynamicMessage: parsed.dynamicMessage || '지금 가기 좋은 플레이스',
         message: '현재 추천 가능한 장소가 없습니다'
       };
-      
+
     } catch (error) {
       console.error('Guest recommendations failed:', error);
       console.error('Error details:', error.message, error.status);

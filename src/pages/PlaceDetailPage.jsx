@@ -7,6 +7,7 @@ import ErrorMessage from '@/components/ui/alerts/ErrorMessage';
 import { activityService, placeService } from '@/services/apiService';
 import { authService } from '@/services/authService';
 import { buildImageUrl, buildImageUrlList, normalizePlaceImages } from '@/utils/image';
+import MenuFullscreenModal from '@/components/ui/modals/MenuFullscreenModal';
 
 // Format date to Korean format (YY.MM.DD)
 const formatDate = (dateString) => {
@@ -64,6 +65,9 @@ export default function PlaceDetailPage({
   const [error, setError] = useState(null);
   const [reviews, setReviews] = useState([]);
   const [menus, setMenus] = useState([]);
+  const [isMenuModalOpen, setIsMenuModalOpen] = useState(false);
+  const [selectedMenuIndex, setSelectedMenuIndex] = useState(0);
+  const [showReviewsFullView, setShowReviewsFullView] = useState(false);
 
   // Get preloaded data from navigation state
   const preloadedImage = buildImageUrl(location.state?.preloadedImage);
@@ -517,6 +521,20 @@ export default function PlaceDetailPage({
               : menusWithImages.slice(0, maxVisible);
             const remainingCount = totalMenuImages - (maxVisible - 1);
 
+            const handleMenuClick = (index) => {
+              setSelectedMenuIndex(index);
+              setIsMenuModalOpen(true);
+            };
+
+            const handleMoreClick = () => {
+              navigate(`/place/${id}/menu`, {
+                state: {
+                  menus: menusWithImages,
+                  placeName: placeData?.name || placeData?.title || ''
+                }
+              });
+            };
+
             return (
               <div className={styles.menuGallery}>
                 {displayMenus.map((menu, index) => (
@@ -525,7 +543,7 @@ export default function PlaceDetailPage({
                     className={styles.menuGalleryItem}
                     onClick={(e) => {
                       e.stopPropagation();
-                      console.log('Menu clicked:', menu.name, menu.id);
+                      handleMenuClick(index);
                     }}
                     onMouseDown={(e) => e.stopPropagation()}
                     onMouseUp={(e) => e.stopPropagation()}
@@ -545,7 +563,7 @@ export default function PlaceDetailPage({
                     className={`${styles.menuGalleryItem} ${styles.moreOverlay}`}
                     onClick={(e) => {
                       e.stopPropagation();
-                      console.log('More menus clicked');
+                      handleMoreClick();
                     }}
                     onMouseDown={(e) => e.stopPropagation()}
                     onMouseUp={(e) => e.stopPropagation()}
@@ -611,9 +629,10 @@ export default function PlaceDetailPage({
                   }
                 }}
               >
-                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M14.167 2.5C14.3859 2.28113 14.6457 2.10752 14.9316 1.98906C15.2175 1.87061 15.5238 1.80965 15.8332 1.80965C16.1426 1.80965 16.4489 1.87061 16.7348 1.98906C17.0207 2.10752 17.2805 2.28113 17.4993 2.5C17.7182 2.71887 17.8918 2.97871 18.0103 3.26461C18.1287 3.5505 18.1897 3.85679 18.1897 4.16617C18.1897 4.47556 18.1287 4.78184 18.0103 5.06774C17.8918 5.35364 17.7182 5.61348 17.4993 5.83234L6.24935 17.0823L1.66602 18.3323L2.91602 13.749L14.167 2.5Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                  <path d="M10.5 1.16669C10.6526 1.01413 10.8339 0.893019 11.0334 0.810363C11.2329 0.727706 11.4467 0.685059 11.6626 0.685059C11.8786 0.685059 12.0924 0.727706 12.2919 0.810363C12.4914 0.893019 12.6727 1.01413 12.8253 1.16669C12.9779 1.31924 13.099 1.50054 13.1816 1.70004C13.2643 1.89955 13.307 2.11339 13.307 2.32935C13.307 2.54532 13.2643 2.75916 13.1816 2.95866C13.099 3.15817 12.9779 3.33947 12.8253 3.49202L4.66699 11.6504L1.16699 12.8337L2.35033 9.33369L10.5 1.16669Z" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
+                리뷰 쓰기
               </button>
             </div>
             <div className={styles.aiCommentsSection}>
@@ -640,9 +659,68 @@ export default function PlaceDetailPage({
                 </div>
               )}
             </div>
+            {reviews.length > 0 && (
+              <button
+                className={styles.viewAllReviewsButton}
+                onClick={() => {
+                  setSheetState('expanded');
+                  setShowReviewsFullView(true);
+                }}
+              >
+                리뷰 모두 보기
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <path d="M6 12L10 8L6 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </button>
+            )}
           </div>
         </div>
+
+        {/* Reviews Full View */}
+        {showReviewsFullView && (
+          <div className={styles.reviewsFullView}>
+            <div className={styles.reviewsFullViewHeader}>
+              <button
+                className={styles.reviewsFullViewBackButton}
+                onClick={() => setShowReviewsFullView(false)}
+              >
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                  <path d="M15 18L9 12L15 6" stroke="#1B1E28" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </button>
+              <h2 className={styles.reviewsFullViewTitle}>리뷰 {reviews.length}개</h2>
+              <div className={styles.reviewsFullViewSpacer} />
+            </div>
+            <div className={styles.reviewsFullViewContent}>
+              {reviews.length > 0 ? (
+                reviews.map((review) => (
+                  <div key={review.id} className={styles.reviewFullCard}>
+                    <p className={styles.reviewFullText}>
+                      {review.reviewText}
+                    </p>
+                    <div className={styles.reviewFullFooter}>
+                      <span className={styles.reviewFullAuthor}>{review.authorName || review.nickname || '익명'}</span>
+                      <span className={styles.reviewFullDate}>{formatDate(review.createdAt)}</span>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className={styles.noReviewsMessage}>
+                  아직 리뷰가 없어요. 첫 번째 리뷰를 남겨보세요!
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
+
+      {/* Menu Fullscreen Modal */}
+      <MenuFullscreenModal
+        isOpen={isMenuModalOpen}
+        onClose={() => setIsMenuModalOpen(false)}
+        menus={menus.filter(menu => menu.imagePath)}
+        initialIndex={selectedMenuIndex}
+      />
     </div>
   );
 }

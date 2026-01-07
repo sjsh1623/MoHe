@@ -31,6 +31,7 @@ import RecentViewPage from '@/pages/RecentViewPage.jsx';
 import SearchResultsPage from '@/pages/SearchResultsPage.jsx';
 import ImageTestPage from '@/pages/ImageTestPage.jsx';
 import WriteReviewPage from '@/pages/WriteReviewPage.jsx';
+import MenuListPage from '@/pages/MenuListPage.jsx';
 
 // Navigation flow hierarchy (lower = earlier in flow)
 const ROUTE_HIERARCHY = {
@@ -57,8 +58,9 @@ const ROUTE_HIERARCHY = {
   '/places': 14,
   '/search-results': 14,
   '/place': 15,
-  '/review/write': 16,
-  '/image-test': 17
+  '/menu': 16,
+  '/review/write': 17,
+  '/image-test': 18
 };
 
 // Routes that only render standalone auth/onboarding screens.
@@ -85,6 +87,8 @@ export default function AnimatedRoutes() {
     if (navigationType === 'POP') {
       // Browser back/forward was used - determine direction from hierarchy
       const getCurrentLevel = (path) => {
+        if (path.includes('/review/write')) return ROUTE_HIERARCHY['/review/write'];
+        if (path.includes('/menu')) return ROUTE_HIERARCHY['/menu'];
         if (path.startsWith('/place/')) return ROUTE_HIERARCHY['/place'];
         return ROUTE_HIERARCHY[path] || 0;
       };
@@ -99,6 +103,8 @@ export default function AnimatedRoutes() {
     // For PUSH/REPLACE navigation (programmatic navigation)
     // Handle dynamic routes like /place/:id
     const getCurrentLevel = (path) => {
+      if (path.includes('/review/write')) return ROUTE_HIERARCHY['/review/write'];
+      if (path.includes('/menu')) return ROUTE_HIERARCHY['/menu'];
       if (path.startsWith('/place/')) return ROUTE_HIERARCHY['/place'];
       return ROUTE_HIERARCHY[path] || 0;
     };
@@ -242,6 +248,7 @@ export default function AnimatedRoutes() {
             <Route path="/places" element={<PlacesListPage />} />
             <Route path="/search-results" element={<SearchResultsPage />} />
             <Route path="/place/:id" element={<PlaceDetailPage />} />
+            <Route path="/place/:id/menu" element={<MenuListPage />} />
             <Route path="/place/:id/review/write" element={<WriteReviewPage />} />
             <Route path="/image-test" element={<ImageTestPage />} />
           </Routes>

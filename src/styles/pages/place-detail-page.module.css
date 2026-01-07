@@ -316,6 +316,12 @@
     flex: 1;
     aspect-ratio: 1;
     max-width: calc((100% - 32px) / 5); /* 5 items with 4 gaps of 8px */
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.menuGalleryItem:active {
+    transform: scale(0.95);
 }
 
 .menuGalleryImage {
@@ -469,23 +475,27 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 36px;
-    height: 36px;
-    background: #F2F4F6;
-    border: none;
-    border-radius: 10px;
+    gap: 4px;
+    padding: 8px 14px;
+    background: transparent;
+    border: 1px solid #03C75A;
+    border-radius: 20px;
     cursor: pointer;
-    color: #3182F6;
+    color: #03C75A;
+    font-size: 13px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+    line-height: 18px;
     transition: all 0.2s ease;
 }
 
 .writeReviewButton:hover {
-    background: #E5E8EB;
+    background: rgba(3, 199, 90, 0.08);
 }
 
 .writeReviewButton:active {
-    background: #D1D6DB;
-    transform: scale(0.96);
+    background: rgba(3, 199, 90, 0.15);
+    transform: scale(0.97);
 }
 
 .aiNoteHeader {
@@ -554,7 +564,7 @@
 }
 
 .aiCommentCard {
-    background: #F8F9FA;
+    background: #FAFBFC;
     border-radius: 12px;
     padding: 16px;
     min-width: 280px;
@@ -678,4 +688,154 @@
 
 .bottomHandle {
     touch-action: none !important;
+}
+
+/* View All Reviews Button */
+.viewAllReviewsButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: 100%;
+    padding: 14px 0;
+    margin-top: 12px;
+    background: transparent;
+    border: 1px solid #E5E8EB;
+    border-radius: 12px;
+    color: #1B1E28;
+    font-size: 14px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+    line-height: 20px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.viewAllReviewsButton:hover {
+    background: #F8F9FA;
+    border-color: #D1D6DB;
+}
+
+.viewAllReviewsButton:active {
+    background: #F2F4F6;
+    transform: scale(0.98);
+}
+
+/* Reviews Full View (within bottom sheet) */
+.reviewsFullView {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: white;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    border-top-left-radius: 30px;
+    border-top-right-radius: 30px;
+    overflow: hidden;
+}
+
+.reviewsFullViewHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 24px 16px 24px;
+    border-bottom: 1px solid #F2F4F6;
+    flex-shrink: 0;
+}
+
+.reviewsFullViewBackButton {
+    width: 40px;
+    height: 40px;
+    background: transparent;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 0;
+    border-radius: 8px;
+    transition: background 0.2s ease;
+}
+
+.reviewsFullViewBackButton:hover {
+    background: #F2F4F6;
+}
+
+.reviewsFullViewTitle {
+    color: #1B1E28;
+    font-size: 18px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    line-height: 24px;
+    margin: 0;
+}
+
+.reviewsFullViewSpacer {
+    width: 40px;
+}
+
+.reviewsFullViewContent {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px 24px 100px 24px;
+    -webkit-overflow-scrolling: touch;
+}
+
+.reviewsFullViewContent::-webkit-scrollbar {
+    width: 0;
+    display: none;
+}
+
+.reviewFullCard {
+    background: #FAFBFC;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 12px;
+}
+
+.reviewFullCard:last-child {
+    margin-bottom: 0;
+}
+
+.reviewFullText {
+    color: #1B1E28;
+    font-size: 15px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 400;
+    line-height: 24px;
+    margin: 0 0 12px 0;
+    white-space: pre-wrap;
+}
+
+.reviewFullFooter {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.reviewFullAuthor {
+    color: #1B1E28;
+    font-size: 13px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+    line-height: 18px;
+}
+
+.reviewFullDate {
+    color: #7D848D;
+    font-size: 12px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 400;
+    line-height: 18px;
+}
+
+.noReviewsMessage {
+    text-align: center;
+    padding: 40px 20px;
+    color: #7D848D;
+    font-size: 15px;
+    line-height: 22px;
 }

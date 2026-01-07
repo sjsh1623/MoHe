@@ -74,6 +74,7 @@ export default function HomePage() {
   const [addressLoading, setAddressLoading] = useState(true);
   const [categories, setCategories] = useState([]);
   const [categoriesPlaces, setCategoriesPlaces] = useState({});
+  const [dynamicMessage, setDynamicMessage] = useState('지금 가기 좋은 플레이스');
 
   // Prevent back navigation to login page
   useEffect(() => {
@@ -269,11 +270,17 @@ export default function HomePage() {
               currentLocation.longitude,
               { limit: 10, maxDistance: 55000 } // 15km in meters
             );
-            
+
             console.log('HomePage: Guest response received:', guestResponse);
             console.log('HomePage: Guest response success:', guestResponse.success);
             console.log('HomePage: Guest response data length:', guestResponse.data?.length);
-            
+
+            // Update dynamic message from guest response
+            if (guestResponse.dynamicMessage && isMounted) {
+              setDynamicMessage(guestResponse.dynamicMessage);
+              console.log('🎨 Guest dynamic message set:', guestResponse.dynamicMessage);
+            }
+
             if (guestResponse.success && guestResponse.data.length > 0) {
               console.log('HomePage: Processing guest recommendations, count:', guestResponse.data.length);
 
@@ -284,13 +291,6 @@ export default function HomePage() {
 
                 // Format the address to show district + detailed address
                 const formattedLocation = formatPlaceAddress(addressStr);
-
-                console.log('HomePage guest mapping:', {
-                  id: place.id,
-                  name: place.name,
-                  originalAddress: addressStr,
-                  formattedLocation: formattedLocation
-                });
 
                 return normalizePlaceImages({
                   id: place.id,
@@ -389,8 +389,18 @@ export default function HomePage() {
 
       console.log('✅ Good-to-visit API response:', response);
 
-      if (response.success && response.data && response.data.length > 0) {
-        return response.data.map(place => {
+      // Parse the response to extract dynamic message and places
+      const parsed = contextualRecommendationService.parseGoodToVisitResponse(response);
+      console.log('📝 Parsed response:', parsed);
+
+      // Update dynamic message state
+      if (parsed.dynamicMessage) {
+        setDynamicMessage(parsed.dynamicMessage);
+        console.log('🎨 Dynamic message set:', parsed.dynamicMessage);
+      }
+
+      if (parsed.places && parsed.places.length > 0) {
+        return parsed.places.map(place => {
           // Use shortAddress field from backend
           const addressStr = place.shortAddress || place.address || '';
           const formattedLocation = formatPlaceAddress(addressStr);
@@ -929,7 +939,7 @@ export default function HomePage() {
       ) : (
         <div className={styles.contentContainer}>
           <div className={styles.content}>
-            {renderPlacesSection('지금 가기 좋은 플레이스', recommendations, {
+            {renderPlacesSection(dynamicMessage, recommendations, {
               emptyMessage: '현재 추천 장소를 불러오고 있습니다.',
               sectionKey: 'primary-recommendations'
             })}

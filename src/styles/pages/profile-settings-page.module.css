@@ -82,8 +82,8 @@
 
 /* Menu Section */
 .menuSection {
-  background: #F8F9FA;
-  border-radius: 16px;
+  background: #FAFBFC;
+  border-radius: 12px;
   overflow: hidden;
   margin-bottom: 20px;
 }
@@ -92,11 +92,11 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 22px 20px;
+  padding: 28px 16px;
   background: transparent;
   cursor: pointer;
   transition: background 0.15s ease;
-  border-bottom: 1px solid #EBEDF0;
+  border-bottom: 1px solid #F0F2F4;
 }
 
 .menuItem:last-child {
@@ -104,7 +104,7 @@
 }
 
 .menuItem:active {
-  background: #EBEDF0;
+  background: #F0F2F4;
 }
 
 .menuLeft {
@@ -182,7 +182,7 @@
   }
 
   .menuItem {
-    padding: 20px 16px;
+    padding: 26px 16px;
   }
 
   .menuLeft span {

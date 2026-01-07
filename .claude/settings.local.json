@@ -3,10 +3,10 @@
   "permissions": {
     "allow": [
       "Bash(git add:*)",
-      "Bash(git commit -m \"$(cat <<''EOF''\nrefactor: 인증 및 라우팅 로직 개선\n\n- ProtectedRoute를 동기 방식으로 재구성하여 성능 향상\n- BackButtonContext 무한 루프 해결 및 메모이제이션 적용\n- 보호된 경로 접근 시 뒤로가기 동작 개선\n- 인증 에러 메시지 한글화 및 통합 관리\n- 에러 메시지 UI 스타일 개선 및 접근성 향상\nEOF\n)\")",
-      "Bash(git push)",
-      "WebSearch",
       "Bash(git commit:*)",
+      "Bash(git push)",
+      "Bash(git restore:*)",
+      "WebSearch",
       "Bash(curl:*)",
       "Bash(docker exec:*)",
       "Bash(docker logs:*)",
@@ -14,22 +14,14 @@
       "Bash(docker ps:*)",
       "Bash(docker inspect:*)",
       "Bash(docker restart:*)",
-      "Bash(TEMP_USER_ID=04fd97c2-8376-4dfb-9c3a-491e9e4945df echo 'Step 1: Verify Email...' curl -X POST http://localhost:8000/api/auth/verify-email -H 'Content-Type: application/json' -d {tempUserId:$TEMP_USER_ID,otpCode:00000})",
-      "Bash(jq -r .success echo echo 'Step 2: Setup Password...' curl -X POST http://localhost:8000/api/auth/setup-password -H 'Content-Type: application/json' -d {tempUserId:$TEMP_USER_ID,nickname:completeuser,password:Test1234,termsAgreed:true})",
       "Bash(npm install:*)",
-      "Bash(npx cap init:*)",
       "Bash(npm run build:*)",
-      "Bash(npx cap add ios)",
+      "Bash(npm run lint:*)",
       "Bash(npx cap:*)",
+      "Bash(npx cap add ios)",
       "Bash(pod install)",
       "Bash(sudo gem install:*)",
       "Bash(open:*)"
-      "Bash(jq -r .success echo echo 'Step 2: Setup Password...' curl -X POST http://localhost:8000/api/auth/setup-password -H 'Content-Type: application/json' -d {tempUserId:$TEMP_USER_ID,nickname:completeuser,password:Test1234,termsAgreed:true})",
-      "Bash(TEMP_USER_ID=\"58613477-6678-487a-90f2-9075aed33d7e\":*)",
-      "Bash(__NEW_LINE__ echo \"\")",
-      "Bash(npm install:*)",
-      "Bash(git restore:*)",
-      "Bash(npm run lint:*)"
     ],
     "deny": [],
     "ask": []
