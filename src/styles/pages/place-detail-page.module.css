@@ -14,7 +14,80 @@
     -webkit-overflow-scrolling: auto;
 }
 
-/* Back Button - Airbnb style */
+/* Header Action Buttons - Airbnb style overlay */
+/* These buttons appear over the header image and transition to a sticky header */
+.headerActions {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+    padding-top: env(safe-area-inset-top, 0);
+    z-index: 100;
+    /* Transition to white background as header fades */
+    background: linear-gradient(
+        to bottom,
+        rgba(0, 0, 0, 0.2) 0%,
+        transparent 100%
+    );
+    transition: background 0.2s ease;
+    pointer-events: none; /* Allow clicks through to image */
+}
+
+/* Individual header button */
+.headerButton {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.9);
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    transition: all 0.2s ease;
+    color: #1B1E28;
+    pointer-events: auto; /* Re-enable clicks on buttons */
+    flex-shrink: 0;
+}
+
+.headerButton:hover {
+    background: rgba(255, 255, 255, 1);
+    transform: scale(1.05);
+}
+
+.headerButton:active {
+    transform: scale(0.95);
+}
+
+.headerButton:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Right side button group */
+.headerRightButtons {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+/* Bookmarked state */
+.headerButton.bookmarked {
+    color: #FF385C;
+}
+
+.headerButton.bookmarked svg {
+    fill: #FF385C;
+    stroke: #FF385C;
+}
+
+/* Legacy back button - kept for compatibility */
 .backButton {
     position: absolute;
     top: 16px;
@@ -258,25 +331,26 @@
 }
 
 /* Scrollable Content */
+/* AIRBNB BEHAVIOR: Light, fluid, natural scrolling */
 .scrollContent {
     flex: 1;
     overflow-x: hidden;
-    overflow-y: hidden; /* Default to hidden, JS will enable when expanded */
+    overflow-y: hidden; /* Default to hidden, JS enables when sheet expanded */
     padding: 20px 28px 100px 28px;
-    /* Smooth scrolling */
+    /* Native smooth scrolling - light and fluid */
     -webkit-overflow-scrolling: touch;
-    /* CRITICAL: Prevent scroll from bubbling to page */
+    /* Contain scroll - prevents page-level bounce */
     overscroll-behavior: contain;
     overscroll-behavior-y: contain;
+    /* No artificial scroll behavior */
     scroll-behavior: auto;
-    /* GPU acceleration */
+    /* GPU acceleration for smooth rendering */
     transform: translateZ(0);
     -webkit-transform: translateZ(0);
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
-    /* Touch action - allow vertical pan for scroll/drag handoff */
+    will-change: scroll-position;
+    /* Touch action for scroll/drag coordination */
     touch-action: pan-y;
-    /* Prevent text selection during drag */
+    /* Prevent text selection during interaction */
     user-select: none;
     -webkit-user-select: none;
 }

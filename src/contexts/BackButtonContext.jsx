@@ -30,7 +30,7 @@ const ROUTES_WITH_BACK_BUTTON = [
   '/my-places',
   '/recent-view',
   '/places',
-  '/place/', // Place detail pages use global back button
+  // '/place/' removed - PlaceDetailPage has its own Airbnb-style header with back button
 ];
 
 export function BackButtonProvider({ children }) {

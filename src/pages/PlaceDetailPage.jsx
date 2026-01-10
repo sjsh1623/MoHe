@@ -71,6 +71,10 @@ export default function PlaceDetailPage({
   const [selectedMenuIndex, setSelectedMenuIndex] = useState(0);
   const [showReviewsFullView, setShowReviewsFullView] = useState(false);
 
+  // Bookmark state
+  const [isBookmarked, setIsBookmarked] = useState(false);
+  const [isBookmarkLoading, setIsBookmarkLoading] = useState(false);
+
   // Get preloaded data from navigation state
   const preloadedImage = buildImageUrl(location.state?.preloadedImage);
   const preloadedData = location.state?.preloadedData
@@ -185,6 +189,7 @@ export default function PlaceDetailPage({
   const scrollContentRef = useRef(null);
   const whiteFadeRef = useRef(null);
   const heroSectionRef = useRef(null);
+  const headerActionsRef = useRef(null);
 
   // Core state
   const progressRef = useRef(0); // 0 = collapsed, 1 = expanded
@@ -220,81 +225,49 @@ export default function PlaceDetailPage({
   const maxSheetHeight = viewportHeight * 0.92;
   const heightRange = maxSheetHeight - minSheetHeight;
 
-  // Spring animation helper - creates natural, physics-based motion
-  const animateWithSpring = useCallback((from, to, onUpdate, onComplete) => {
-    const startTime = performance.now();
-    const duration = 350; // Base duration (tuned for natural feel)
+  // Apply all visual updates based on progress (0-1)
+  // AIRBNB BEHAVIOR: Direct, immediate updates - NO auto-animations
+  // Hero image stays FIXED - only white fade overlay changes
+  const applyProgress = useCallback((progress, animate = false) => {
+    const clampedProgress = Math.max(0, Math.min(1, progress));
+    const height = minSheetHeight + heightRange * clampedProgress;
+    // White overlay fades in as sheet expands (0 = transparent, 0.92 = fully white)
+    const targetFadeOpacity = clampedProgress * 0.92;
 
-    const animate = (currentTime) => {
-      const elapsed = currentTime - startTime;
-      const t = Math.min(elapsed / duration, 1);
-
-      // Spring physics approximation with slight overshoot
-      const springT = 1 - Math.pow(1 - t, 3) * Math.cos(t * Math.PI * 0.5);
-      const value = from + (to - from) * springT;
-
-      onUpdate(value);
-
-      if (t < 1) {
-        requestAnimationFrame(animate);
-      } else {
-        onUpdate(to);
-        onComplete?.();
+    // Update header actions background based on progress
+    // At full expansion, header becomes a solid white sticky header
+    const updateHeaderBackground = (p) => {
+      if (headerActionsRef.current) {
+        if (p >= 0.9) {
+          // Fully white sticky header
+          headerActionsRef.current.style.background = 'white';
+          headerActionsRef.current.style.boxShadow = '0 1px 0 rgba(0, 0, 0, 0.08)';
+        } else if (p > 0.3) {
+          // Transitioning - fade from gradient to white
+          const whiteness = (p - 0.3) / 0.6;
+          headerActionsRef.current.style.background = `rgba(255, 255, 255, ${whiteness * 0.95})`;
+          headerActionsRef.current.style.boxShadow = `0 1px 0 rgba(0, 0, 0, ${whiteness * 0.08})`;
+        } else {
+          // Image visible - subtle gradient
+          headerActionsRef.current.style.background = 'linear-gradient(to bottom, rgba(0, 0, 0, 0.15) 0%, transparent 100%)';
+          headerActionsRef.current.style.boxShadow = 'none';
+        }
+        headerActionsRef.current.style.transition = 'none';
       }
     };
 
-    requestAnimationFrame(animate);
-  }, []);
-
-  // Apply all visual updates based on progress (0-1)
-  // Note: Hero image stays FIXED - only white fade overlay changes
-  const applyProgress = useCallback((progress, animate = false, springPhysics = false) => {
-    const clampedProgress = Math.max(0, Math.min(1, progress));
-    const height = minSheetHeight + heightRange * clampedProgress;
-    // White overlay fades in as sheet expands (0 = transparent, 0.85 = mostly white)
-    const targetFadeOpacity = clampedProgress * 0.85;
-
-    if (springPhysics) {
-      // Use spring animation for sheet height and white overlay
-      const currentHeight = sheetRef.current ? parseFloat(sheetRef.current.style.height) || minSheetHeight : minSheetHeight;
-      const currentFadeOpacity = whiteFadeRef.current ?
-        parseFloat(whiteFadeRef.current.style.opacity || '0') : 0;
-
-      animateWithSpring(0, 1, (t) => {
-        const h = currentHeight + (height - currentHeight) * t;
-        const fo = currentFadeOpacity + (targetFadeOpacity - currentFadeOpacity) * t;
-
-        if (sheetRef.current) {
-          sheetRef.current.style.transition = 'none';
-          sheetRef.current.style.height = `${h}px`;
-        }
-        if (whiteFadeRef.current) {
-          whiteFadeRef.current.style.transition = 'none';
-          whiteFadeRef.current.style.opacity = String(fo);
-        }
-      });
-    } else if (animate) {
-      // CSS transition animation
-      if (sheetRef.current) {
-        sheetRef.current.style.transition = 'height 0.35s cubic-bezier(0.32, 0.72, 0, 1)';
-        sheetRef.current.style.height = `${height}px`;
-      }
-      if (whiteFadeRef.current) {
-        whiteFadeRef.current.style.transition = 'opacity 0.35s cubic-bezier(0.32, 0.72, 0, 1)';
-        whiteFadeRef.current.style.opacity = String(targetFadeOpacity);
-      }
-    } else {
-      // Immediate update (during drag)
-      if (sheetRef.current) {
-        sheetRef.current.style.transition = 'none';
-        sheetRef.current.style.height = `${height}px`;
-      }
-      if (whiteFadeRef.current) {
-        whiteFadeRef.current.style.transition = 'none';
-        whiteFadeRef.current.style.opacity = String(targetFadeOpacity);
-      }
+    // All updates are immediate - NO spring physics, NO auto-animation
+    // This ensures sheet moves exactly with user's finger
+    if (sheetRef.current) {
+      sheetRef.current.style.transition = 'none';
+      sheetRef.current.style.height = `${height}px`;
     }
-  }, [minSheetHeight, heightRange, animateWithSpring]);
+    if (whiteFadeRef.current) {
+      whiteFadeRef.current.style.transition = 'none';
+      whiteFadeRef.current.style.opacity = String(targetFadeOpacity);
+    }
+    updateHeaderBackground(clampedProgress);
+  }, [minSheetHeight, heightRange]);
 
   // Initialize on mount
   useEffect(() => {
@@ -322,78 +295,68 @@ export default function PlaceDetailPage({
   }, [showReviewsFullView]);
 
   // Called during touch move - handles scroll-to-drag handoff
+  // AIRBNB BEHAVIOR: Clear ownership - either scroll OR drag, never both
   const handleContentTouchMove = useCallback((e) => {
     if (showReviewsFullView) return;
 
     const touch = e.touches[0];
     const currentY = touch.clientY;
-    const currentTime = performance.now();
     const deltaY = touchStartY.current - currentY; // Positive = swipe up
-    const deltaFromLast = lastTouchY.current - currentY;
-    const timeDelta = currentTime - lastTouchTime.current;
-
-    // Calculate velocity (pixels per millisecond)
-    if (timeDelta > 0) {
-      velocityY.current = deltaFromLast / timeDelta;
-    }
 
     lastTouchY.current = currentY;
-    lastTouchTime.current = currentTime;
+    lastTouchTime.current = performance.now();
 
     const scrollEl = scrollContentRef.current;
-    const isFullyExpanded = progressRef.current >= 0.99;
+    const currentProgress = progressRef.current;
     const scrollTop = scrollEl?.scrollTop || 0;
     const isAtScrollTop = scrollTop <= 1;
+    // Sheet is "scrollable" when pulled up enough
+    const canScroll = currentProgress > 0.3;
 
-    // Determine gesture phase
+    // Determine gesture phase on first significant movement
     if (gesturePhase.current === 'idle') {
-      // First significant movement - decide between scroll and drag
       const absY = Math.abs(deltaY);
 
       if (absY > 5) {
-        if (isFullyExpanded && !isAtScrollTop) {
-          // Expanded and not at top: pure scroll mode
+        if (canScroll && !isAtScrollTop) {
+          // Has scroll content and not at top: scroll mode
           gesturePhase.current = 'scroll';
           isScrolling.current = true;
-        } else if (!isFullyExpanded) {
-          // Not fully expanded: drag mode
+        } else if (!canScroll) {
+          // Sheet not expanded enough: drag mode
           gesturePhase.current = 'drag';
           isDraggingSheet.current = true;
-          startProgress.current = progressRef.current;
+          startProgress.current = currentProgress;
           touchStartY.current = currentY;
-        } else if (isFullyExpanded && isAtScrollTop && deltaY < 0) {
-          // Expanded, at top, swiping down: drag mode
+        } else if (canScroll && isAtScrollTop && deltaY < 0) {
+          // At scroll top, pulling down: drag mode
           gesturePhase.current = 'drag';
           isDraggingSheet.current = true;
-          startProgress.current = progressRef.current;
+          startProgress.current = currentProgress;
           touchStartY.current = currentY;
         } else {
-          // Expanded, at top, swiping up: scroll mode
+          // At scroll top, pushing up: scroll mode
           gesturePhase.current = 'scroll';
           isScrolling.current = true;
         }
       }
     }
 
-    // Handle scroll-to-drag transition (seamless handoff)
+    // Handle scroll-to-drag transition (seamless handoff at scroll top)
     if (gesturePhase.current === 'scroll' && isAtScrollTop && deltaY < 0) {
-      // User is scrolling, reached top, and now pulling down
-      // Seamlessly transition to drag mode
       gesturePhase.current = 'drag';
       isDraggingSheet.current = true;
       isScrolling.current = false;
-      startProgress.current = progressRef.current;
+      startProgress.current = currentProgress;
       touchStartY.current = currentY;
 
-      // Reset scroll to prevent bounce
       if (scrollEl) {
         scrollEl.scrollTop = 0;
       }
     }
 
-    // Process based on current phase
+    // Process based on current phase - ONE owner at a time
     if (gesturePhase.current === 'drag') {
-      // Prevent content scroll during sheet drag
       e.preventDefault();
 
       const dragDeltaY = touchStartY.current - currentY;
@@ -403,71 +366,41 @@ export default function PlaceDetailPage({
       progressRef.current = newProgress;
       applyProgress(newProgress, false);
 
-      // Disable content scroll during drag
       if (scrollEl) {
         scrollEl.style.overflowY = 'hidden';
       }
     } else if (gesturePhase.current === 'scroll') {
-      // Allow natural scrolling
-      if (scrollEl && isFullyExpanded) {
+      if (scrollEl) {
         scrollEl.style.overflowY = 'auto';
       }
     }
   }, [showReviewsFullView, heightRange, applyProgress]);
 
   // Called when touch ends
+  // AIRBNB BEHAVIOR: NO auto-movement, NO snapping, NO "helpful" positioning
+  // Sheet stays EXACTLY where user left it
   const handleContentTouchEnd = useCallback(() => {
     if (showReviewsFullView) return;
 
     const scrollEl = scrollContentRef.current;
+    const currentProgress = progressRef.current;
 
-    if (gesturePhase.current === 'drag' || isDraggingSheet.current) {
-      const currentProgress = progressRef.current;
-      const velocity = velocityY.current;
+    // Simply update expanded state based on where the sheet currently is
+    // No movement, no animation, no snapping
+    const isExpanded = currentProgress > 0.3; // Low threshold for scroll enable
+    setIsSheetExpanded(isExpanded);
 
-      // Velocity threshold (pixels per millisecond)
-      const velocityThreshold = 0.3;
-
-      // Determine snap direction based on velocity OR position
-      let snapToExpanded;
-      if (Math.abs(velocity) > velocityThreshold) {
-        // Velocity-based decision
-        snapToExpanded = velocity > 0; // Positive velocity = swiping up = expand
-      } else {
-        // Position-based decision
-        snapToExpanded = currentProgress > 0.5;
-      }
-
-      const targetProgress = snapToExpanded ? 1 : 0;
-
-      progressRef.current = targetProgress;
-      applyProgress(targetProgress, true, true); // Use spring physics
-      setIsSheetExpanded(snapToExpanded);
-
-      // Reset scroll position when collapsing
-      if (!snapToExpanded && scrollEl) {
-        scrollEl.scrollTop = 0;
-      }
-
-      // Enable scroll when fully expanded
-      if (snapToExpanded && scrollEl) {
-        scrollEl.style.overflowY = 'auto';
-      }
+    // Enable scroll when sheet is pulled up enough to show content
+    if (scrollEl) {
+      scrollEl.style.overflowY = isExpanded ? 'auto' : 'hidden';
     }
 
-    // Restore scroll capability for expanded state
-    if (scrollEl && progressRef.current >= 0.99) {
-      scrollEl.style.overflowY = 'auto';
-    } else if (scrollEl) {
-      scrollEl.style.overflowY = 'hidden';
-    }
-
-    // Reset state
+    // Reset gesture state - NO auto-movement
     gesturePhase.current = 'idle';
     isDraggingSheet.current = false;
     isScrolling.current = false;
     velocityY.current = 0;
-  }, [showReviewsFullView, applyProgress]);
+  }, [showReviewsFullView]);
 
   // Note: Drag handle removed - entire sheet surface is now draggable
   // via the handleContentTouchStart/Move/End handlers above
@@ -482,10 +415,12 @@ export default function PlaceDetailPage({
     return () => window.removeEventListener('resize', handleResize);
   }, [applyProgress]);
 
-  // Initialize scroll state based on sheet state
+  // Initialize scroll state based on sheet position
+  // Scroll enabled when sheet is pulled up enough (> 30%)
   useEffect(() => {
     if (scrollContentRef.current) {
-      scrollContentRef.current.style.overflowY = isSheetExpanded ? 'auto' : 'hidden';
+      const canScroll = progressRef.current > 0.3;
+      scrollContentRef.current.style.overflowY = canScroll ? 'auto' : 'hidden';
     }
   }, [isSheetExpanded]);
 
@@ -558,6 +493,75 @@ export default function PlaceDetailPage({
     }
   };
 
+  // ========== BOOKMARK FUNCTIONALITY ==========
+  // Check bookmark status on mount
+  useEffect(() => {
+    const checkBookmarkStatus = async () => {
+      if (!id || !authService.isAuthenticated()) return;
+      try {
+        const response = await activityService.getBookmarks();
+        if (response.success && response.data?.bookmarks) {
+          const isPlaceBookmarked = response.data.bookmarks.some(
+            bookmark => bookmark.placeId === id || bookmark.id === id
+          );
+          setIsBookmarked(isPlaceBookmarked);
+        }
+      } catch (err) {
+        console.warn('Failed to check bookmark status:', err);
+      }
+    };
+    checkBookmarkStatus();
+  }, [id]);
+
+  // Toggle bookmark handler
+  const handleToggleBookmark = async () => {
+    if (!authService.isAuthenticated()) {
+      navigate('/login', { state: { from: `/place/${id}` } });
+      return;
+    }
+
+    if (isBookmarkLoading) return;
+
+    setIsBookmarkLoading(true);
+    try {
+      if (isBookmarked) {
+        await activityService.removeBookmark(id);
+        setIsBookmarked(false);
+      } else {
+        await activityService.addBookmark(id);
+        setIsBookmarked(true);
+      }
+    } catch (err) {
+      console.error('Failed to toggle bookmark:', err);
+    } finally {
+      setIsBookmarkLoading(false);
+    }
+  };
+
+  // Share handler
+  const handleShare = async () => {
+    const shareData = {
+      title: placeData?.name || placeData?.title || 'Mohe',
+      text: `${placeData?.name || placeData?.title} - Mohe에서 발견한 장소`,
+      url: window.location.href,
+    };
+
+    try {
+      if (navigator.share && navigator.canShare?.(shareData)) {
+        await navigator.share(shareData);
+      } else {
+        // Fallback: copy to clipboard
+        await navigator.clipboard.writeText(window.location.href);
+        // Could show a toast notification here
+        console.log('Link copied to clipboard');
+      }
+    } catch (err) {
+      if (err.name !== 'AbortError') {
+        console.error('Share failed:', err);
+      }
+    }
+  };
+
 
   // Show loading or error state
   if (isLoading) {
@@ -616,7 +620,51 @@ export default function PlaceDetailPage({
         handleImageSwipeEnd(e);
       }}
     >
-      {/* Global back button is used - no page-specific back button needed */}
+      {/* Header Action Buttons - Airbnb style overlay */}
+      {/* These buttons transition with the header: visible over image, become sticky header at full scroll */}
+      <div
+        ref={headerActionsRef}
+        className={styles.headerActions}
+      >
+        {/* Back button - uses global styling but positioned here for layout */}
+        <button
+          className={styles.headerButton}
+          onClick={() => navigate(-1)}
+          aria-label="뒤로가기"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M15 18L9 12L15 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </button>
+
+        {/* Right side buttons */}
+        <div className={styles.headerRightButtons}>
+          {/* Share button */}
+          <button
+            className={styles.headerButton}
+            onClick={handleShare}
+            aria-label="공유하기"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+              <path d="M4 12V20C4 20.5304 4.21071 21.0391 4.58579 21.4142C4.96086 21.7893 5.46957 22 6 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              <polyline points="16,6 12,2 8,6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              <line x1="12" y1="2" x2="12" y2="15" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </button>
+
+          {/* Bookmark button */}
+          <button
+            className={`${styles.headerButton} ${isBookmarked ? styles.bookmarked : ''}`}
+            onClick={handleToggleBookmark}
+            disabled={isBookmarkLoading}
+            aria-label={isBookmarked ? '북마크 해제' : '북마크 추가'}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill={isBookmarked ? 'currentColor' : 'none'}>
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </button>
+        </div>
+      </div>
 
       {/* Full-screen Image Section */}
       <div
