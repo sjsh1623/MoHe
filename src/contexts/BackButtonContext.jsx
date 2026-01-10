@@ -30,7 +30,7 @@ const ROUTES_WITH_BACK_BUTTON = [
   '/my-places',
   '/recent-view',
   '/places',
-  '/place/', // Dynamic route prefix
+  '/place/', // Place detail pages use global back button
 ];
 
 export function BackButtonProvider({ children }) {

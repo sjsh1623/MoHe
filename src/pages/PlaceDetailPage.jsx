@@ -1,6 +1,7 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { motion, AnimatePresence } from 'framer-motion';
 import styles from '@/styles/pages/place-detail-page.module.css';
 import PlaceDetailSkeleton from '@/components/ui/skeletons/PlaceDetailSkeleton';
 import ErrorMessage from '@/components/ui/alerts/ErrorMessage';
@@ -60,6 +61,7 @@ export default function PlaceDetailPage({
   const { id } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
+
   const [placeData, setPlaceData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -74,7 +76,6 @@ export default function PlaceDetailPage({
   const preloadedData = location.state?.preloadedData
     ? normalizePlaceImages(location.state?.preloadedData)
     : null;
-
 
   useEffect(() => {
     const loadPlaceDetail = async () => {
@@ -126,18 +127,11 @@ export default function PlaceDetailPage({
         console.log('Fetching complete place details from API for id:', id);
         const response = await placeService.getPlaceById(id);
         if (response.success && response.data.place) {
-          // API returns { place: SimplePlaceDto, images: [], reviews: [], isBookmarked: false, similarPlaces: [] }
-          console.log('API response place data:', response.data.place);
-          console.log('API response description:', response.data.place.description);
-          console.log('API response reviews:', response.data.reviews);
-
           const normalizedPlace = normalizePlaceImages(response.data.place);
-          console.log('Normalized place description:', normalizedPlace.description);
           setPlaceData(normalizedPlace);
 
           // Use reviews from place detail response (already included)
           if (response.data.reviews && response.data.reviews.length > 0) {
-            console.log('Reviews loaded from place detail:', response.data.reviews.length);
             setReviews(response.data.reviews);
           }
 
@@ -145,7 +139,6 @@ export default function PlaceDetailPage({
           try {
             const menusResponse = await placeService.getPlaceMenus(id);
             if (menusResponse.success && menusResponse.data) {
-              console.log('Menus loaded:', menusResponse.data);
               setMenus(menusResponse.data.menus || []);
             }
           } catch (err) {
@@ -178,32 +171,393 @@ export default function PlaceDetailPage({
     loadPlaceDetail();
   }, [id, place]);
 
-  const [sheetState, setSheetState] = useState('half'); // 'half' (50%), 'large' (80%), 'expanded' (100%)
-  const [dragOffset, setDragOffset] = useState(0);
-  const [isDragging, setIsDragging] = useState(false);
-  const dragStartY = useRef(0);
-  const initialOffset = useRef(0);
+  // ========== AIRBNB-STYLE BOTTOM SHEET ==========
+  // Implements seamless scroll-to-drag handoff like Airbnb's accommodation detail sheet
+  //
+  // Key behaviors:
+  // 1. Collapsed state: Sheet at ~57% height, content scroll disabled, drag to expand
+  // 2. Expanded state: Sheet at ~92% height, content scroll enabled
+  // 3. Scroll-to-drag handoff: When scrolled to top + drag down → sheet drags (seamless)
+  // 4. Spring physics for natural animations
+  // 5. Velocity-based snap decisions
+
+  const sheetRef = useRef(null);
+  const scrollContentRef = useRef(null);
+  const whiteFadeRef = useRef(null);
+  const heroSectionRef = useRef(null);
+
+  // Core state
+  const progressRef = useRef(0); // 0 = collapsed, 1 = expanded
+  const [isSheetExpanded, setIsSheetExpanded] = useState(false);
+
+  // Unified touch tracking for scroll-to-drag handoff
+  const touchStartY = useRef(0);
+  const touchStartTime = useRef(0);
+  const lastTouchY = useRef(0);
+  const lastTouchTime = useRef(0);
+  const startProgress = useRef(0);
+  const isDraggingSheet = useRef(false);
+  const isScrolling = useRef(false);
+  const velocityY = useRef(0);
+  const initialScrollTop = useRef(0);
+  const gesturePhase = useRef('idle'); // 'idle' | 'scroll' | 'drag'
 
   // Image swiping state
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isImageDragging, setIsImageDragging] = useState(false);
   const startX = useRef(0);
-  const DRAG_THRESHOLD = 50; // Minimum drag distance to change image
 
-  // Calculate sheet heights based on viewport (ensure image shows at least 40%)
-  const getSheetHeight = (state) => {
-    const vh = window.innerHeight;
-    switch (state) {
-      case 'half': return vh * 0.60; // 60% of screen (image shows 40%)
-      case 'large': return vh * 0.80; // 80% of screen (image shows 20%)
-      case 'expanded': return vh * 1.0; // 100% of screen
-      default: return vh * 0.5;
+  // Pull-to-dismiss state for image area
+  const [dismissProgress, setDismissProgress] = useState(0);
+  const [isDismissing, setIsDismissing] = useState(false);
+  const dismissStartY = useRef(0);
+
+  // Calculate heights
+  const [viewportHeight, setViewportHeight] = useState(
+    typeof window !== 'undefined' ? window.innerHeight : 800
+  );
+  const minSheetHeight = viewportHeight * 0.57;
+  const maxSheetHeight = viewportHeight * 0.92;
+  const heightRange = maxSheetHeight - minSheetHeight;
+
+  // Spring animation helper - creates natural, physics-based motion
+  const animateWithSpring = useCallback((from, to, onUpdate, onComplete) => {
+    const startTime = performance.now();
+    const duration = 350; // Base duration (tuned for natural feel)
+
+    const animate = (currentTime) => {
+      const elapsed = currentTime - startTime;
+      const t = Math.min(elapsed / duration, 1);
+
+      // Spring physics approximation with slight overshoot
+      const springT = 1 - Math.pow(1 - t, 3) * Math.cos(t * Math.PI * 0.5);
+      const value = from + (to - from) * springT;
+
+      onUpdate(value);
+
+      if (t < 1) {
+        requestAnimationFrame(animate);
+      } else {
+        onUpdate(to);
+        onComplete?.();
+      }
+    };
+
+    requestAnimationFrame(animate);
+  }, []);
+
+  // Apply all visual updates based on progress (0-1)
+  // Note: Hero image stays FIXED - only white fade overlay changes
+  const applyProgress = useCallback((progress, animate = false, springPhysics = false) => {
+    const clampedProgress = Math.max(0, Math.min(1, progress));
+    const height = minSheetHeight + heightRange * clampedProgress;
+    // White overlay fades in as sheet expands (0 = transparent, 0.85 = mostly white)
+    const targetFadeOpacity = clampedProgress * 0.85;
+
+    if (springPhysics) {
+      // Use spring animation for sheet height and white overlay
+      const currentHeight = sheetRef.current ? parseFloat(sheetRef.current.style.height) || minSheetHeight : minSheetHeight;
+      const currentFadeOpacity = whiteFadeRef.current ?
+        parseFloat(whiteFadeRef.current.style.opacity || '0') : 0;
+
+      animateWithSpring(0, 1, (t) => {
+        const h = currentHeight + (height - currentHeight) * t;
+        const fo = currentFadeOpacity + (targetFadeOpacity - currentFadeOpacity) * t;
+
+        if (sheetRef.current) {
+          sheetRef.current.style.transition = 'none';
+          sheetRef.current.style.height = `${h}px`;
+        }
+        if (whiteFadeRef.current) {
+          whiteFadeRef.current.style.transition = 'none';
+          whiteFadeRef.current.style.opacity = String(fo);
+        }
+      });
+    } else if (animate) {
+      // CSS transition animation
+      if (sheetRef.current) {
+        sheetRef.current.style.transition = 'height 0.35s cubic-bezier(0.32, 0.72, 0, 1)';
+        sheetRef.current.style.height = `${height}px`;
+      }
+      if (whiteFadeRef.current) {
+        whiteFadeRef.current.style.transition = 'opacity 0.35s cubic-bezier(0.32, 0.72, 0, 1)';
+        whiteFadeRef.current.style.opacity = String(targetFadeOpacity);
+      }
+    } else {
+      // Immediate update (during drag)
+      if (sheetRef.current) {
+        sheetRef.current.style.transition = 'none';
+        sheetRef.current.style.height = `${height}px`;
+      }
+      if (whiteFadeRef.current) {
+        whiteFadeRef.current.style.transition = 'none';
+        whiteFadeRef.current.style.opacity = String(targetFadeOpacity);
+      }
+    }
+  }, [minSheetHeight, heightRange, animateWithSpring]);
+
+  // Initialize on mount
+  useEffect(() => {
+    applyProgress(0, false);
+  }, [applyProgress]);
+
+  // ========== UNIFIED GESTURE HANDLING ==========
+  // This handles the critical scroll-to-drag handoff behavior
+
+  // Called when touch starts on the sheet content area
+  const handleContentTouchStart = useCallback((e) => {
+    if (showReviewsFullView) return;
+
+    const touch = e.touches[0];
+    touchStartY.current = touch.clientY;
+    touchStartTime.current = performance.now();
+    lastTouchY.current = touch.clientY;
+    lastTouchTime.current = performance.now();
+    startProgress.current = progressRef.current;
+    initialScrollTop.current = scrollContentRef.current?.scrollTop || 0;
+    velocityY.current = 0;
+    gesturePhase.current = 'idle';
+    isDraggingSheet.current = false;
+    isScrolling.current = false;
+  }, [showReviewsFullView]);
+
+  // Called during touch move - handles scroll-to-drag handoff
+  const handleContentTouchMove = useCallback((e) => {
+    if (showReviewsFullView) return;
+
+    const touch = e.touches[0];
+    const currentY = touch.clientY;
+    const currentTime = performance.now();
+    const deltaY = touchStartY.current - currentY; // Positive = swipe up
+    const deltaFromLast = lastTouchY.current - currentY;
+    const timeDelta = currentTime - lastTouchTime.current;
+
+    // Calculate velocity (pixels per millisecond)
+    if (timeDelta > 0) {
+      velocityY.current = deltaFromLast / timeDelta;
+    }
+
+    lastTouchY.current = currentY;
+    lastTouchTime.current = currentTime;
+
+    const scrollEl = scrollContentRef.current;
+    const isFullyExpanded = progressRef.current >= 0.99;
+    const scrollTop = scrollEl?.scrollTop || 0;
+    const isAtScrollTop = scrollTop <= 1;
+
+    // Determine gesture phase
+    if (gesturePhase.current === 'idle') {
+      // First significant movement - decide between scroll and drag
+      const absY = Math.abs(deltaY);
+
+      if (absY > 5) {
+        if (isFullyExpanded && !isAtScrollTop) {
+          // Expanded and not at top: pure scroll mode
+          gesturePhase.current = 'scroll';
+          isScrolling.current = true;
+        } else if (!isFullyExpanded) {
+          // Not fully expanded: drag mode
+          gesturePhase.current = 'drag';
+          isDraggingSheet.current = true;
+          startProgress.current = progressRef.current;
+          touchStartY.current = currentY;
+        } else if (isFullyExpanded && isAtScrollTop && deltaY < 0) {
+          // Expanded, at top, swiping down: drag mode
+          gesturePhase.current = 'drag';
+          isDraggingSheet.current = true;
+          startProgress.current = progressRef.current;
+          touchStartY.current = currentY;
+        } else {
+          // Expanded, at top, swiping up: scroll mode
+          gesturePhase.current = 'scroll';
+          isScrolling.current = true;
+        }
+      }
+    }
+
+    // Handle scroll-to-drag transition (seamless handoff)
+    if (gesturePhase.current === 'scroll' && isAtScrollTop && deltaY < 0) {
+      // User is scrolling, reached top, and now pulling down
+      // Seamlessly transition to drag mode
+      gesturePhase.current = 'drag';
+      isDraggingSheet.current = true;
+      isScrolling.current = false;
+      startProgress.current = progressRef.current;
+      touchStartY.current = currentY;
+
+      // Reset scroll to prevent bounce
+      if (scrollEl) {
+        scrollEl.scrollTop = 0;
+      }
+    }
+
+    // Process based on current phase
+    if (gesturePhase.current === 'drag') {
+      // Prevent content scroll during sheet drag
+      e.preventDefault();
+
+      const dragDeltaY = touchStartY.current - currentY;
+      const progressDelta = dragDeltaY / heightRange;
+      const newProgress = Math.max(0, Math.min(1, startProgress.current + progressDelta));
+
+      progressRef.current = newProgress;
+      applyProgress(newProgress, false);
+
+      // Disable content scroll during drag
+      if (scrollEl) {
+        scrollEl.style.overflowY = 'hidden';
+      }
+    } else if (gesturePhase.current === 'scroll') {
+      // Allow natural scrolling
+      if (scrollEl && isFullyExpanded) {
+        scrollEl.style.overflowY = 'auto';
+      }
+    }
+  }, [showReviewsFullView, heightRange, applyProgress]);
+
+  // Called when touch ends
+  const handleContentTouchEnd = useCallback(() => {
+    if (showReviewsFullView) return;
+
+    const scrollEl = scrollContentRef.current;
+
+    if (gesturePhase.current === 'drag' || isDraggingSheet.current) {
+      const currentProgress = progressRef.current;
+      const velocity = velocityY.current;
+
+      // Velocity threshold (pixels per millisecond)
+      const velocityThreshold = 0.3;
+
+      // Determine snap direction based on velocity OR position
+      let snapToExpanded;
+      if (Math.abs(velocity) > velocityThreshold) {
+        // Velocity-based decision
+        snapToExpanded = velocity > 0; // Positive velocity = swiping up = expand
+      } else {
+        // Position-based decision
+        snapToExpanded = currentProgress > 0.5;
+      }
+
+      const targetProgress = snapToExpanded ? 1 : 0;
+
+      progressRef.current = targetProgress;
+      applyProgress(targetProgress, true, true); // Use spring physics
+      setIsSheetExpanded(snapToExpanded);
+
+      // Reset scroll position when collapsing
+      if (!snapToExpanded && scrollEl) {
+        scrollEl.scrollTop = 0;
+      }
+
+      // Enable scroll when fully expanded
+      if (snapToExpanded && scrollEl) {
+        scrollEl.style.overflowY = 'auto';
+      }
+    }
+
+    // Restore scroll capability for expanded state
+    if (scrollEl && progressRef.current >= 0.99) {
+      scrollEl.style.overflowY = 'auto';
+    } else if (scrollEl) {
+      scrollEl.style.overflowY = 'hidden';
+    }
+
+    // Reset state
+    gesturePhase.current = 'idle';
+    isDraggingSheet.current = false;
+    isScrolling.current = false;
+    velocityY.current = 0;
+  }, [showReviewsFullView, applyProgress]);
+
+  // Note: Drag handle removed - entire sheet surface is now draggable
+  // via the handleContentTouchStart/Move/End handlers above
+
+  // Handle window resize
+  useEffect(() => {
+    const handleResize = () => {
+      setViewportHeight(window.innerHeight);
+      applyProgress(progressRef.current, false);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [applyProgress]);
+
+  // Initialize scroll state based on sheet state
+  useEffect(() => {
+    if (scrollContentRef.current) {
+      scrollContentRef.current.style.overflowY = isSheetExpanded ? 'auto' : 'hidden';
+    }
+  }, [isSheetExpanded]);
+
+  // Image dismiss handlers (pull down to go back)
+  const handleImageDismissStart = (e) => {
+    if (isImageDragging) return;
+    const clientY = e.type === 'mousedown' ? e.clientY : e.touches[0].clientY;
+    dismissStartY.current = clientY;
+    setIsDismissing(true);
+  };
+
+  const handleImageDismissMove = (e) => {
+    if (!isDismissing || isImageDragging) return;
+
+    const clientY = e.type === 'mousemove' ? e.clientY : e.touches[0].clientY;
+    const deltaY = clientY - dismissStartY.current;
+
+    if (deltaY > 0) {
+      // Pulling down - calculate progress (0 to 1)
+      const progress = Math.min(deltaY / 150, 1);
+      setDismissProgress(progress);
+    } else {
+      setDismissProgress(0);
     }
   };
 
-  const getCurrentSheetHeight = () => {
-    return getSheetHeight(sheetState) + dragOffset;
+  const handleImageDismissEnd = () => {
+    if (!isDismissing) return;
+    setIsDismissing(false);
+
+    if (dismissProgress > 0.5) {
+      // Dismiss - navigate back
+      navigate(-1);
+    } else {
+      // Reset
+      setDismissProgress(0);
+    }
   };
+
+  // Image swipe handlers (left/right)
+  const handleImageSwipeStart = (e) => {
+    e.stopPropagation();
+    setIsImageDragging(true);
+    const clientX = e.type === 'mousedown' ? e.clientX : e.touches[0].clientX;
+    startX.current = clientX;
+  };
+
+  const handleImageSwipeEnd = (e) => {
+    if (!isImageDragging) return;
+    setIsImageDragging(false);
+
+    let clientX;
+    if (e.type === 'mouseup') {
+      clientX = e.clientX;
+    } else if (e.changedTouches && e.changedTouches[0]) {
+      clientX = e.changedTouches[0].clientX;
+    } else {
+      return;
+    }
+
+    const distance = clientX - startX.current;
+    const threshold = 30;
+
+    if (Math.abs(distance) > threshold) {
+      if (distance > 0 && currentImageIndex > 0) {
+        setCurrentImageIndex(prev => prev - 1);
+      } else if (distance < 0 && currentImageIndex < images.length - 1) {
+        setCurrentImageIndex(prev => prev + 1);
+      }
+    }
+  };
+
 
   // Show loading or error state
   if (isLoading) {
@@ -234,156 +588,55 @@ export default function PlaceDetailPage({
 
   const images = candidateImages.length ? candidateImages : defaultImages;
 
-  const handleThumbnailClick = (index) => {
-    setCurrentImageIndex(index);
-  };
-
-  const handleDragStart = (e) => {
-    setIsDragging(true);
-    const clientY = e.type === 'mousedown' ? e.clientY : e.touches[0].clientY;
-    dragStartY.current = clientY;
-    initialOffset.current = dragOffset;
-  };
-
-  const handleDragMove = (e) => {
-    if (!isDragging) return;
-
-    const clientY = e.type === 'mousemove' ? e.clientY : e.touches[0].clientY;
-    const deltaY = dragStartY.current - clientY; // Inverted: positive = drag up
-    const newOffset = initialOffset.current + deltaY;
-
-    // Limit drag range
-    const minHeight = getSheetHeight('half');
-    const maxHeight = getSheetHeight('expanded');
-    const currentBaseHeight = getSheetHeight(sheetState);
-    const maxOffset = maxHeight - currentBaseHeight;
-    const minOffset = minHeight - currentBaseHeight;
-
-    const clampedOffset = Math.max(minOffset, Math.min(maxOffset, newOffset));
-    setDragOffset(clampedOffset);
-  };
-
-  const handleDragEnd = () => {
-    if (!isDragging) return;
-    setIsDragging(false);
-
-    const currentHeight = getCurrentSheetHeight();
-
-    // Determine which state to snap to based on current height
-    const halfHeight = getSheetHeight('half');
-    const largeHeight = getSheetHeight('large');
-    const expandedHeight = getSheetHeight('expanded');
-
-    let newState = sheetState;
-
-    if (currentHeight < (halfHeight + largeHeight) / 2) {
-      newState = 'half';
-    } else if (currentHeight < (largeHeight + expandedHeight) / 2) {
-      newState = 'large';
-    } else {
-      newState = 'expanded';
-    }
-
-    setSheetState(newState);
-    setDragOffset(0);
-  };
-
-  // Simple image navigation functions
-  const nextImage = () => {
-    if (currentImageIndex < images.length - 1) {
-      setCurrentImageIndex(prev => prev + 1);
-    }
-  };
-
-  const prevImage = () => {
-    if (currentImageIndex > 0) {
-      setCurrentImageIndex(prev => prev - 1);
-    }
-  };
-
-  // Image swipe handlers
-  const handleImageStart = (e) => {
-    e.stopPropagation();
-    setIsImageDragging(true);
-    const clientX = e.type === 'mousedown' ? e.clientX : e.touches[0].clientX;
-    startX.current = clientX;
-  };
-
-  const handleImageEnd = (e) => {
-    if (!isImageDragging) return;
-
-    setIsImageDragging(false);
-
-    // Get the end position
-    let clientX;
-    if (e.type === 'mouseup') {
-      clientX = e.clientX;
-    } else if (e.changedTouches && e.changedTouches[0]) {
-      clientX = e.changedTouches[0].clientX;
-    } else {
-      return; // No valid touch data
-    }
-
-    const distance = clientX - startX.current;
-
-    // Use a smaller threshold for more responsive swiping
-    const threshold = 30;
-
-    // Check if drag distance exceeds threshold
-    if (Math.abs(distance) > threshold) {
-      if (distance > 0) {
-        // Dragged right, go to previous image
-        prevImage();
-      } else {
-        // Dragged left, go to next image
-        nextImage();
-      }
-    }
-  };
-
-  // Show skeleton loader while loading (with preloaded image if available)
-  if (isLoading) {
-    return <PlaceDetailSkeleton preloadedImage={preloadedImage} />;
-  }
+  // Calculate dismiss animation values
+  const dismissScale = 1 - (dismissProgress * 0.1);
+  const dismissOpacity = 1 - (dismissProgress * 0.3);
+  const dismissTranslateY = dismissProgress * 100;
 
   return (
-    <div
+    <motion.div
       className={styles.pageContainer}
+      style={{
+        transform: `scale(${dismissScale}) translateY(${dismissTranslateY}px)`,
+        opacity: dismissOpacity,
+        borderRadius: dismissProgress > 0 ? '24px' : '0px',
+      }}
       onMouseMove={(e) => {
-        if (!isImageDragging) {
-          handleDragMove(e);
-        }
+        handleImageDismissMove(e);
       }}
       onMouseUp={(e) => {
-        if (isImageDragging) {
-          handleImageEnd(e);
-        } else {
-          handleDragEnd();
-        }
+        handleImageDismissEnd();
+        handleImageSwipeEnd(e);
       }}
       onTouchMove={(e) => {
-        if (!isImageDragging) {
-          handleDragMove(e);
-        }
+        handleImageDismissMove(e);
       }}
       onTouchEnd={(e) => {
-        if (isImageDragging) {
-          handleImageEnd(e);
-        } else {
-          handleDragEnd();
-        }
+        handleImageDismissEnd();
+        handleImageSwipeEnd(e);
       }}
     >
-      {/* Header Image Carousel */}
-      <div className={styles.heroSection}>
+      {/* Global back button is used - no page-specific back button needed */}
+
+      {/* Full-screen Image Section */}
+      <div
+        ref={heroSectionRef}
+        className={styles.heroSection}
+        onMouseDown={(e) => {
+          handleImageDismissStart(e);
+          handleImageSwipeStart(e);
+        }}
+        onTouchStart={(e) => {
+          handleImageDismissStart(e);
+          handleImageSwipeStart(e);
+        }}
+      >
         <div
           className={styles.imageCarousel}
           style={{
-            transform: `translateX(-${currentImageIndex * 20}%)`,
-            transition: 'transform 0.3s ease-out'
+            transform: `translateX(-${currentImageIndex * 100}%)`,
+            transition: isImageDragging ? 'none' : 'transform 0.3s ease-out'
           }}
-          onMouseDown={handleImageStart}
-          onTouchStart={handleImageStart}
         >
           {images.map((image, index) => (
             <img
@@ -395,323 +648,317 @@ export default function PlaceDetailPage({
             />
           ))}
         </div>
-        <div className={styles.heroOverlay} />
 
-        {/* Bottom Handle */}
+        {/* Image Indicators */}
+        <div className={styles.imageIndicators}>
+          {images.map((_, index) => (
+            <div
+              key={index}
+              className={`${styles.indicator} ${index === currentImageIndex ? styles.active : ''}`}
+            />
+          ))}
+        </div>
+
+        {/* Gradient overlay at bottom */}
+        <div className={styles.heroGradient} />
+
+        {/* White fade overlay - increases with scroll */}
         <div
-          className={styles.bottomHandle}
-          onMouseDown={handleDragStart}
-          onTouchStart={handleDragStart}
+          ref={whiteFadeRef}
+          className={styles.whiteFadeOverlay}
         />
       </div>
 
-      {/* Image Indicators - positioned above modal */}
+      {/* Bottom Sheet - height controlled by applyProgress */}
+      {/* No drag handle - entire sheet surface is draggable via scrollContent touch handlers */}
       <div
-        className={styles.imageIndicators}
-        style={{
-          bottom: `${getCurrentSheetHeight() + 20}px`,
-          transition: isDragging ? 'none' : 'bottom 0.3s ease-out'
-        }}
+        ref={sheetRef}
+        className={styles.bottomSheet}
+        style={{ height: '57vh' }}
       >
-        {images.map((_, index) => (
+        {/* Sheet Content */}
+        <div className={styles.sheetContent}>
+          {/* Scrollable Content - with unified touch handling for scroll-to-drag handoff */}
           <div
-            key={index}
-            className={`${styles.indicator} ${index === currentImageIndex ? styles.active : ''}`}
-          />
-        ))}
-      </div>
-
-      {/* Content Section */}
-      <div
-        className={styles.contentSection}
-        style={{
-          height: `${getCurrentSheetHeight()}px`,
-          transition: isDragging ? 'none' : 'height 0.3s ease-out'
-        }}
-      >
-        {/* Draggable Header Area */}
-        <div
-          className={styles.draggableHeader}
-          onMouseDown={handleDragStart}
-          onTouchStart={handleDragStart}
-        >
-          {/* Drag Indicator */}
-          <div className={styles.dragIndicator} />
-
-          {/* Tags (Hashtags) */}
-          {placeData.tags && placeData.tags.length > 0 && (
-            <div className={styles.hashtags}>
-              {placeData.tags.map((tag, index) => (
-                <span key={index} className={styles.hashtag}>#{tag}</span>
-              ))}
-            </div>
-          )}
-
-          {/* Title and Rating */}
-          <div className={styles.header}>
-            <h1 className={styles.title}>{placeData.name || placeData.title}</h1>
-            <div className={styles.ratingContainer}>
-              <svg className={styles.starIcon} width="12.94" height="11.64" viewBox="0 0 13 12" fill="none">
-                <path d="M5.59149 0.345492C5.74042 -0.115164 6.38888 -0.115164 6.53781 0.345491L7.62841 3.71885C7.69501 3.92486 7.88603 4.06434 8.10157 4.06434H11.6308C12.1128 4.06434 12.3132 4.68415 11.9233 4.96885L9.06803 7.0537C8.89366 7.18102 8.82069 7.4067 8.8873 7.61271L9.9779 10.9861C10.1268 11.4467 9.60222 11.8298 9.21232 11.5451L6.35708 9.46024C6.18271 9.33291 5.94659 9.33291 5.77222 9.46024L2.91698 11.5451C2.52708 11.8298 2.00247 11.4467 2.1514 10.9861L3.242 7.61271C3.30861 7.4067 3.23564 7.18102 3.06127 7.0537L0.206033 4.96885C-0.183869 4.68415 0.0165137 4.06434 0.49846 4.06434H4.02773C4.24326 4.06434 4.43428 3.92486 4.50089 3.71885L5.59149 0.345492Z" fill="#FFD336"/>
-              </svg>
-              <span className={styles.ratingText}>{Number(placeData.rating).toFixed(1)}</span>
-              <span className={styles.reviewCount}>({placeData.reviewCount || placeData.userRatingsTotal || 0})</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Scrollable Content Area */}
-        <div className={styles.contentScrollArea}>
-
-          {/* Location and Transportation */}
-          <div className={styles.locationSection}>
-            <div className={styles.locationRow}>
-              <div className={styles.locationInfo}>
-                <svg className={styles.locationIcon} width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <circle cx="8" cy="7.33325" r="2" stroke="#7D848D" strokeWidth="1.5"/>
-                  <path d="M14 7.25918C14 10.532 10.25 14.6666 8 14.6666C5.75 14.6666 2 10.532 2 7.25918C2 3.98638 4.68629 1.33325 8 1.33325C11.3137 1.33325 14 3.98638 14 7.25918Z" stroke="#7D848D" strokeWidth="1.5"/>
-                </svg>
-                <span className={styles.locationText}>{placeData.location || placeData.address}</span>
-              </div>
-
-              {(placeData.transportationCarTime || placeData.transportationBusTime) && (
-              <div className={styles.transportationRow}>
-                {placeData.transportationCarTime && (
-                  <>
-                    <svg className={styles.carIcon} width="16" height="16" viewBox="0 0 16 16" fill="none">
-                      <path d="M11.67 1.39C12.67 1.39 13.84 2.56 13.84 3.56V7.84H2.17V3.56C2.17 2.56 3.34 1.39 4.34 1.39H11.67Z" fill="#7D848D"/>
-                      <path d="M0.83 6.83H15.17V11.16C15.17 12.16 14 13.33 13 13.33H3C2 13.33 0.83 12.16 0.83 11.16V6.83Z" fill="#7D848D"/>
-                      <circle cx="4" cy="10.5" r="1" fill="white"/>
-                      <circle cx="12" cy="10.5" r="1" fill="white"/>
-                      <rect x="7" y="2" width="2" height="1" fill="white"/>
-                    </svg>
-                    <span className={styles.transportTime}>{placeData.transportationCarTime}</span>
-                  </>
-                )}
-
-                {placeData.transportationBusTime && (
-                  <>
-                    <svg className={styles.busIcon} width="16" height="16" viewBox="0 0 16 16" fill="none">
-                      <rect x="2" y="1" width="12" height="13" rx="1.5" fill="#7D848D"/>
-                      <rect x="2.5" y="4.5" width="11" height="4" fill="white"/>
-                      <circle cx="5" cy="11.5" r="1" fill="white"/>
-                      <circle cx="11" cy="11.5" r="1" fill="white"/>
-                      <rect x="6" y="2.5" width="4" height="1" fill="white"/>
-                    </svg>
-                    <span className={styles.transportTime}>{placeData.transportationBusTime}</span>
-                  </>
-                )}
-              </div>
-              )}
-            </div>
-          </div>
-
-          {/* Menu Gallery */}
-          {(() => {
-            const menusWithImages = menus.filter(menu => menu.imagePath);
-            const totalMenuImages = menusWithImages.length;
-
-            if (totalMenuImages === 0) return null;
-
-            // Show up to 5 images, if more than 5: show 4 + overlay with +N
-            const maxVisible = 5;
-            const shouldShowOverlay = totalMenuImages > maxVisible;
-            const displayMenus = shouldShowOverlay
-              ? menusWithImages.slice(0, maxVisible - 1)
-              : menusWithImages.slice(0, maxVisible);
-            const remainingCount = totalMenuImages - (maxVisible - 1);
-
-            const handleMenuClick = (index) => {
-              setSelectedMenuIndex(index);
-              setIsMenuModalOpen(true);
-            };
-
-            const handleMoreClick = () => {
-              navigate(`/place/${id}/menu`, {
-                state: {
-                  menus: menusWithImages,
-                  placeName: placeData?.name || placeData?.title || ''
-                }
-              });
-            };
-
-            return (
-              <div className={styles.menuGallery}>
-                {displayMenus.map((menu, index) => (
-                  <div
-                    key={menu.id || index}
-                    className={styles.menuGalleryItem}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleMenuClick(index);
-                    }}
-                    onMouseDown={(e) => e.stopPropagation()}
-                    onMouseUp={(e) => e.stopPropagation()}
-                    onTouchStart={(e) => e.stopPropagation()}
-                    onTouchEnd={(e) => e.stopPropagation()}
-                  >
-                    <img
-                      src={buildImageUrl(menu.imagePath)}
-                      alt={menu.name || `메뉴 ${index + 1}`}
-                      className={styles.menuGalleryImage}
-                      draggable={false}
-                    />
-                  </div>
-                ))}
-                {shouldShowOverlay && (
-                  <div
-                    className={`${styles.menuGalleryItem} ${styles.moreOverlay}`}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleMoreClick();
-                    }}
-                    onMouseDown={(e) => e.stopPropagation()}
-                    onMouseUp={(e) => e.stopPropagation()}
-                    onTouchStart={(e) => e.stopPropagation()}
-                    onTouchEnd={(e) => e.stopPropagation()}
-                  >
-                    <img
-                      src={buildImageUrl(menusWithImages[maxVisible - 1]?.imagePath)}
-                      alt="더보기"
-                      className={styles.menuGalleryImage}
-                      draggable={false}
-                    />
-                    <div className={styles.overlayContent}>
-                      <span className={styles.overlayText}>+{remainingCount}</span>
-                    </div>
-                  </div>
-                )}
-              </div>
-            );
-          })()}
-
-          {/* Mohe AI Note Section - Always visible */}
-          <div className={styles.aiNoteSection}>
-            <div className={styles.aiNoteHeader}>
-              <h2 className={styles.aiNoteTitle}>Mohe AI 노트</h2>
-              <p className={styles.aiNoteSubtitle}>
-                리뷰와 데이터를 읽고 AI가 정리했어요
-              </p>
-            </div>
-            <div className={styles.description}>
-              {placeData.description && placeData.description.length > 10 ? (
-                placeData.description.split('\n').map((line, index) => (
-                  <span key={index}>
-                    {parseMarkdown(line)}
-                    {index < placeData.description.split('\n').length - 1 && <br />}
-                  </span>
-                ))
-              ) : (
-                <div className={styles.aiNotePlaceholder}>
-                  <p>리뷰를 작성하면 Mohe가 리뷰를 기반으로 장소 설명을 생성해요</p>
-                  <p className={styles.aiNotePlaceholderHighlight}>
-                    {placeData.name || placeData.title}의 첫 리뷰어가 되어보세요!
-                  </p>
+            ref={scrollContentRef}
+            className={styles.scrollContent}
+            onTouchStart={handleContentTouchStart}
+            onTouchMove={handleContentTouchMove}
+            onTouchEnd={handleContentTouchEnd}
+          >
+            {/* Header - Title and Rating (scrolls with content) */}
+            <div className={styles.sheetHeader}>
+              {placeData.tags && placeData.tags.length > 0 && (
+                <div className={styles.hashtags}>
+                  {placeData.tags.map((tag, index) => (
+                    <span key={index} className={styles.hashtag}>#{tag}</span>
+                  ))}
                 </div>
               )}
-            </div>
-          </div>
 
-          {/* Reviews Section - Always visible */}
-          <div className={styles.reviewsSection}>
-            <div className={styles.reviewsHeader}>
-              <div className={styles.reviewsTitleGroup}>
-                <h2 className={styles.reviewsTitle}>리뷰</h2>
-                <span className={styles.reviewsCount}>{reviews.length}개</span>
+              <div className={styles.titleRow}>
+                <h1 className={styles.title}>{placeData.name || placeData.title}</h1>
+                <div className={styles.ratingContainer}>
+                  <svg className={styles.starIcon} width="14" height="14" viewBox="0 0 14 13" fill="none">
+                    <path d="M6.04914 0.927051C6.21045 0.429825 6.91123 0.429825 7.07254 0.927051L8.25254 4.57354C8.32461 4.79648 8.53119 4.94755 8.76531 4.94755H12.5832C13.1047 4.94755 13.3214 5.61782 12.8997 5.92484L9.81085 8.17764C9.62207 8.31511 9.54258 8.55947 9.61465 8.78241L10.7947 12.4289C10.956 12.9261 10.3841 13.3409 9.96241 13.0339L6.87355 10.7811C6.68478 10.6436 6.4369 10.6436 6.24813 10.7811L3.15927 13.0339C2.7376 13.3409 2.16566 12.9261 2.32697 12.4289L3.50697 8.78241C3.57904 8.55947 3.49955 8.31511 3.31078 8.17764L0.221913 5.92484C-0.199755 5.61782 0.0169654 4.94755 0.538474 4.94755H4.35637C4.59049 4.94755 4.79707 4.79648 4.86914 4.57354L6.04914 0.927051Z" fill="#FFD336"/>
+                  </svg>
+                  <span className={styles.ratingText}>{Number(placeData.rating).toFixed(1)}</span>
+                  <span className={styles.reviewCount}>({placeData.reviewCount || placeData.userRatingsTotal || 0})</span>
+                </div>
               </div>
-              <button
-                className={styles.writeReviewButton}
-                onClick={() => {
-                  if (authService.isAuthenticated()) {
-                    navigate(`/place/${id}/review/write`);
-                  } else {
-                    navigate('/login', { state: { from: `/place/${id}/review/write` } });
-                  }
-                }}
-              >
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                  <path d="M10.5 1.16669C10.6526 1.01413 10.8339 0.893019 11.0334 0.810363C11.2329 0.727706 11.4467 0.685059 11.6626 0.685059C11.8786 0.685059 12.0924 0.727706 12.2919 0.810363C12.4914 0.893019 12.6727 1.01413 12.8253 1.16669C12.9779 1.31924 13.099 1.50054 13.1816 1.70004C13.2643 1.89955 13.307 2.11339 13.307 2.32935C13.307 2.54532 13.2643 2.75916 13.1816 2.95866C13.099 3.15817 12.9779 3.33947 12.8253 3.49202L4.66699 11.6504L1.16699 12.8337L2.35033 9.33369L10.5 1.16669Z" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-                리뷰 쓰기
-              </button>
             </div>
-            <div className={styles.aiCommentsSection}>
-              {reviews.length > 0 ? (
-                reviews.map((review) => (
-                  <div key={review.id} className={styles.aiCommentCard}>
+            {/* Location and Transportation */}
+            <div className={styles.locationSection}>
+              <div className={styles.locationRow}>
+                <div className={styles.locationInfo}>
+                  <svg className={styles.locationIcon} width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <circle cx="8" cy="7.33325" r="2" stroke="#7D848D" strokeWidth="1.5"/>
+                    <path d="M14 7.25918C14 10.532 10.25 14.6666 8 14.6666C5.75 14.6666 2 10.532 2 7.25918C2 3.98638 4.68629 1.33325 8 1.33325C11.3137 1.33325 14 3.98638 14 7.25918Z" stroke="#7D848D" strokeWidth="1.5"/>
+                  </svg>
+                  <span className={styles.locationText}>{placeData.location || placeData.address}</span>
+                </div>
+
+                {(placeData.transportationCarTime || placeData.transportationBusTime) && (
+                  <div className={styles.transportationRow}>
+                    {placeData.transportationCarTime && (
+                      <>
+                        <svg className={styles.carIcon} width="16" height="16" viewBox="0 0 16 16" fill="none">
+                          <path d="M11.67 1.39C12.67 1.39 13.84 2.56 13.84 3.56V7.84H2.17V3.56C2.17 2.56 3.34 1.39 4.34 1.39H11.67Z" fill="#7D848D"/>
+                          <path d="M0.83 6.83H15.17V11.16C15.17 12.16 14 13.33 13 13.33H3C2 13.33 0.83 12.16 0.83 11.16V6.83Z" fill="#7D848D"/>
+                          <circle cx="4" cy="10.5" r="1" fill="white"/>
+                          <circle cx="12" cy="10.5" r="1" fill="white"/>
+                          <rect x="7" y="2" width="2" height="1" fill="white"/>
+                        </svg>
+                        <span className={styles.transportTime}>{placeData.transportationCarTime}</span>
+                      </>
+                    )}
+
+                    {placeData.transportationBusTime && (
+                      <>
+                        <svg className={styles.busIcon} width="16" height="16" viewBox="0 0 16 16" fill="none">
+                          <rect x="2" y="1" width="12" height="13" rx="1.5" fill="#7D848D"/>
+                          <rect x="2.5" y="4.5" width="11" height="4" fill="white"/>
+                          <circle cx="5" cy="11.5" r="1" fill="white"/>
+                          <circle cx="11" cy="11.5" r="1" fill="white"/>
+                          <rect x="6" y="2.5" width="4" height="1" fill="white"/>
+                        </svg>
+                        <span className={styles.transportTime}>{placeData.transportationBusTime}</span>
+                      </>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Menu Gallery */}
+            {(() => {
+              const menusWithImages = menus.filter(menu => menu.imagePath);
+              const totalMenuImages = menusWithImages.length;
+
+              if (totalMenuImages === 0) return null;
+
+              const maxVisible = 5;
+              const shouldShowOverlay = totalMenuImages > maxVisible;
+              const displayMenus = shouldShowOverlay
+                ? menusWithImages.slice(0, maxVisible - 1)
+                : menusWithImages.slice(0, maxVisible);
+              const remainingCount = totalMenuImages - (maxVisible - 1);
+
+              const handleMenuClick = (index) => {
+                setSelectedMenuIndex(index);
+                setIsMenuModalOpen(true);
+              };
+
+              const handleMoreClick = () => {
+                navigate(`/place/${id}/menu`, {
+                  state: {
+                    menus: menusWithImages,
+                    placeName: placeData?.name || placeData?.title || ''
+                  }
+                });
+              };
+
+              return (
+                <div className={styles.menuGallery}>
+                  {displayMenus.map((menu, index) => (
+                    <div
+                      key={menu.id || index}
+                      className={styles.menuGalleryItem}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleMenuClick(index);
+                      }}
+                    >
+                      <img
+                        src={buildImageUrl(menu.imagePath)}
+                        alt={menu.name || `메뉴 ${index + 1}`}
+                        className={styles.menuGalleryImage}
+                        draggable={false}
+                      />
+                    </div>
+                  ))}
+                  {shouldShowOverlay && (
+                    <div
+                      className={`${styles.menuGalleryItem} ${styles.moreOverlay}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleMoreClick();
+                      }}
+                    >
+                      <img
+                        src={buildImageUrl(menusWithImages[maxVisible - 1]?.imagePath)}
+                        alt="더보기"
+                        className={styles.menuGalleryImage}
+                        draggable={false}
+                      />
+                      <div className={styles.overlayContent}>
+                        <span className={styles.overlayText}>+{remainingCount}</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
+
+            {/* Mohe AI Note Section */}
+            <div className={styles.aiNoteSection}>
+              <div className={styles.aiNoteHeader}>
+                <h2 className={styles.aiNoteTitle}>Mohe AI 노트</h2>
+                <p className={styles.aiNoteSubtitle}>
+                  리뷰와 데이터를 읽고 AI가 정리했어요
+                </p>
+              </div>
+              <div className={styles.description}>
+                {placeData.description && placeData.description.length > 10 ? (
+                  placeData.description.split('\n').map((line, index) => (
+                    <span key={index}>
+                      {parseMarkdown(line)}
+                      {index < placeData.description.split('\n').length - 1 && <br />}
+                    </span>
+                  ))
+                ) : (
+                  <div className={styles.aiNotePlaceholder}>
+                    <p>리뷰를 작성하면 Mohe가 리뷰를 기반으로 장소 설명을 생성해요</p>
+                    <p className={styles.aiNotePlaceholderHighlight}>
+                      {placeData.name || placeData.title}의 첫 리뷰어가 되어보세요!
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Reviews Section */}
+            <div className={styles.reviewsSection}>
+              <div className={styles.reviewsHeader}>
+                <div className={styles.reviewsTitleGroup}>
+                  <h2 className={styles.reviewsTitle}>리뷰</h2>
+                  <span className={styles.reviewsCount}>{reviews.length}개</span>
+                </div>
+                <button
+                  className={styles.writeReviewButton}
+                  onClick={() => {
+                    if (authService.isAuthenticated()) {
+                      navigate(`/place/${id}/review/write`);
+                    } else {
+                      navigate('/login', { state: { from: `/place/${id}/review/write` } });
+                    }
+                  }}
+                >
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                    <path d="M10.5 1.16669C10.6526 1.01413 10.8339 0.893019 11.0334 0.810363C11.2329 0.727706 11.4467 0.685059 11.6626 0.685059C11.8786 0.685059 12.0924 0.727706 12.2919 0.810363C12.4914 0.893019 12.6727 1.01413 12.8253 1.16669C12.9779 1.31924 13.099 1.50054 13.1816 1.70004C13.2643 1.89955 13.307 2.11339 13.307 2.32935C13.307 2.54532 13.2643 2.75916 13.1816 2.95866C13.099 3.15817 12.9779 3.33947 12.8253 3.49202L4.66699 11.6504L1.16699 12.8337L2.35033 9.33369L10.5 1.16669Z" stroke="#4E5968" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                  리뷰 쓰기
+                </button>
+              </div>
+              <div className={styles.aiCommentsSection}>
+                {reviews.length > 0 ? (
+                  reviews.map((review) => (
+                    <div key={review.id} className={styles.aiCommentCard}>
+                      <p className={styles.commentText}>
+                        {review.reviewText}
+                      </p>
+                      <div className={styles.commentFooter}>
+                        <span className={styles.authorName}>{review.authorName || review.nickname || '익명'}</span>
+                        <span className={styles.commentDate}>{formatDate(review.createdAt)}</span>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className={styles.aiCommentCard}>
                     <p className={styles.commentText}>
-                      {review.reviewText}
+                      아직 리뷰가 없어요. 첫 번째 리뷰를 남겨보세요!
                     </p>
                     <div className={styles.commentFooter}>
-                      <span className={styles.authorName}>{review.authorName || review.nickname || '익명'}</span>
-                      <span className={styles.commentDate}>{formatDate(review.createdAt)}</span>
+                      <span className={styles.authorName}>Mohe</span>
                     </div>
                   </div>
-                ))
-              ) : (
-                <div className={styles.aiCommentCard}>
-                  <p className={styles.commentText}>
-                    아직 리뷰가 없어요. 첫 번째 리뷰를 남겨보세요!
-                  </p>
-                  <div className={styles.commentFooter}>
-                    <span className={styles.authorName}>Mohe</span>
-                  </div>
-                </div>
+                )}
+              </div>
+              {reviews.length > 0 && (
+                <button
+                  className={styles.viewAllReviewsButton}
+                  onClick={() => {
+                    // Expand sheet fully before showing reviews
+                    progressRef.current = 1;
+                    applyProgress(1, true);
+                    setIsSheetExpanded(true);
+                    setShowReviewsFullView(true);
+                  }}
+                >
+                  리뷰 모두 보기
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <path d="M6 12L10 8L6 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </button>
               )}
             </div>
-            {reviews.length > 0 && (
-              <button
-                className={styles.viewAllReviewsButton}
-                onClick={() => {
-                  setSheetState('expanded');
-                  setShowReviewsFullView(true);
-                }}
-              >
-                리뷰 모두 보기
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <path d="M6 12L10 8L6 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              </button>
-            )}
           </div>
-        </div>
 
-        {/* Reviews Full View */}
-        {showReviewsFullView && (
-          <div className={styles.reviewsFullView}>
-            <div className={styles.reviewsFullViewHeader}>
-              <button
-                className={styles.reviewsFullViewBackButton}
-                onClick={() => setShowReviewsFullView(false)}
+          {/* Reviews Full View */}
+          <AnimatePresence>
+            {showReviewsFullView && (
+              <motion.div
+                className={styles.reviewsFullView}
+                initial={{ x: '100%' }}
+                animate={{ x: 0 }}
+                exit={{ x: '100%' }}
+                transition={{ type: 'tween', duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
               >
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                  <path d="M15 18L9 12L15 6" stroke="#1B1E28" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              </button>
-              <h2 className={styles.reviewsFullViewTitle}>리뷰 {reviews.length}개</h2>
-              <div className={styles.reviewsFullViewSpacer} />
-            </div>
-            <div className={styles.reviewsFullViewContent}>
-              {reviews.length > 0 ? (
-                reviews.map((review) => (
-                  <div key={review.id} className={styles.reviewFullCard}>
-                    <p className={styles.reviewFullText}>
-                      {review.reviewText}
-                    </p>
-                    <div className={styles.reviewFullFooter}>
-                      <span className={styles.reviewFullAuthor}>{review.authorName || review.nickname || '익명'}</span>
-                      <span className={styles.reviewFullDate}>{formatDate(review.createdAt)}</span>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className={styles.noReviewsMessage}>
-                  아직 리뷰가 없어요. 첫 번째 리뷰를 남겨보세요!
+                <div className={styles.reviewsFullViewHeader}>
+                  <button
+                    className={styles.reviewsFullViewBackButton}
+                    onClick={() => setShowReviewsFullView(false)}
+                  >
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                      <path d="M15 18L9 12L15 6" stroke="#1B1E28" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  </button>
+                  <h2 className={styles.reviewsFullViewTitle}>리뷰 {reviews.length}개</h2>
+                  <div className={styles.reviewsFullViewSpacer} />
                 </div>
-              )}
-            </div>
-          </div>
-        )}
+                <div className={styles.reviewsFullViewContent}>
+                  {reviews.length > 0 ? (
+                    reviews.map((review) => (
+                      <div key={review.id} className={styles.reviewFullCard}>
+                        <p className={styles.reviewFullText}>
+                          {review.reviewText}
+                        </p>
+                        <div className={styles.reviewFullFooter}>
+                          <span className={styles.reviewFullAuthor}>{review.authorName || review.nickname || '익명'}</span>
+                          <span className={styles.reviewFullDate}>{formatDate(review.createdAt)}</span>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className={styles.noReviewsMessage}>
+                      아직 리뷰가 없어요. 첫 번째 리뷰를 남겨보세요!
+                    </div>
+                  )}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
       </div>
 
       {/* Menu Fullscreen Modal */}
@@ -721,6 +968,6 @@ export default function PlaceDetailPage({
         menus={menus.filter(menu => menu.imagePath)}
         initialIndex={selectedMenuIndex}
       />
-    </div>
+    </motion.div>
   );
 }
