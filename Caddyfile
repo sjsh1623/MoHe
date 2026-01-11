@@ -29,6 +29,10 @@ mohe.today {
 		reverse_proxy mohe-admin-app:80
 	}
 
+	# Rewrite /images/* to /image/* for ImageProcessor compatibility
+	@images_path path_regexp images ^/images/(.*)$
+	rewrite @images_path /image/{re.images.1}
+
 	# Image processing server - proxy to Node.js image processor
 	handle /image/* {
 		reverse_proxy moheimageprocessor-app-1:5200 {

@@ -8,6 +8,7 @@ const BackButtonContext = createContext();
 const ROUTES_WITHOUT_BACK_BUTTON = [
   '/', // Landing page
   '/home', // Home page - main app entry point
+  '/place/', // Place detail pages have their own back button in TopActionsLayer
 ];
 
 // Routes that should always show the back button
@@ -30,7 +31,7 @@ const ROUTES_WITH_BACK_BUTTON = [
   '/my-places',
   '/recent-view',
   '/places',
-  // '/place/' removed - PlaceDetailPage has its own Airbnb-style header with back button
+  // Place detail pages have their own back button in the header
 ];
 
 export function BackButtonProvider({ children }) {
@@ -40,7 +41,10 @@ export function BackButtonProvider({ children }) {
 
   const shouldShowFromRoute = useMemo(() => {
     const currentPath = location.pathname;
-    const shouldHideButton = ROUTES_WITHOUT_BACK_BUTTON.includes(currentPath);
+    // Check if current path matches any route that should hide the back button
+    const shouldHideButton = ROUTES_WITHOUT_BACK_BUTTON.some(route =>
+      route.endsWith('/') ? currentPath.startsWith(route) : currentPath === route
+    );
     const matchesBackRoute = ROUTES_WITH_BACK_BUTTON.some(route =>
       route.endsWith('/') ? currentPath.startsWith(route) : currentPath === route
     );

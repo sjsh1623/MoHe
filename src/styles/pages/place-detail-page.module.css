@@ -1,864 +1,272 @@
-/* Place Detail Page - Airbnb Style */
-.pageContainer {
-    width: 100%;
-    height: 100vh;
-    height: 100dvh;
-    background: #000;
-    position: relative;
-    overflow: hidden;
-    transform-origin: center center;
-    /* Prevent page-level pull-to-refresh and overscroll */
-    overscroll-behavior: none;
-    overscroll-behavior-y: none;
-    touch-action: pan-x pan-y;
-    -webkit-overflow-scrolling: auto;
+/* Place Detail Page - Content Styles */
+/* Note: Header image, action buttons, and bottom sheet container are in bottom-sheet-layers.module.css */
+
+/* Tags */
+.tags {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
 }
 
-/* Header Action Buttons - Airbnb style overlay */
-/* These buttons appear over the header image and transition to a sticky header */
-.headerActions {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 60px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 16px;
-    padding-top: env(safe-area-inset-top, 0);
-    z-index: 100;
-    /* Transition to white background as header fades */
-    background: linear-gradient(
-        to bottom,
-        rgba(0, 0, 0, 0.2) 0%,
-        transparent 100%
-    );
-    transition: background 0.2s ease;
-    pointer-events: none; /* Allow clicks through to image */
+.tag {
+  color: #7D848D;
+  font-size: 13px;
 }
 
-/* Individual header button */
-.headerButton {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.9);
-    border: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-    transition: all 0.2s ease;
-    color: #1B1E28;
-    pointer-events: auto; /* Re-enable clicks on buttons */
-    flex-shrink: 0;
-}
-
-.headerButton:hover {
-    background: rgba(255, 255, 255, 1);
-    transform: scale(1.05);
-}
-
-.headerButton:active {
-    transform: scale(0.95);
-}
-
-.headerButton:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-}
-
-/* Right side button group */
-.headerRightButtons {
-    display: flex;
-    gap: 12px;
-    align-items: center;
-}
-
-/* Bookmarked state */
-.headerButton.bookmarked {
-    color: #FF385C;
-}
-
-.headerButton.bookmarked svg {
-    fill: #FF385C;
-    stroke: #FF385C;
-}
-
-/* Legacy back button - kept for compatibility */
-.backButton {
-    position: absolute;
-    top: 16px;
-    left: 16px;
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.9);
-    border: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    z-index: 20;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
-    transition: all 0.2s ease;
-}
-
-.backButton:hover {
-    background: rgba(255, 255, 255, 1);
-    transform: scale(1.05);
-}
-
-.backButton:active {
-    transform: scale(0.95);
-}
-
-/* Hero Section - Full Screen Image */
-/* Note: Image stays FIXED - no transform/scale on scroll */
-.heroSection {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 100%;
-    overflow: hidden;
-    cursor: grab;
-    user-select: none;
-    /* GPU acceleration */
-    transform: translateZ(0);
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
-}
-
-.heroSection:active {
-    cursor: grabbing;
-}
-
-.imageCarousel {
-    display: flex;
-    width: 100%;
-    height: 100%;
-    will-change: transform;
-}
-
-.heroImage {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    flex-shrink: 0;
-    pointer-events: none;
-    user-select: none;
-    -webkit-user-drag: none;
-    /* Prevent image flickering during transforms */
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
-    transform: translateZ(0);
-}
-
-/* Gradient overlay at bottom of image */
-.heroGradient {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 120px;
-    background: linear-gradient(to top, rgba(0, 0, 0, 0.4), transparent);
-    pointer-events: none;
-}
-
-/* White fade overlay - increases with scroll */
-.whiteFadeOverlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: white;
-    pointer-events: none;
-    opacity: 0;
-    /* GPU acceleration - no transition for smooth scroll updates */
-    will-change: opacity;
-    transform: translateZ(0);
-}
-
-/* Image Indicators */
-.imageIndicators {
-    position: absolute;
-    bottom: 50%;
-    left: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    gap: 6px;
-    z-index: 5;
-    pointer-events: none;
-}
-
-.indicator {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.4);
-    transition: all 0.2s ease;
-}
-
-.indicator.active {
-    background: white;
-    width: 18px;
-    border-radius: 3px;
-}
-
-/* Bottom Sheet - Airbnb Style */
-.bottomSheet {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 57vh; /* Initial collapsed height - JS will override */
-    background: white;
-    border-top-left-radius: 24px;
-    border-top-right-radius: 24px;
-    z-index: 10;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
-    /* GPU acceleration - no transition for smooth scroll updates */
-    will-change: height;
-    transform: translateZ(0);
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
-}
-
-/* Drag Handle - HIDDEN (no longer used) */
-/* Dragging now works from the entire sheet surface */
-.dragHandle {
-    display: none;
-}
-
-.dragHandle:active {
-    cursor: grabbing;
-}
-
-.dragHandleBar {
-    display: none;
-}
-
-/* Legacy - kept for compatibility */
-.sheetHandle {
-    display: none;
-}
-
-.handleBar {
-    display: none;
-}
-
-/* Sheet Content */
-.sheetContent {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    position: relative;
-    /* Prevent any scroll leaking */
-    overscroll-behavior: contain;
-}
-
-/* Sheet Header - now inside scrollContent */
-.sheetHeader {
-    padding: 0 0 16px 0;
-}
-
-.hashtags {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-    margin-bottom: 8px;
-}
-
-.hashtag {
-    color: #7D848D;
-    font-size: 13px;
-    font-family: 'Inter', sans-serif;
-    font-weight: 400;
-    line-height: 18px;
-}
-
+/* Title Row */
 .titleRow {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 12px;
 }
 
 .title {
-    color: #1B1E28;
-    font-size: 26px;
-    font-family: 'Inter', sans-serif;
-    font-weight: 600;
-    line-height: 34px;
-    margin: 0;
-    flex: 1;
+  font-size: 22px;
+  font-weight: 600;
+  color: #1B1E28;
+  margin: 0;
+  flex: 1;
 }
 
-.ratingContainer {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    flex-shrink: 0;
-    padding-top: 4px;
+.rating {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #1B1E28;
+  flex-shrink: 0;
 }
 
-.starIcon {
-    flex-shrink: 0;
+.rating .reviewCount {
+  color: #7D848D;
+  font-weight: 400;
 }
 
-.ratingText {
-    color: #1B1E28;
-    font-size: 15px;
-    font-family: 'Inter', sans-serif;
-    font-weight: 500;
-    line-height: 20px;
-}
-
-.reviewCount {
-    color: #7D848D;
-    font-size: 14px;
-    font-family: 'Inter', sans-serif;
-    font-weight: 400;
-    line-height: 20px;
-}
-
-/* Scrollable Content */
-/* AIRBNB BEHAVIOR: Light, fluid, natural scrolling */
-.scrollContent {
-    flex: 1;
-    overflow-x: hidden;
-    overflow-y: hidden; /* Default to hidden, JS enables when sheet expanded */
-    padding: 20px 28px 100px 28px;
-    /* Native smooth scrolling - light and fluid */
-    -webkit-overflow-scrolling: touch;
-    /* Contain scroll - prevents page-level bounce */
-    overscroll-behavior: contain;
-    overscroll-behavior-y: contain;
-    /* No artificial scroll behavior */
-    scroll-behavior: auto;
-    /* GPU acceleration for smooth rendering */
-    transform: translateZ(0);
-    -webkit-transform: translateZ(0);
-    will-change: scroll-position;
-    /* Touch action for scroll/drag coordination */
-    touch-action: pan-y;
-    /* Prevent text selection during interaction */
-    user-select: none;
-    -webkit-user-select: none;
-}
-
-.scrollContent::-webkit-scrollbar {
-    width: 0;
-    display: none;
-}
-
-/* Location Section */
-.locationSection {
-    margin-bottom: 20px;
-}
-
-.locationRow {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 12px;
-}
-
-.locationInfo {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-
-.locationIcon {
-    width: 16px;
-    height: 16px;
-    flex-shrink: 0;
-}
-
-.locationText {
-    color: #7D848D;
-    font-size: 14px;
-    font-family: 'Inter', sans-serif;
-    font-weight: 400;
-    line-height: 20px;
-}
-
-.transportationRow {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.carIcon,
-.busIcon {
-    width: 16px;
-    height: 16px;
-    flex-shrink: 0;
-}
-
-.transportTime {
-    color: #7D848D;
-    font-size: 13px;
-    font-family: 'Inter', sans-serif;
-    font-weight: 400;
-    line-height: 18px;
+/* Location */
+.location {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #7D848D;
+  font-size: 14px;
+  margin-bottom: 20px;
 }
 
 /* Menu Gallery */
 .menuGallery {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 20px;
-    width: 100%;
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
 }
 
-.menuGalleryItem {
-    position: relative;
-    flex: 1;
-    aspect-ratio: 1;
-    max-width: calc((100% - 32px) / 5);
-    cursor: pointer;
-    border-radius: 12px;
-    overflow: hidden;
-    transition: transform 0.2s ease;
+.menuItem {
+  flex: 1;
+  aspect-ratio: 1;
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: pointer;
 }
 
-.menuGalleryItem:active {
-    transform: scale(0.95);
+.menuItem img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
-.menuGalleryImage {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    pointer-events: none;
+.menuItem:active {
+  opacity: 0.8;
 }
 
-.moreOverlay {
-    position: relative;
+/* Section */
+.section {
+  margin-bottom: 24px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid #F2F4F6;
 }
 
-.overlayContent {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
+.section:last-child {
+  border-bottom: none;
 }
 
-.overlayText {
-    color: white;
-    font-size: 14px;
-    font-family: 'Inter', sans-serif;
-    font-weight: 600;
-    line-height: 18px;
+.sectionTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1B1E28;
+  margin: 0 0 4px;
 }
 
-/* AI Note Section */
-.aiNoteSection {
-    margin-bottom: 24px;
-    padding-bottom: 24px;
-    border-bottom: 1px solid #F2F4F6;
-}
-
-.aiNoteHeader {
-    margin-bottom: 12px;
-}
-
-.aiNoteTitle {
-    color: #1B1E28;
-    font-size: 16px;
-    font-family: 'Inter', sans-serif;
-    font-weight: 600;
-    line-height: 24px;
-    margin: 0 0 4px 0;
-}
-
-.aiNoteSubtitle {
-    color: #7D848D;
-    font-size: 12px;
-    font-family: 'Inter', sans-serif;
-    font-weight: 400;
-    line-height: 18px;
-    margin: 0;
+.sectionSub {
+  font-size: 12px;
+  color: #7D848D;
+  margin: 0 0 12px;
 }
 
 .description {
-    color: #1B1E28;
-    font-size: 15px;
-    font-family: 'Inter', sans-serif;
-    font-weight: 400;
-    line-height: 24px;
+  font-size: 15px;
+  line-height: 1.6;
+  color: #1B1E28;
 }
 
-.aiNotePlaceholder {
-    text-align: center;
-    padding: 16px 0;
+.placeholder {
+  color: #7D848D;
+  text-align: center;
+  padding: 16px 0;
+  margin: 0;
 }
 
-.aiNotePlaceholder p {
-    margin: 0;
-    color: #7D848D;
-    font-size: 14px;
-    line-height: 22px;
+/* Review Header */
+.reviewHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
 }
 
-.aiNotePlaceholderHighlight {
-    color: #3182F6 !important;
-    font-weight: 500;
-    margin-top: 4px !important;
+.reviewCount {
+  color: #7D848D;
+  font-weight: 400;
 }
 
-/* Reviews Section */
-.reviewsSection {
-    margin-bottom: 24px;
+.writeBtn {
+  padding: 8px 14px;
+  background: #F2F4F6;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #4E5968;
+  cursor: pointer;
 }
 
-.reviewsHeader {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 16px;
+.writeBtn:active {
+  background: #E5E8EB;
 }
 
-.reviewsTitleGroup {
-    display: flex;
-    align-items: center;
-    gap: 8px;
+/* Review List - Horizontal Scroll */
+.reviewList {
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 4px;
+  margin: 0 -20px;
+  padding-left: 20px;
+  padding-right: 20px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
-.reviewsTitle {
-    color: #1B1E28;
-    font-size: 16px;
-    font-family: 'Inter', sans-serif;
-    font-weight: 600;
-    line-height: 24px;
-    margin: 0;
+.reviewList::-webkit-scrollbar {
+  display: none;
 }
 
-.reviewsCount {
-    color: #7D848D;
-    font-size: 14px;
-    font-family: 'Inter', sans-serif;
-    font-weight: 400;
-    line-height: 20px;
+.reviewCard {
+  background: #FAFBFC;
+  border-radius: 16px;
+  padding: 16px;
+  min-width: 280px;
+  max-width: 300px;
+  flex-shrink: 0;
+  scroll-snap-align: start;
 }
 
-.writeReviewButton {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 5px;
-    padding: 8px 14px;
-    background: #F2F4F6;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    color: #4E5968;
-    font-size: 13px;
-    font-family: 'Inter', sans-serif;
-    font-weight: 500;
-    line-height: 18px;
-    transition: all 0.2s ease;
+.reviewCard p {
+  font-size: 14px;
+  line-height: 1.6;
+  color: #1B1E28;
+  margin: 0 0 12px;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
-.writeReviewButton:hover {
-    background: #E5E8EB;
+.reviewFooter {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #7D848D;
 }
 
-.writeReviewButton:active {
-    background: #D1D6DB;
-    transform: scale(0.97);
+.reviewFooter span:first-child {
+  font-weight: 500;
+  color: #1B1E28;
 }
 
-/* AI Comments Section - Horizontal Scroll */
-.aiCommentsSection {
-    display: flex;
-    gap: 12px;
-    overflow-x: auto;
-    overflow-y: hidden;
-    padding-bottom: 8px;
-    margin: 0 -28px;
-    padding-left: 28px;
-    padding-right: 28px;
-    -webkit-overflow-scrolling: touch;
-    scroll-snap-type: x mandatory;
+.viewAllBtn {
+  width: 100%;
+  padding: 14px;
+  margin-top: 16px;
+  background: transparent;
+  border: 1px solid #E5E8EB;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #1B1E28;
+  cursor: pointer;
 }
 
-.aiCommentsSection::-webkit-scrollbar {
-    display: none;
+.viewAllBtn:active {
+  background: #F8F9FA;
 }
 
-.aiCommentCard {
-    background: #FAFBFC;
-    border-radius: 16px;
-    padding: 16px;
-    min-width: 280px;
-    max-width: 280px;
-    min-height: 120px;
-    flex-shrink: 0;
-    scroll-snap-align: start;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
+/* Modal */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: #fff;
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
 }
 
-.commentText {
-    color: #1B1E28;
-    font-size: 14px;
-    font-family: 'Inter', sans-serif;
-    font-weight: 400;
-    line-height: 22px;
-    margin: 0;
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    text-overflow: ellipsis;
+.modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid #F2F4F6;
 }
 
-.commentFooter {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: auto;
+.modalHeader button {
+  width: 40px;
+  height: 40px;
+  background: transparent;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
 }
 
-.authorName {
-    color: #1B1E28;
-    font-size: 13px;
-    font-family: 'Inter', sans-serif;
-    font-weight: 500;
-    line-height: 18px;
+.modalHeader h2 {
+  font-size: 17px;
+  font-weight: 600;
+  margin: 0;
 }
 
-.commentDate {
-    color: #7D848D;
-    font-size: 12px;
-    font-family: 'Inter', sans-serif;
-    font-weight: 400;
-    line-height: 18px;
+.modalContent {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 16px;
 }
 
-/* View All Reviews Button */
-.viewAllReviewsButton {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    width: 100%;
-    padding: 14px 0;
-    margin-top: 16px;
-    background: transparent;
-    border: 1px solid #E5E8EB;
-    border-radius: 12px;
-    color: #1B1E28;
-    font-size: 14px;
-    font-family: 'Inter', sans-serif;
-    font-weight: 500;
-    line-height: 20px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.viewAllReviewsButton:hover {
-    background: #F8F9FA;
-    border-color: #D1D6DB;
-}
-
-.viewAllReviewsButton:active {
-    background: #F2F4F6;
-    transform: scale(0.98);
-}
-
-/* Reviews Full View */
-.reviewsFullView {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: white;
-    z-index: 20;
-    display: flex;
-    flex-direction: column;
-}
-
-.reviewsFullViewHeader {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 16px 20px;
-    border-bottom: 1px solid #F2F4F6;
-    flex-shrink: 0;
-}
-
-.reviewsFullViewBackButton {
-    width: 40px;
-    height: 40px;
-    background: transparent;
-    border: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    padding: 0;
-    border-radius: 8px;
-    transition: background 0.2s ease;
-}
-
-.reviewsFullViewBackButton:hover {
-    background: #F2F4F6;
-}
-
-.reviewsFullViewTitle {
-    color: #1B1E28;
-    font-size: 17px;
-    font-family: 'Inter', sans-serif;
-    font-weight: 600;
-    line-height: 24px;
-    margin: 0;
-}
-
-.reviewsFullViewSpacer {
-    width: 40px;
-}
-
-.reviewsFullViewContent {
-    flex: 1;
-    overflow-y: auto;
-    padding: 16px 20px 100px 20px;
-    -webkit-overflow-scrolling: touch;
-}
-
-.reviewsFullViewContent::-webkit-scrollbar {
-    width: 0;
-    display: none;
-}
-
-.reviewFullCard {
-    background: #FAFBFC;
-    border-radius: 16px;
-    padding: 16px;
-    margin-bottom: 12px;
-}
-
-.reviewFullCard:last-child {
-    margin-bottom: 0;
-}
-
-.reviewFullText {
-    color: #1B1E28;
-    font-size: 15px;
-    font-family: 'Inter', sans-serif;
-    font-weight: 400;
-    line-height: 24px;
-    margin: 0 0 12px 0;
-    white-space: pre-wrap;
-}
-
-.reviewFullFooter {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.reviewFullAuthor {
-    color: #1B1E28;
-    font-size: 13px;
-    font-family: 'Inter', sans-serif;
-    font-weight: 500;
-    line-height: 18px;
-}
-
-.reviewFullDate {
-    color: #7D848D;
-    font-size: 12px;
-    font-family: 'Inter', sans-serif;
-    font-weight: 400;
-    line-height: 18px;
-}
-
-.noReviewsMessage {
-    text-align: center;
-    padding: 40px 20px;
-    color: #7D848D;
-    font-size: 15px;
-    line-height: 22px;
-}
-
-/* Error Container */
+/* Error */
 .errorContainer {
-    width: 100%;
-    height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-    background: white;
-}
-
-/* Mobile responsive */
-@media (max-width: 480px) {
-    .title {
-        font-size: 20px;
-        line-height: 28px;
-    }
-
-    .aiCommentCard {
-        min-width: 260px;
-        max-width: 260px;
-    }
-}
-
-/* Touch interactions */
-.pageContainer * {
-    -webkit-tap-highlight-color: transparent;
-}
-
-/* Legacy support - drag handle no longer used */
-.dragHandle {
-    touch-action: none !important;
-}
-
-.sheetHandle {
-    touch-action: none !important;
-}
-
-/* Bottom sheet content area - pan-y for scroll/drag coordination */
-.sheetContent {
-    touch-action: pan-y;
-    overscroll-behavior: contain;
-    overscroll-behavior-y: contain;
-}
-
-/* Hero section allows horizontal swipe for image carousel */
-.heroSection {
-    touch-action: pan-x pan-y;
-}
-
-/* Prevent rubber-banding and page drag on sheet */
-.bottomSheet {
-    overscroll-behavior: none;
-    overscroll-behavior-y: none;
-}
-
-/* Prevent body/html scroll and pull-to-refresh */
-html, body {
-    overscroll-behavior: none;
-    overscroll-behavior-y: none;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
 }

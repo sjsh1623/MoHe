@@ -14,7 +14,8 @@ services:
     networks:
       - mohe-network
       - mohespring_mohe-network
-      - moheimageprocessor_default
+      - proxy_network
+      - mohebatch_mohe-network
     depends_on:
       - mohe-frontend
       - mohe-admin
@@ -52,7 +53,9 @@ networks:
     driver: bridge
   mohespring_mohe-network:
     external: true
-  moheimageprocessor_default:
+  proxy_network:
+    external: true
+  mohebatch_mohe-network:
     external: true
 
 volumes:

@@ -56,7 +56,6 @@
 .content {
     flex: 1;
     padding: 24px 20px;
-    overflow-y: auto;
 }
 
 /* Place Section */

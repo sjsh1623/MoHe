@@ -129,8 +129,9 @@
     border-color: #E5E7EB !important;
 }
 
-/* Touch interactions */
-* {
+/* Touch interactions - apply only to interactive elements */
+.pageContainer button,
+.pageContainer a {
     -webkit-tap-highlight-color: transparent;
     touch-action: manipulation;
 }
