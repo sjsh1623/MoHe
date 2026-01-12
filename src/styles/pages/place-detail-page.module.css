@@ -1,12 +1,187 @@
-/* Place Detail Page - Content Styles */
-/* Note: Header image, action buttons, and bottom sheet container are in bottom-sheet-layers.module.css */
+/* Place Detail Page - Airbnb-like Scroll Behavior */
+/*
+ * ARCHITECTURE:
+ * - Fixed elements (action buttons, sticky header) rendered via React Portal
+ * - Header image with white overlay that fades in on scroll
+ * - Content section as bottom sheet with proper padding
+ * - Single scroll container (AnimatedRoutes parent)
+ */
+
+/* ============================================
+   PAGE CONTAINER - Single scroll surface
+   ============================================ */
+.pageContainer {
+  position: relative;
+  min-height: 100%;
+  background: #fff;
+}
+
+/* ============================================
+   HEADER IMAGE SECTION - Hero image at top
+   Height: 380px for prominent Airbnb-like hero
+   ============================================ */
+.headerImageSection {
+  position: relative;
+  width: 100%;
+  height: 380px;
+  background: #e0e0e0;
+  overflow: hidden;
+}
+
+.headerImage {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+/* WHITE OVERLAY - Covers the image as user scrolls */
+/* Opacity controlled by JS: 0 at top, 1 when fully scrolled */
+.whiteOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: #fff;
+  z-index: 2;
+  pointer-events: none;
+  will-change: opacity;
+}
+
+.imageDots {
+  position: absolute;
+  bottom: 40px; /* Above the content section overlap */
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 6px;
+  z-index: 3;
+  pointer-events: auto;
+  will-change: opacity;
+}
+
+.imageDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  border: none;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.imageDot.activeDot {
+  background: #fff;
+  width: 16px;
+  border-radius: 3px;
+}
+
+/* ============================================
+   FIXED ACTION BUTTONS - Rendered via React Portal
+   True viewport-fixed overlay, escapes Framer Motion transforms
+   z-index: 10000 (highest, above everything)
+   ============================================ */
+.fixedActionsLayer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  padding: 12px 16px;
+  padding-top: calc(env(safe-area-inset-top, 0px) + 12px);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 10000;
+  pointer-events: none;
+}
+
+.actionButton {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #1B1E28;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  pointer-events: auto;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.actionButton:active {
+  transform: scale(0.95);
+}
+
+.actionButton.bookmarked {
+  color: #FF385C;
+}
+
+.actionButtonsRight {
+  display: flex;
+  gap: 10px;
+}
+
+/* ============================================
+   STICKY HEADER - Rendered via React Portal
+   Fades in as scroll progresses (Airbnb-like)
+   z-index: 9999 (below action buttons)
+   ============================================ */
+.stickyHeader {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: calc(56px + env(safe-area-inset-top, 0px));
+  padding-top: env(safe-area-inset-top, 0px);
+  background: #fff;
+  border-bottom: 1px solid #f0f0f0;
+  z-index: 9999;
+  will-change: opacity;
+}
+
+.stickyHeaderContent {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 60px;
+}
+
+.stickyHeaderTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1B1E28;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ============================================
+   CONTENT SECTION - Bottom sheet style
+   Balanced padding for Airbnb-like spacing
+   ============================================ */
+.contentSection {
+  position: relative;
+  z-index: 4; /* Above white overlay */
+  background: #fff;
+  border-radius: 24px 24px 0 0;
+  margin-top: -24px; /* Overlap image slightly for sheet effect */
+  padding: 24px 20px 100px 20px;
+  min-height: 100vh;
+}
 
 /* Tags */
 .tags {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
 }
 
 .tag {
@@ -29,6 +204,7 @@
   color: #1B1E28;
   margin: 0;
   flex: 1;
+  line-height: 1.3;
 }
 
 .rating {
@@ -39,6 +215,7 @@
   font-weight: 500;
   color: #1B1E28;
   flex-shrink: 0;
+  margin-top: 4px;
 }
 
 .rating .reviewCount {
@@ -53,32 +230,104 @@
   gap: 6px;
   color: #7D848D;
   font-size: 14px;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid #F2F4F6;
 }
 
 /* Menu Gallery */
 .menuGallery {
-  display: flex;
-  gap: 8px;
   margin-bottom: 24px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid #F2F4F6;
 }
 
-.menuItem {
-  flex: 1;
-  aspect-ratio: 1;
-  border-radius: 12px;
+.menuGalleryTitle {
+  color: #1B1E28;
+  font-size: 16px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  line-height: 24px;
+  margin: 0 0 12px 0;
+}
+
+.menuGalleryItems {
+  display: flex;
+  gap: 12px;
   overflow: hidden;
+  justify-content: flex-start;
+}
+
+.menuGalleryItem {
+  position: relative;
+  flex: 0 0 auto;
+  width: 72px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
   cursor: pointer;
 }
 
-.menuItem img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+.menuGalleryItem:active {
+  opacity: 0.8;
 }
 
-.menuItem:active {
-  opacity: 0.8;
+.menuGalleryImage {
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 12px;
+  object-fit: cover;
+  pointer-events: none;
+}
+
+.menuName {
+  color: #1B1E28;
+  font-size: 12px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 400;
+  line-height: 16px;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+}
+
+/* Menu "+" Overlay */
+.moreOverlay {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+}
+
+.moreOverlay .menuGalleryImage {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.overlayContent {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+}
+
+.overlayText {
+  color: white;
+  font-size: 16px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  line-height: 20px;
 }
 
 /* Section */
@@ -90,31 +339,32 @@
 
 .section:last-child {
   border-bottom: none;
+  padding-bottom: 0;
 }
 
 .sectionTitle {
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 600;
   color: #1B1E28;
-  margin: 0 0 4px;
+  margin: 0 0 6px;
 }
 
 .sectionSub {
-  font-size: 12px;
+  font-size: 13px;
   color: #7D848D;
-  margin: 0 0 12px;
+  margin: 0 0 16px;
 }
 
 .description {
   font-size: 15px;
-  line-height: 1.6;
+  line-height: 1.7;
   color: #1B1E28;
 }
 
 .placeholder {
   color: #7D848D;
   text-align: center;
-  padding: 16px 0;
+  padding: 20px 0;
   margin: 0;
 }
 
@@ -132,11 +382,11 @@
 }
 
 .writeBtn {
-  padding: 8px 14px;
+  padding: 10px 16px;
   background: #F2F4F6;
   border: none;
   border-radius: 8px;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
   color: #4E5968;
   cursor: pointer;
@@ -153,7 +403,6 @@
   gap: 12px;
   overflow-x: auto;
   overflow-y: hidden;
-  scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
   padding-bottom: 4px;
   margin: 0 -20px;
@@ -174,7 +423,6 @@
   min-width: 280px;
   max-width: 300px;
   flex-shrink: 0;
-  scroll-snap-align: start;
 }
 
 .reviewCard p {
@@ -259,7 +507,13 @@
   flex: 1;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  padding: 16px;
+  padding: 16px 20px;
+}
+
+.modalContent .reviewCard {
+  margin-bottom: 12px;
+  min-width: unset;
+  max-width: unset;
 }
 
 /* Error */

@@ -1,7 +1,10 @@
 /* Bottom Sheet Layers - Airbnb Style Architecture */
+/* PASSIVE OBSERVATION - NO CONTROL */
 
 /* ============================================
    LAYER A: Header Image Layer (fixed, non-scroll)
+   - NEVER moves
+   - Only fades based on sheet progress
    ============================================ */
 .headerImageLayer {
   position: fixed;
@@ -11,15 +14,14 @@
   height: 40vh;
   z-index: 0;
   overflow: hidden;
-  background: #fff; /* White background shows when image fades */
+  background: #fff;
 }
 
 .headerImage {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: opacity 0.1s ease-out;
-  will-change: opacity;
+  /* No transition - instant visual feedback */
 }
 
 .imageDots {
@@ -49,7 +51,10 @@
 }
 
 /* ============================================
-   LAYER B: Top Actions Layer (overlay, no background)
+   LAYER B: Top Actions Layer (overlay)
+   - Always on top
+   - NO background
+   - NEVER animates
    ============================================ */
 .topActionsLayer {
   position: fixed;
@@ -62,7 +67,7 @@
   justify-content: space-between;
   align-items: center;
   z-index: 100;
-  pointer-events: none; /* Allow touches to pass through to layers below */
+  pointer-events: none;
 }
 
 .actionButton {
@@ -76,15 +81,13 @@
   justify-content: center;
   color: #1B1E28;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
-  pointer-events: auto; /* Re-enable touches on buttons */
+  pointer-events: auto;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
-  transition: transform 0.1s ease, background-color 0.1s ease;
 }
 
 .actionButton:active {
   transform: scale(0.95);
-  background: rgba(255, 255, 255, 1);
 }
 
 .actionButton.bookmarked {
@@ -97,7 +100,10 @@
 }
 
 /* ============================================
-   LAYER C: Bottom Sheet Container (the only moving vertical surface)
+   LAYER C: Bottom Sheet (ONLY moving layer)
+   - Moves ONLY on user drag
+   - NO transitions
+   - NO auto-movement
    ============================================ */
 .bottomSheetContainer {
   position: fixed;
@@ -106,7 +112,9 @@
   right: 0;
   bottom: 0;
   z-index: 10;
-  pointer-events: none; /* Pass through when not on sheet */
+  pointer-events: none;
+  /* Prevent pull-to-refresh at container level */
+  overscroll-behavior: none;
 }
 
 .bottomSheet {
@@ -118,21 +126,23 @@
   background: #fff;
   border-radius: 20px 20px 0 0;
   box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.08);
-  pointer-events: auto; /* Re-enable touches on sheet */
-  will-change: transform;
-  touch-action: pan-y; /* Allow vertical touch gestures */
+  pointer-events: auto;
+  /* NO transition - sheet follows finger exactly */
+  /* NO will-change - let browser decide */
+  touch-action: pan-y;
 }
 
 .bottomSheetContent {
-  height: calc(100vh - 20px); /* Account for border radius visual */
+  height: calc(100vh - 20px);
   overflow-y: auto;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
+  /* CRITICAL: Prevent scroll chaining to body */
   overscroll-behavior: contain;
   padding: 24px 20px 100px;
 }
 
-/* Page container - fullscreen with layers */
+/* Page container */
 .pageContainer {
   position: fixed;
   top: 0;
@@ -141,4 +151,7 @@
   bottom: 0;
   background: #fff;
   overflow: hidden;
+  /* Prevent pull-to-refresh on the page */
+  overscroll-behavior: none;
+  touch-action: pan-y;
 }

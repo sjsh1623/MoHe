@@ -1,17 +1,23 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import styles from '@/styles/pages/place-detail-page.module.css';
-import sheetStyles from '@/styles/components/bottom-sheet/bottom-sheet-layers.module.css';
 import PlaceDetailSkeleton from '@/components/ui/skeletons/PlaceDetailSkeleton';
 import ErrorMessage from '@/components/ui/alerts/ErrorMessage';
 import { activityService, placeService } from '@/services/apiService';
 import { authService } from '@/services/authService';
 import { buildImageUrl, buildImageUrlList, normalizePlaceImages } from '@/utils/image';
 import MenuFullscreenModal from '@/components/ui/modals/MenuFullscreenModal';
-import { HeaderImageLayer, TopActionsLayer, BottomSheetContainer } from '@/components/ui/bottom-sheet';
-import { useBottomSheetGesture } from '@/hooks';
+
+// ============================================
+// CONFIGURATION FLAGS
+// ============================================
+const SHOW_HEADER_TITLE = false; // Set to true to show place name in sticky header
+
+// Header height constant - used for scroll calculations
+const HEADER_MAX_HEIGHT = 380;
 
 const formatDate = (dateString) => {
   if (!dateString) return '';
@@ -63,20 +69,51 @@ export default function PlaceDetailPage({ place = null }) {
 
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [isBookmarkLoading, setIsBookmarkLoading] = useState(false);
+  const [maxVisibleMenus, setMaxVisibleMenus] = useState(5);
+  const menuGalleryRef = useRef(null);
+  const [scrollProgress, setScrollProgress] = useState(0);
+  const [portalContainer, setPortalContainer] = useState(null);
+  const pageRef = useRef(null);
 
-  // Bottom sheet gesture coordination
-  const {
-    translateY,
-    sheetProgress,
-    isInteracting,
-    scrollRef,
-    handleTouchStart,
-    handleTouchMove,
-    handleTouchEnd,
-    handleScroll,
-  } = useBottomSheetGesture({
-    peekHeight: 0.6, // Sheet initially covers 60% of viewport
-  });
+  // Initialize portal container for fixed elements
+  // Portals are REQUIRED because Framer Motion's transform breaks position:fixed
+  useEffect(() => {
+    setPortalContainer(document.body);
+
+    // Cleanup portal elements on unmount
+    return () => {
+      const portalElements = document.querySelectorAll('[data-place-detail-portal]');
+      portalElements.forEach(el => el.remove());
+    };
+  }, []);
+
+  // Scroll-driven header - Airbnb style (SINGLE SCROLL SURFACE)
+  useEffect(() => {
+    const findScrollParent = () => {
+      let el = document.querySelector('[data-page-container]');
+      return el;
+    };
+
+    const scrollParent = findScrollParent();
+    if (!scrollParent) return;
+
+    const handleScroll = () => {
+      const scrollTop = scrollParent.scrollTop;
+      // Linear interpolation: 0 at top, 1 when scrolled HEADER_MAX_HEIGHT
+      const progress = Math.min(1, Math.max(0, scrollTop / HEADER_MAX_HEIGHT));
+      setScrollProgress(progress);
+    };
+
+    // Initialize on mount
+    handleScroll();
+
+    scrollParent.addEventListener('scroll', handleScroll, { passive: true });
+    return () => scrollParent.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Derived values from scroll progress
+  const whiteOverlayOpacity = scrollProgress; // 0 -> 1 (white cover fades in)
+  const stickyHeaderOpacity = scrollProgress; // 0 -> 1
 
   const preloadedData = location.state?.preloadedData
     ? normalizePlaceImages(location.state?.preloadedData)
@@ -177,6 +214,22 @@ export default function PlaceDetailPage({ place = null }) {
     checkBookmarkStatus();
   }, [id]);
 
+  // Calculate max visible menus based on container width
+  const calculateMaxMenus = useCallback(() => {
+    if (!menuGalleryRef.current) return;
+    const containerWidth = menuGalleryRef.current.offsetWidth;
+    const minItemWidth = 56;
+    const gap = 8;
+    const maxItems = Math.floor((containerWidth + gap) / (minItemWidth + gap));
+    setMaxVisibleMenus(Math.max(2, Math.min(5, maxItems)));
+  }, []);
+
+  useEffect(() => {
+    calculateMaxMenus();
+    window.addEventListener('resize', calculateMaxMenus);
+    return () => window.removeEventListener('resize', calculateMaxMenus);
+  }, [calculateMaxMenus]);
+
   const handleToggleBookmark = async () => {
     if (!authService.isAuthenticated()) {
       navigate('/login', { state: { from: `/place/${id}` } });
@@ -242,36 +295,112 @@ export default function PlaceDetailPage({ place = null }) {
 
   const images = candidateImages.length ? candidateImages : defaultImages;
 
-  return (
-    <div className={sheetStyles.pageContainer}>
-      {/* LAYER A: Header Image (fixed, fades based on sheetProgress) */}
-      <HeaderImageLayer
-        images={images}
-        currentIndex={currentImageIndex}
-        onDotClick={setCurrentImageIndex}
-        sheetProgress={sheetProgress}
-        alt={placeData.name || placeData.title}
-      />
+  // Fixed elements rendered via portal to escape Framer Motion's transform
+  const fixedElements = portalContainer && createPortal(
+    <>
+      {/* LAYER 1: Fixed Action Buttons - TRUE fixed overlay, NEVER scrolls */}
+      <div className={styles.fixedActionsLayer} data-place-detail-portal>
+        <button
+          className={styles.actionButton}
+          onClick={() => navigate(-1)}
+          aria-label="뒤로 가기"
+        >
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <path d="M15 18L9 12L15 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </button>
+        <div className={styles.actionButtonsRight}>
+          <button className={styles.actionButton} onClick={handleShare} aria-label="공유하기">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+              <path d="M4 12V20C4 20.5304 4.21071 21.0391 4.58579 21.4142C4.96086 21.7893 5.46957 22 6 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              <polyline points="16,6 12,2 8,6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              <line x1="12" y1="2" x2="12" y2="15" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </button>
+          <button
+            className={`${styles.actionButton} ${isBookmarked ? styles.bookmarked : ''}`}
+            onClick={handleToggleBookmark}
+            disabled={isBookmarkLoading}
+            aria-label={isBookmarked ? '북마크 해제' : '북마크'}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill={isBookmarked ? 'currentColor' : 'none'}>
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </button>
+        </div>
+      </div>
 
-      {/* LAYER B: Top Actions (overlay, no background) */}
-      <TopActionsLayer
-        onShareClick={handleShare}
-        onBookmarkClick={handleToggleBookmark}
-        isBookmarked={isBookmarked}
-        isBookmarkLoading={isBookmarkLoading}
-      />
-
-      {/* LAYER C: Bottom Sheet (the only moving vertical surface) */}
-      <BottomSheetContainer
-        translateY={translateY}
-        isInteracting={isInteracting}
-        scrollRef={scrollRef}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
-        onScroll={handleScroll}
+      {/* LAYER 2: Sticky Header - Fixed at top, fades IN as scroll progresses */}
+      {/* Only renders title if SHOW_HEADER_TITLE is true */}
+      <div
+        className={styles.stickyHeader}
+        data-place-detail-portal
+        style={{
+          opacity: stickyHeaderOpacity,
+          pointerEvents: stickyHeaderOpacity > 0.5 ? 'auto' : 'none'
+        }}
       >
-        {/* === CONTENT BELOW IS UNCHANGED === */}
+        <div className={styles.stickyHeaderContent}>
+          {SHOW_HEADER_TITLE && (
+            <span className={styles.stickyHeaderTitle}>{placeData.name || placeData.title}</span>
+          )}
+        </div>
+      </div>
+    </>,
+    portalContainer
+  );
+
+  return (
+    <div className={styles.pageContainer} ref={pageRef}>
+      {/* Portal-rendered fixed elements */}
+      {fixedElements}
+
+      {/* LAYER 3: Header Image Section with White Overlay */}
+      <div className={styles.headerImageSection}>
+        {/* The actual image */}
+        {images.length > 0 ? (
+          <img
+            src={images[currentImageIndex]}
+            alt={placeData.name || placeData.title}
+            className={styles.headerImage}
+            draggable={false}
+            onError={(e) => {
+              console.error('Image failed to load:', images[currentImageIndex]);
+              e.target.style.background = '#ccc';
+            }}
+          />
+        ) : (
+          <div style={{ width: '100%', height: '100%', background: '#ccc', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            No Image
+          </div>
+        )}
+
+        {/* WHITE OVERLAY - Fades in as user scrolls (Airbnb-like cover effect) */}
+        <div
+          className={styles.whiteOverlay}
+          style={{ opacity: whiteOverlayOpacity }}
+        />
+
+        {/* Image carousel dots */}
+        {images.length > 1 && (
+          <div
+            className={styles.imageDots}
+            style={{ opacity: 1 - whiteOverlayOpacity }}
+          >
+            {images.map((_, i) => (
+              <button
+                key={i}
+                className={`${styles.imageDot} ${i === currentImageIndex ? styles.activeDot : ''}`}
+                onClick={() => setCurrentImageIndex(i)}
+                aria-label={`Image ${i + 1}`}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* LAYER 4: Content Section - Bottom sheet style */}
+      <div className={styles.contentSection}>
         {placeData.tags?.length > 0 && (
           <div className={styles.tags}>
             {placeData.tags.map((tag, i) => (
@@ -300,15 +429,61 @@ export default function PlaceDetailPage({ place = null }) {
         </div>
 
         {/* Menu Gallery */}
-        {menus.filter(m => m.imagePath).length > 0 && (
-          <div className={styles.menuGallery}>
-            {menus.filter(m => m.imagePath).slice(0, 5).map((menu, i) => (
-              <div key={menu.id || i} className={styles.menuItem} onClick={() => { setSelectedMenuIndex(i); setIsMenuModalOpen(true); }}>
-                <img src={buildImageUrl(menu.imagePath)} alt={menu.name || `메뉴 ${i + 1}`} draggable={false} />
+        {(() => {
+          const menusWithImages = menus.filter(m => m.imagePath);
+          const totalMenuImages = menusWithImages.length;
+
+          if (totalMenuImages === 0) return null;
+
+          const shouldShowOverlay = totalMenuImages > maxVisibleMenus;
+          const visibleCount = shouldShowOverlay ? maxVisibleMenus - 1 : Math.min(totalMenuImages, maxVisibleMenus);
+          const displayMenus = menusWithImages.slice(0, visibleCount);
+          const remainingCount = totalMenuImages - visibleCount;
+
+          return (
+            <div className={styles.menuGallery} ref={menuGalleryRef}>
+              <h3 className={styles.menuGalleryTitle}>메뉴</h3>
+              <div className={styles.menuGalleryItems}>
+                {displayMenus.map((menu, index) => (
+                  <div
+                    key={menu.id || index}
+                    className={styles.menuGalleryItem}
+                    onClick={() => { setSelectedMenuIndex(index); setIsMenuModalOpen(true); }}
+                  >
+                    <img
+                      src={buildImageUrl(menu.imagePath)}
+                      alt={menu.name || `메뉴 ${index + 1}`}
+                      className={styles.menuGalleryImage}
+                      draggable={false}
+                    />
+                    {menu.name && (
+                      <span className={styles.menuName}>{menu.name}</span>
+                    )}
+                  </div>
+                ))}
+                {shouldShowOverlay && (
+                  <div
+                    className={styles.menuGalleryItem}
+                    onClick={() => { setSelectedMenuIndex(visibleCount); setIsMenuModalOpen(true); }}
+                  >
+                    <div className={styles.moreOverlay}>
+                      <img
+                        src={buildImageUrl(menusWithImages[visibleCount]?.imagePath)}
+                        alt="더보기"
+                        className={styles.menuGalleryImage}
+                        draggable={false}
+                      />
+                      <div className={styles.overlayContent}>
+                        <span className={styles.overlayText}>+{remainingCount}</span>
+                      </div>
+                    </div>
+                    <span className={styles.menuName}>더보기</span>
+                  </div>
+                )}
               </div>
-            ))}
-          </div>
-        )}
+            </div>
+          );
+        })()}
 
         {/* AI Note */}
         <div className={styles.section}>
@@ -354,8 +529,7 @@ export default function PlaceDetailPage({ place = null }) {
             </button>
           )}
         </div>
-        {/* === END UNCHANGED CONTENT === */}
-      </BottomSheetContainer>
+      </div>
 
       {/* Reviews Full View Modal */}
       <AnimatePresence>
