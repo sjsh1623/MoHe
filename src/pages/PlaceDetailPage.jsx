@@ -12,12 +12,15 @@ import { buildImageUrl, buildImageUrlList, normalizePlaceImages } from '@/utils/
 import MenuFullscreenModal from '@/components/ui/modals/MenuFullscreenModal';
 
 // ============================================
-// CONFIGURATION FLAGS
+// CONFIGURATION
 // ============================================
 const SHOW_HEADER_TITLE = false; // Set to true to show place name in sticky header
+const HERO_HEIGHT = 380; // Hero image height in pixels
+const HEADER_HEIGHT = 56; // Sticky header height (excluding safe area)
 
-// Header height constant - used for scroll calculations
-const HEADER_MAX_HEIGHT = 380;
+// Calculate the scroll position where bottom sheet meets header
+// This is the point where the hero image should be fully covered
+const ATTACHMENT_SCROLL = HERO_HEIGHT - HEADER_HEIGHT;
 
 const formatDate = (dateString) => {
   if (!dateString) return '';
@@ -71,49 +74,81 @@ export default function PlaceDetailPage({ place = null }) {
   const [isBookmarkLoading, setIsBookmarkLoading] = useState(false);
   const [maxVisibleMenus, setMaxVisibleMenus] = useState(5);
   const menuGalleryRef = useRef(null);
-  const [scrollProgress, setScrollProgress] = useState(0);
+
+  // Scroll state - pure scroll position, no velocity/acceleration
+  const [scrollTop, setScrollTop] = useState(0);
   const [portalContainer, setPortalContainer] = useState(null);
-  const pageRef = useRef(null);
 
   // Initialize portal container for fixed elements
-  // Portals are REQUIRED because Framer Motion's transform breaks position:fixed
   useEffect(() => {
     setPortalContainer(document.body);
-
-    // Cleanup portal elements on unmount
     return () => {
       const portalElements = document.querySelectorAll('[data-place-detail-portal]');
       portalElements.forEach(el => el.remove());
     };
   }, []);
 
-  // Scroll-driven header - Airbnb style (SINGLE SCROLL SURFACE)
+  // Simple scroll listener - NO custom physics, just read scrollTop
   useEffect(() => {
     const findScrollParent = () => {
-      let el = document.querySelector('[data-page-container]');
-      return el;
+      return document.querySelector('[data-page-container]');
     };
 
     const scrollParent = findScrollParent();
     if (!scrollParent) return;
 
     const handleScroll = () => {
-      const scrollTop = scrollParent.scrollTop;
-      // Linear interpolation: 0 at top, 1 when scrolled HEADER_MAX_HEIGHT
-      const progress = Math.min(1, Math.max(0, scrollTop / HEADER_MAX_HEIGHT));
-      setScrollProgress(progress);
+      // Just read the scroll position - no manipulation
+      setScrollTop(scrollParent.scrollTop);
     };
 
-    // Initialize on mount
     handleScroll();
-
     scrollParent.addEventListener('scroll', handleScroll, { passive: true });
     return () => scrollParent.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Derived values from scroll progress
-  const whiteOverlayOpacity = scrollProgress; // 0 -> 1 (white cover fades in)
-  const stickyHeaderOpacity = scrollProgress; // 0 -> 1
+  // ============================================
+  // SCROLL-DRIVEN VISUAL STATES
+  // Airbnb model: overlay covers image, then header takes over
+  // CRITICAL: Only ONE white surface visible at any time to prevent double-white
+  // ============================================
+
+  // Clamp scroll to hero region for visual calculations
+  const heroScroll = Math.min(Math.max(0, scrollTop), HERO_HEIGHT);
+
+  // Progress from 0 (top) to 1 (hero fully scrolled)
+  const scrollProgress = heroScroll / HERO_HEIGHT;
+
+  // Progress relative to attachment point (when bottom sheet meets header)
+  const attachmentProgress = Math.min(1, heroScroll / ATTACHMENT_SCROLL);
+
+  // HANDOFF POINT: When overlay reaches full opacity and header starts fading in
+  // Overlay stays at 1 to keep image covered - it never fades out
+  // Header fades in on TOP of the overlay (header is z-index 9999)
+  // Higher value = image becomes white later (closer to header)
+  const HANDOFF = 0.9;
+
+  // Overlay: fades in from 0→1, then STAYS at 1 (never reveals image)
+  const overlayOpacity = Math.min(1, attachmentProgress / HANDOFF);
+
+  // Header: starts fading in at handoff point, on top of the overlay
+  // Since header is above overlay in z-index, no double-white issue
+  const headerBgOpacity = attachmentProgress > HANDOFF
+    ? (attachmentProgress - HANDOFF) / (1 - HANDOFF)
+    : 0;
+
+  // Action buttons shadow: fades out as header becomes solid
+  // When header is white, buttons don't need shadow anymore
+  const buttonShadowOpacity = 1 - headerBgOpacity;
+
+  // Hero image opacity: fades as overlay covers it
+  const heroImageOpacity = Math.max(0, 1 - attachmentProgress);
+
+  // Image indicators: fade out as overlay covers the image
+  const indicatorOpacity = Math.max(0, 1 - attachmentProgress * 1.5);
+
+  // After hero is fully scrolled, hero section is hidden
+  const isHeroHidden = scrollProgress >= 1;
 
   const preloadedData = location.state?.preloadedData
     ? normalizePlaceImages(location.state?.preloadedData)
@@ -214,7 +249,6 @@ export default function PlaceDetailPage({ place = null }) {
     checkBookmarkStatus();
   }, [id]);
 
-  // Calculate max visible menus based on container width
   const calculateMaxMenus = useCallback(() => {
     if (!menuGalleryRef.current) return;
     const containerWidth = menuGalleryRef.current.offsetWidth;
@@ -298,19 +332,25 @@ export default function PlaceDetailPage({ place = null }) {
   // Fixed elements rendered via portal to escape Framer Motion's transform
   const fixedElements = portalContainer && createPortal(
     <>
-      {/* LAYER 1: Fixed Action Buttons - TRUE fixed overlay, NEVER scrolls */}
+      {/* LAYER 1: Fixed Action Buttons */}
       <div className={styles.fixedActionsLayer} data-place-detail-portal>
         <button
           className={styles.actionButton}
           onClick={() => navigate(-1)}
           aria-label="뒤로 가기"
+          style={{ boxShadow: `0 2px 8px rgba(0, 0, 0, ${0.12 * buttonShadowOpacity})` }}
         >
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
             <path d="M15 18L9 12L15 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
         </button>
         <div className={styles.actionButtonsRight}>
-          <button className={styles.actionButton} onClick={handleShare} aria-label="공유하기">
+          <button
+            className={styles.actionButton}
+            onClick={handleShare}
+            aria-label="공유하기"
+            style={{ boxShadow: `0 2px 8px rgba(0, 0, 0, ${0.12 * buttonShadowOpacity})` }}
+          >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
               <path d="M4 12V20C4 20.5304 4.21071 21.0391 4.58579 21.4142C4.96086 21.7893 5.46957 22 6 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               <polyline points="16,6 12,2 8,6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -322,6 +362,7 @@ export default function PlaceDetailPage({ place = null }) {
             onClick={handleToggleBookmark}
             disabled={isBookmarkLoading}
             aria-label={isBookmarked ? '북마크 해제' : '북마크'}
+            style={{ boxShadow: `0 2px 8px rgba(0, 0, 0, ${0.12 * buttonShadowOpacity})` }}
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill={isBookmarked ? 'currentColor' : 'none'}>
               <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -330,17 +371,19 @@ export default function PlaceDetailPage({ place = null }) {
         </div>
       </div>
 
-      {/* LAYER 2: Sticky Header - Fixed at top, fades IN as scroll progresses */}
-      {/* Only renders title if SHOW_HEADER_TITLE is true */}
+      {/* LAYER 2: Sticky Header - background transitions from transparent to white */}
       <div
         className={styles.stickyHeader}
         data-place-detail-portal
         style={{
-          opacity: stickyHeaderOpacity,
-          pointerEvents: stickyHeaderOpacity > 0.5 ? 'auto' : 'none'
+          background: `rgba(255, 255, 255, ${headerBgOpacity})`,
+          borderBottomColor: `rgba(240, 240, 240, ${headerBgOpacity})`,
         }}
       >
-        <div className={styles.stickyHeaderContent}>
+        <div
+          className={styles.stickyHeaderContent}
+          style={{ opacity: headerBgOpacity > 0.5 ? 1 : 0 }}
+        >
           {SHOW_HEADER_TITLE && (
             <span className={styles.stickyHeaderTitle}>{placeData.name || placeData.title}</span>
           )}
@@ -351,41 +394,40 @@ export default function PlaceDetailPage({ place = null }) {
   );
 
   return (
-    <div className={styles.pageContainer} ref={pageRef}>
-      {/* Portal-rendered fixed elements */}
+    <div className={styles.pageContainer}>
       {fixedElements}
 
-      {/* LAYER 3: Header Image Section with White Overlay */}
-      <div className={styles.headerImageSection}>
-        {/* The actual image */}
-        {images.length > 0 ? (
-          <img
-            src={images[currentImageIndex]}
-            alt={placeData.name || placeData.title}
-            className={styles.headerImage}
-            draggable={false}
-            onError={(e) => {
-              console.error('Image failed to load:', images[currentImageIndex]);
-              e.target.style.background = '#ccc';
-            }}
-          />
-        ) : (
-          <div style={{ width: '100%', height: '100%', background: '#ccc', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            No Image
-          </div>
-        )}
-
-        {/* WHITE OVERLAY - Fades in as user scrolls (Airbnb-like cover effect) */}
-        <div
-          className={styles.whiteOverlay}
-          style={{ opacity: whiteOverlayOpacity }}
+      {/* HERO SECTION - Fixed position, content scrolls over it */}
+      <div
+        className={styles.heroSection}
+        style={{
+          opacity: isHeroHidden ? 0 : 1,
+          visibility: isHeroHidden ? 'hidden' : 'visible',
+        }}
+      >
+        {/* Hero image */}
+        <img
+          src={images[currentImageIndex]}
+          alt={placeData.name || placeData.title}
+          className={styles.heroImage}
+          style={{ opacity: heroImageOpacity }}
+          draggable={false}
+          onError={(e) => {
+            e.target.style.background = '#ccc';
+          }}
         />
 
-        {/* Image carousel dots */}
+        {/* White overlay - fades in as you scroll */}
+        <div
+          className={styles.whiteOverlay}
+          style={{ opacity: overlayOpacity }}
+        />
+
+        {/* Image indicators */}
         {images.length > 1 && (
           <div
             className={styles.imageDots}
-            style={{ opacity: 1 - whiteOverlayOpacity }}
+            style={{ opacity: indicatorOpacity }}
           >
             {images.map((_, i) => (
               <button
@@ -399,7 +441,7 @@ export default function PlaceDetailPage({ place = null }) {
         )}
       </div>
 
-      {/* LAYER 4: Content Section - Bottom sheet style */}
+      {/* CONTENT SECTION - Scrolls naturally over the hero */}
       <div className={styles.contentSection}>
         {placeData.tags?.length > 0 && (
           <div className={styles.tags}>
