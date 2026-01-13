@@ -1,64 +1,97 @@
-/* Floating action button */
+/* Airbnb-style floating search button */
 .floatingButton {
-  background: transparent;
   position: fixed;
-  bottom: calc(var(--app-shell-safe-bottom, 0px) + 1.75rem);
-  right: calc(var(--app-shell-offset, 0px) + var(--app-shell-safe-right, 0px) + var(--app-shell-horizontal-gutter, 16px));
-  width: 60px;
-  height: 60px;
-  border: none;
-  cursor: pointer;
-  padding: 0;
+  bottom: calc(var(--app-shell-safe-bottom, 0px) + 1.5rem);
+  left: 50%;
+  transform: translateX(-50%);
   display: flex;
   align-items: center;
-  justify-content: center;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  gap: 12px;
+  background: white;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 32px;
+  padding: 8px 20px 8px 8px;
+  cursor: pointer;
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.06),
+    0 8px 24px rgba(0, 0, 0, 0.12);
+  transition: all 0.2s ease;
   z-index: 10000;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 .floatingButton:hover {
-  transform: scale(1.05);
-  box-shadow: 0 8px 24px rgba(91, 95, 239, 0.3);
+  box-shadow:
+    0 4px 8px rgba(0, 0, 0, 0.08),
+    0 12px 32px rgba(0, 0, 0, 0.16);
+  transform: translateX(-50%) scale(1.02);
 }
 
 .floatingButton:active {
-  transform: scale(0.95);
+  transform: translateX(-50%) scale(0.98);
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.04),
+    0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
-.background {
-  position: absolute;
-  width: 60px;
-  height: 60px;
-  background: #5B5FEF;
-  border-radius: 30px;
-  box-shadow: 0 4px 16px rgba(91, 95, 239, 0.2);
-}
-
-.content {
-  position: relative;
+.searchIcon {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1;
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, #FF385C 0%, #E31C5F 100%);
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.textContent {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+}
+
+.primaryText {
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: #222222;
+  line-height: 1.2;
+}
+
+.secondaryText {
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  color: #717171;
+  line-height: 1.2;
 }
 
 /* Mobile responsive */
 @media (max-width: 480px) {
   .floatingButton {
-    width: 56px;
-    height: 56px;
     bottom: calc(var(--app-shell-safe-bottom, 0px) + 1.25rem);
+    padding: 6px 16px 6px 6px;
+    gap: 10px;
   }
-  
-  .background {
-    width: 56px;
-    height: 56px;
-    border-radius: 28px;
-  }
-}
 
-/* Touch interactions */
-.floatingButton {
-  -webkit-tap-highlight-color: transparent;
-  touch-action: manipulation;
+  .searchIcon {
+    width: 36px;
+    height: 36px;
+  }
+
+  .searchIcon svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  .primaryText {
+    font-size: 13px;
+  }
+
+  .secondaryText {
+    font-size: 11px;
+  }
 }

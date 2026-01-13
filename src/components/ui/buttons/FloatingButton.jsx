@@ -1,28 +1,29 @@
 import React from 'react';
 import styles from '@/styles/components/buttons/floating-button.module.css';
 
-export default function FloatingButton({ 
+export default function FloatingButton({
   onClick,
   className = '',
   children,
-  ...props 
+  ...props
 }) {
   return (
-    <button 
+    <button
       className={`${styles.floatingButton} ${className}`}
       onClick={onClick}
       {...props}
     >
-      <div className={styles.background}></div>
-      <div className={styles.content}>
-        {children}
-        <svg width="30" height="31" viewBox="0 0 30 31" fill="none">
-          <path d="M1.33334 15C1.33334 21.6274 6.70593 27 13.3333 27C19.9608 27 25.3333 21.6274 25.3333 15C25.3333 8.37258 19.9608 3 13.3333 3C11.9789 3 10.6769 3.2244 9.46238 3.63805" stroke="#E0E0E0" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-          <path d="M13.7385 15.6329L13.075 17.6547C12.9922 17.9071 12.6352 17.9071 12.5524 17.6548L11.889 15.6329C11.8072 15.3835 11.6117 15.188 11.3623 15.1062L9.34045 14.4428C9.0881 14.36 9.0881 14.003 9.34045 13.9202L11.3623 13.2567C11.6117 13.1749 11.8072 12.9794 11.889 12.7301L12.5524 10.7082C12.6352 10.4558 12.9922 10.4558 13.075 10.7082L13.7385 12.7301C13.8203 12.9794 14.0158 13.1749 14.2651 13.2567L16.287 13.9202C16.5394 14.003 16.5394 14.36 16.287 14.4428L14.2651 15.1062C14.0158 15.188 13.8203 15.3835 13.7385 15.6329Z" fill="#E0E0E0"/>
-          <path d="M5.52767 9.721L4.86424 11.7429C4.78144 11.9952 4.42446 11.9952 4.34165 11.7429L3.67822 9.721C3.59641 9.47167 3.40088 9.27614 3.15155 9.19433L1.12967 8.5309C0.877315 8.44809 0.877314 8.09111 1.12967 8.00831L3.15155 7.34488C3.40088 7.26307 3.59641 7.06753 3.67822 6.81821L4.34165 4.79632C4.42446 4.54397 4.78144 4.54397 4.86424 4.79632L5.52767 6.81821C5.60948 7.06753 5.80502 7.26307 6.05434 7.34488L8.07623 8.00831C8.32858 8.09111 8.32858 8.44809 8.07623 8.5309L6.05434 9.19433C5.80502 9.27614 5.60948 9.47167 5.52767 9.721Z" fill="#E0E0E0"/>
-          <path d="M28.3333 30L26.4685 28.1351L24.6036 26.2703L22.3333 24" stroke="#E0E0E0" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+      <div className={styles.searchIcon}>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+          <circle cx="11" cy="11" r="7" stroke="white" strokeWidth="2"/>
+          <path d="M16 16L20 20" stroke="white" strokeWidth="2" strokeLinecap="round"/>
         </svg>
       </div>
+      <div className={styles.textContent}>
+        <span className={styles.primaryText}>어디로 가볼까요?</span>
+        <span className={styles.secondaryText}>장소 검색</span>
+      </div>
+      {children}
     </button>
   );
 }

@@ -644,12 +644,16 @@ export default function PlaceDetailPage({ place = null }) {
         )}
       </AnimatePresence>
 
-      <MenuFullscreenModal
-        isOpen={isMenuModalOpen}
-        onClose={() => setIsMenuModalOpen(false)}
-        menus={menus.filter(m => m.imagePath)}
-        initialIndex={selectedMenuIndex}
-      />
+      {/* Menu Modal - rendered via portal to escape stacking context */}
+      {portalContainer && createPortal(
+        <MenuFullscreenModal
+          isOpen={isMenuModalOpen}
+          onClose={() => setIsMenuModalOpen(false)}
+          menus={menus.filter(m => m.imagePath)}
+          initialIndex={selectedMenuIndex}
+        />,
+        portalContainer
+      )}
     </div>
   );
 }

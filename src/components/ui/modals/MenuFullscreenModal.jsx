@@ -18,13 +18,36 @@ export default function MenuFullscreenModal({
   }, [initialIndex, isOpen]);
 
   useEffect(() => {
+    const restoreScroll = () => {
+      document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
+
+      // Restore page containers to their default scroll behavior
+      const pageContainers = document.querySelectorAll('[data-page-container]');
+      pageContainers.forEach(container => {
+        container.style.overflow = 'auto';
+        container.style.overflowY = 'auto';
+        container.style.touchAction = '';
+      });
+    };
+
     if (isOpen) {
+      // Block all scrolling
       document.body.style.overflow = 'hidden';
+      document.documentElement.style.overflow = 'hidden';
+
+      // Also block scroll on page containers
+      const pageContainers = document.querySelectorAll('[data-page-container]');
+      pageContainers.forEach(container => {
+        container.style.overflow = 'hidden';
+        container.style.touchAction = 'none';
+      });
     } else {
-      document.body.style.overflow = '';
+      restoreScroll();
     }
+
     return () => {
-      document.body.style.overflow = '';
+      restoreScroll();
     };
   }, [isOpen]);
 
