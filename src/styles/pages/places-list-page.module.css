@@ -14,12 +14,21 @@
 .header {
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: space-between;
     padding: 0;
     position: relative;
     top: auto;
     background: transparent;
     margin-bottom: 20px;
+}
+
+.backButton {
+    flex-shrink: 0;
+}
+
+.headerSpacer {
+    width: 26px;
+    flex-shrink: 0;
 }
 
 .pageTitle {
@@ -117,8 +126,8 @@
     }
 
     .placesGrid {
-        grid-template-columns: 1fr;
-        gap: 12px;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
     }
 }
 

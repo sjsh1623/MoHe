@@ -3,9 +3,10 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import styles from '@/styles/pages/profile-settings-page.module.css';
 import { useAuthGuard } from '@/hooks/useAuthGuard';
+import { useAuth } from '@/contexts';
 import { userService, bookmarkService } from '@/services/apiService';
-import { authService } from '@/services/authService';
 import { buildImageUrl } from '@/utils/image';
+import BackButton from '@/components/ui/buttons/BackButton';
 
 // Icons
 const BookmarkIcon = () => (
@@ -87,6 +88,7 @@ export default function ProfileSettingsPage() {
   const location = useLocation();
   const { t } = useTranslation();
   const { isGuest } = useAuthGuard(true);
+  const { logout } = useAuth();
   const [profile, setProfile] = useState(null);
   const [bookmarkCount, setBookmarkCount] = useState(0);
 
@@ -116,11 +118,10 @@ export default function ProfileSettingsPage() {
 
   const handleLogout = async () => {
     try {
-      await authService.logout();
+      await logout();
       navigate('/', { replace: true });
     } catch (error) {
       console.error('Logout failed:', error);
-      authService.clearAuthData();
       navigate('/', { replace: true });
     }
   };
@@ -131,6 +132,11 @@ export default function ProfileSettingsPage() {
 
   return (
     <div className={styles.container}>
+      {/* Header with Back Button */}
+      <header className={styles.header}>
+        <BackButton />
+      </header>
+
       {/* Profile Header */}
       <div className={styles.profileHeader}>
         {profile?.profileImage ? (

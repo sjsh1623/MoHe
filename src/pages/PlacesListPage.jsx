@@ -8,6 +8,7 @@ import GridPlaceCard from '@/components/ui/cards/GridPlaceCard';
 import PlacesListSkeleton from '@/components/ui/skeletons/PlacesListSkeleton';
 import ErrorMessage from '@/components/ui/alerts/ErrorMessage';
 import PrimaryButton from '@/components/ui/buttons/PrimaryButton';
+import BackButton from '@/components/ui/buttons/BackButton';
 import { placeService, bookmarkService } from '@/services/apiService';
 import { authService } from '@/services/authService';
 import { useGeolocation } from '@/hooks/useGeolocation';
@@ -140,7 +141,9 @@ export default function PlacesListPage() {
     <div className={styles.pageContainer}>
       {/* Header - Always shown immediately */}
       <header className={styles.header}>
+        <BackButton className={styles.backButton} />
         <h1 className={styles.pageTitle}>{t('places.list.title')}</h1>
+        <div className={styles.headerSpacer} />
       </header>
 
       {/* Main content */}

@@ -11,8 +11,8 @@ import TextLink from '@/components/ui/links/TextLink';
 import {AuthContainer, AuthTitle} from '@/components/auth';
 import {useAuthNavigation} from '@/hooks/useAuthNavigation';
 import { useBackButton } from '@/contexts/BackButtonContext';
+import { useAuth } from '@/contexts';
 import { PROTECTED_ROUTES } from '@/hooks/useAuthGuard';
-import { authService } from '@/services/authService';
 
 export default function LoginPage() {
     const { t } = useTranslation();
@@ -20,6 +20,7 @@ export default function LoginPage() {
     const navigate = useNavigate();
     const location = useLocation();
     const { setBackClickHandler, clearBackClickHandler } = useBackButton();
+    const { isAuthenticated, isLoading: authLoading, login } = useAuth();
     const [formData, setFormData] = useState({
         email: '',
         password: ''
@@ -29,30 +30,22 @@ export default function LoginPage() {
     const [error, setError] = useState('');
     const handlerSetRef = useRef(false);
 
-    // Check if user is already logged in and redirect to home
+    // Redirect if already authenticated
     useEffect(() => {
-        const checkExistingSession = async () => {
-            const isLoggedIn = authService.isAuthenticated();
-            if (isLoggedIn) {
-                console.log('User already logged in, attempting session restore');
-                const restored = await authService.tryRestoreSession();
-                if (restored) {
-                    console.log('Session restored, redirecting to /home');
-                    navigate('/home', { replace: true });
-                    return;
-                }
-            }
-        };
+        if (!authLoading && isAuthenticated) {
+            console.log('User already authenticated, redirecting to /home');
+            navigate('/home', { replace: true });
+        }
+    }, [isAuthenticated, authLoading, navigate]);
 
-        checkExistingSession();
-
-        // Load saved email
+    // Load saved email on mount
+    useEffect(() => {
         const savedEmail = localStorage.getItem('rememberedEmail');
         if (savedEmail) {
             setFormData(prev => ({ ...prev, email: savedEmail }));
             setRememberMe(true);
         }
-    }, [navigate]);
+    }, []);
 
     const handleInputChange = (field) => (e) => {
         setFormData(prev => ({
@@ -71,7 +64,7 @@ export default function LoginPage() {
 
         try {
             console.log('Attempting login with:', { email: formData.email.trim(), password: '***' });
-            const result = await authService.login(formData.email.trim(), formData.password);
+            const result = await login(formData.email.trim(), formData.password);
             console.log('Login successful:', result);
 
             // Save or remove email based on rememberMe checkbox

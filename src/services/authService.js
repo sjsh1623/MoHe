@@ -54,6 +54,66 @@ class AuthService {
     this.userKey = 'currentUser';
     this.isRefreshing = false; // Prevent multiple refresh attempts
     this.refreshPromise = null; // Store ongoing refresh promise
+    this.TOKEN_REFRESH_THRESHOLD = 5 * 60 * 1000; // Refresh 5 minutes before expiry
+  }
+
+  /**
+   * Decode JWT token without verification (client-side only)
+   */
+  decodeToken(token) {
+    try {
+      const parts = token.split('.');
+      if (parts.length !== 3) return null;
+
+      const payload = parts[1];
+      const decoded = atob(payload.replace(/-/g, '+').replace(/_/g, '/'));
+      return JSON.parse(decoded);
+    } catch (error) {
+      console.error('[AuthService] Token decode error:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Check if token is expired
+   */
+  isTokenExpired(token) {
+    if (!token) return true;
+
+    const decoded = this.decodeToken(token);
+    if (!decoded || !decoded.exp) return true;
+
+    const expiryTime = decoded.exp * 1000; // Convert to milliseconds
+    const now = Date.now();
+
+    return now >= expiryTime;
+  }
+
+  /**
+   * Check if token will expire soon (within threshold)
+   */
+  isTokenExpiringSoon(token) {
+    if (!token) return true;
+
+    const decoded = this.decodeToken(token);
+    if (!decoded || !decoded.exp) return true;
+
+    const expiryTime = decoded.exp * 1000;
+    const now = Date.now();
+
+    return (expiryTime - now) <= this.TOKEN_REFRESH_THRESHOLD;
+  }
+
+  /**
+   * Get token expiry time in milliseconds
+   */
+  getTokenExpiryTime(token) {
+    if (!token) return null;
+
+    const decoded = this.decodeToken(token);
+    if (!decoded || !decoded.exp) return null;
+
+    return decoded.exp * 1000;
   }
 
   /**
@@ -103,12 +163,70 @@ class AuthService {
   }
 
   /**
-   * Check if user is authenticated
+   * Check if user is authenticated (token exists and not expired)
    */
   isAuthenticated() {
     const token = this.getToken();
     const user = this.getCurrentUser();
-    return !!(token && user);
+
+    if (!token || !user) {
+      return false;
+    }
+
+    // Check if token is expired
+    if (this.isTokenExpired(token)) {
+      console.log('[AuthService] Token is expired');
+      return false;
+    }
+
+    return true;
+  }
+
+  /**
+   * Ensure we have a valid token, refreshing if necessary
+   * Returns true if we have a valid token, false otherwise
+   */
+  async ensureValidToken() {
+    const token = this.getToken();
+    const refreshToken = this.getRefreshToken();
+
+    // No tokens at all
+    if (!token && !refreshToken) {
+      console.log('[AuthService] No tokens available');
+      return false;
+    }
+
+    // Token exists and is valid
+    if (token && !this.isTokenExpired(token)) {
+      // Proactively refresh if expiring soon
+      if (this.isTokenExpiringSoon(token) && refreshToken) {
+        console.log('[AuthService] Token expiring soon, refreshing proactively');
+        try {
+          await this.refreshAccessToken();
+        } catch (error) {
+          console.warn('[AuthService] Proactive refresh failed:', error.message);
+          // Continue with existing token if refresh fails but token is still valid
+        }
+      }
+      return true;
+    }
+
+    // Token expired but we have refresh token
+    if (refreshToken) {
+      console.log('[AuthService] Token expired, attempting refresh');
+      try {
+        await this.refreshAccessToken();
+        return true;
+      } catch (error) {
+        console.error('[AuthService] Token refresh failed:', error.message);
+        this.clearAuthData();
+        return false;
+      }
+    }
+
+    // No valid authentication
+    this.clearAuthData();
+    return false;
   }
 
   /**

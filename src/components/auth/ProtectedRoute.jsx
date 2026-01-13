@@ -1,36 +1,49 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
-import { authService } from '@/services/authService';
+import { useAuth } from '@/contexts';
 
 /**
  * ProtectedRoute component that requires authentication
  * Redirects to login if user is not authenticated
- *
- * SIMPLIFIED VERSION: Uses synchronous check to prevent infinite loops
+ * Uses AuthContext for proper token validation and refresh
  */
 export default function ProtectedRoute({ children }) {
   const location = useLocation();
+  const { isAuthenticated, isLoading, user } = useAuth();
 
-  // Synchronous authentication check - runs only once during render
-  const isAuthenticated = useMemo(() => {
-    const user = authService.getCurrentUser();
-    const token = authService.getToken();
+  // Show loading state while checking authentication
+  if (isLoading) {
+    return (
+      <div style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        minHeight: '100vh',
+        background: '#fff'
+      }}>
+        <div style={{
+          width: 40,
+          height: 40,
+          border: '3px solid #f3f3f3',
+          borderTop: '3px solid #3182F6',
+          borderRadius: '50%',
+          animation: 'spin 1s linear infinite'
+        }} />
+        <style>{`
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+        `}</style>
+      </div>
+    );
+  }
 
-    // Check if user exists and is not a guest
-    if (!user || !token) {
-      return false;
-    }
+  // Check if user is a guest
+  const isGuest = user?.isGuest === true || user?.id === 'guest';
 
-    // Check if user is a guest user
-    if (user.isGuest === true || user.id === 'guest') {
-      return false;
-    }
-
-    return true;
-  }, []);
-
-  // Not authenticated - redirect to login
-  if (!isAuthenticated) {
+  // Not authenticated or is guest - redirect to login
+  if (!isAuthenticated || isGuest) {
     return (
       <Navigate
         to="/login"

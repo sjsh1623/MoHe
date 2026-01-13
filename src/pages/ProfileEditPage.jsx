@@ -3,6 +3,40 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import styles from '@/styles/pages/profile-edit-page.module.css';
 import { userService } from '@/services/apiService';
+import { buildImageUrl } from '@/utils/image';
+import BackButton from '@/components/ui/buttons/BackButton';
+
+// Gmail-style default avatar with first letter
+const DefaultAvatar = ({ name, size = 96 }) => {
+  const firstChar = (name || '?').charAt(0).toUpperCase();
+
+  // Generate consistent color based on name
+  const colors = [
+    '#4285F4', '#EA4335', '#FBBC05', '#34A853', // Google colors
+    '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4',
+    '#FFEAA7', '#DDA0DD', '#98D8C8', '#F7DC6F'
+  ];
+  const colorIndex = name ? name.charCodeAt(0) % colors.length : 0;
+  const bgColor = colors[colorIndex];
+
+  return (
+    <div style={{
+      width: size,
+      height: size,
+      borderRadius: '50%',
+      backgroundColor: bgColor,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      fontSize: size * 0.45,
+      fontWeight: 600,
+      color: '#fff',
+      flexShrink: 0
+    }}>
+      {firstChar}
+    </div>
+  );
+};
 
 export default function ProfileEditPage() {
   const navigate = useNavigate();
@@ -135,8 +169,11 @@ export default function ProfileEditPage() {
   return (
     <div className={styles.iphoneProMax}>
       <div className={styles.div}>
-        {/* Header - BackButton now handled globally */}
+        {/* Header */}
         <header className={styles.header}>
+          <BackButton />
+          <h1 className={styles.pageTitle}>{t('profile.edit.title')}</h1>
+          <div className={styles.headerSpacer} />
         </header>
 
         {/* Profile Image Section */}
@@ -146,15 +183,19 @@ export default function ProfileEditPage() {
             onClick={handleImageClick}
             style={{ cursor: 'pointer', position: 'relative' }}
           >
-            <img
-              src={previewUrl || profileImage || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop&crop=face"}
-              alt={t('profile.edit.profileImageAlt')}
-              className={styles.profileImage}
-            />
+            {previewUrl || profileImage ? (
+              <img
+                src={previewUrl || buildImageUrl(profileImage)}
+                alt={t('profile.edit.profileImageAlt')}
+                className={styles.profileImage}
+              />
+            ) : (
+              <DefaultAvatar name={nickname || t('profile.defaultNickname')} size={96} />
+            )}
             <div className={styles.imageOverlay}>
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M23 19C23 19.5304 22.7893 20.0391 22.4142 20.4142C22.0391 20.7893 21.5304 21 21 21H3C2.46957 21 1.96086 20.7893 1.58579 20.4142C1.21071 20.0391 1 19.5304 1 19V8C1 7.46957 1.21071 6.96086 1.58579 6.58579C1.96086 6.21071 2.46957 6 3 6H7L9 3H15L17 6H21C21.5304 6 22.0391 6.21071 22.4142 6.58579C22.7893 6.96086 23 7.46957 23 8V19Z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                <path d="M12 17C14.2091 17 16 15.2091 16 13C16 10.7909 14.2091 9 12 9C9.79086 9 8 10.7909 8 13C8 15.2091 9.79086 17 12 17Z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M23 19C23 19.5304 22.7893 20.0391 22.4142 20.4142C22.0391 20.7893 21.5304 21 21 21H3C2.46957 21 1.96086 20.7893 1.58579 20.4142C1.21071 20.0391 1 19.5304 1 19V8C1 7.46957 1.21071 6.96086 1.58579 6.58579C1.96086 6.21071 2.46957 6 3 6H7L9 3H15L17 6H21C21.5304 6 22.0391 6.21071 22.4142 6.58579C22.7893 6.96086 23 7.46957 23 8V19Z" stroke="#222222" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M12 17C14.2091 17 16 15.2091 16 13C16 10.7909 14.2091 9 12 9C9.79086 9 8 10.7909 8 13C8 15.2091 9.79086 17 12 17Z" stroke="#222222" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             </div>
             <input

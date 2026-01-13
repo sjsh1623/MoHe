@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import BookmarkPlaceCard from '@/components/ui/cards/BookmarkPlaceCard';
 import BookmarksSkeleton from '@/components/ui/skeletons/BookmarksSkeleton';
-import ErrorMessage from '@/components/ui/alerts/ErrorMessage';
+import BackButton from '@/components/ui/buttons/BackButton';
 import { bookmarkService } from '@/services/apiService';
 import { authService } from '@/services/authService';
 import styles from '@/styles/pages/bookmarks-page.module.css';
 import useAuthGuard from '@/hooks/useAuthGuard';
 
 function BookmarksPage() {
+  const navigate = useNavigate();
   const { t } = useTranslation();
   useAuthGuard(true); // Protect this page
   const [bookmarkedPlaces, setBookmarkedPlaces] = useState([]);
@@ -50,21 +52,35 @@ function BookmarksPage() {
   return (
     <>
       <header className={styles.header}>
+        <BackButton />
         <h1 className={styles.title}>{t('bookmarks.title')}</h1>
       </header>
 
       <main className={styles.main}>
-        {error && (
-          <ErrorMessage message={error} />
-        )}
-
         {isLoading ? (
           <BookmarksSkeleton />
+        ) : error ? (
+          <div className={styles.centerMessage}>
+            <p className={styles.errorText}>데이터를 불러오는중에 오류가 발생했습니다.</p>
+          </div>
         ) : bookmarkedPlaces.length === 0 ? (
           <div className={styles.emptyState}>
-            {t('bookmarks.emptyState').split('\n').map((line, index) => (
-              <p key={index}>{line}</p>
-            ))}
+            <div className={styles.emptyIconWrapper}>
+              <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M19 21L12 16L5 21V5C5 4.46957 5.21071 3.96086 5.58579 3.58579C5.96086 3.21071 6.46957 3 7 3H17C17.5304 3 18.0391 3.21071 18.4142 3.58579C18.7893 3.96086 19 4.46957 19 5V21Z" stroke="#DDDDDD" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </div>
+            <h2 className={styles.emptyTitle}>저장한 장소가 없습니다</h2>
+            <p className={styles.emptyDescription}>
+              마음에 드는 장소를 발견하면<br />
+              하트를 눌러 저장해보세요
+            </p>
+            <button
+              className={styles.exploreButton}
+              onClick={() => navigate('/places')}
+            >
+              장소 둘러보기
+            </button>
           </div>
         ) : (
           <div className={styles.placesList}>

@@ -4,7 +4,7 @@ import '@/i18n'; // i18n 초기화
 import AnimatedRoutes from '@/components/ui/transitions/AnimatedRoutes.jsx';
 import React from 'react';
 import {BrowserRouter} from 'react-router-dom';
-import {UserPreferencesProvider} from '@/contexts';
+import {AuthProvider, UserPreferencesProvider} from '@/contexts';
 import { BackButtonProvider } from '@/contexts/BackButtonContext';
 import GlobalBackButtonWrapper from '@/components/ui/layout/GlobalBackButtonWrapper';
 import GlobalFloatingButton from '@/components/ui/layout/GlobalFloatingButton';
@@ -23,18 +23,20 @@ initializeWebViewOptimizations();
 createRoot(document.getElementById('root')).render(
     <ErrorBoundary>
         <BrowserRouter>
-            <BackButtonProvider>
-                <UserPreferencesProvider>
-                    <AppShell>
-                        <AnimatedRoutes />
-                    </AppShell>
+            <AuthProvider>
+                <BackButtonProvider>
+                    <UserPreferencesProvider>
+                        <AppShell>
+                            <AnimatedRoutes />
+                        </AppShell>
 
-                    {/* Global UI elements anchored via shell offsets */}
-                    <GlobalBackButtonWrapper />
-                    <GlobalFloatingButton />
-                    <GlobalMessageInput />
-                </UserPreferencesProvider>
-            </BackButtonProvider>
+                        {/* Global UI elements anchored via shell offsets */}
+                        <GlobalBackButtonWrapper />
+                        <GlobalFloatingButton />
+                        <GlobalMessageInput />
+                    </UserPreferencesProvider>
+                </BackButtonProvider>
+            </AuthProvider>
         </BrowserRouter>
     </ErrorBoundary>
 )

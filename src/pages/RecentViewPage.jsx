@@ -6,7 +6,7 @@ import styles from '@/styles/pages/recent-view-page.module.css';
 import { Container } from '@/components/ui/layout';
 import GridPlaceCard from '@/components/ui/cards/GridPlaceCard';
 import PlacesListSkeleton from '@/components/ui/skeletons/PlacesListSkeleton';
-import ErrorMessage from '@/components/ui/alerts/ErrorMessage';
+import BackButton from '@/components/ui/buttons/BackButton';
 import { activityService, bookmarkService } from '@/services/apiService';
 import { authService } from '@/services/authService';
 import { buildImageUrl } from '@/utils/image';
@@ -104,25 +104,41 @@ export default function RecentViewPage() {
     <div className={styles.pageContainer}>
       {/* Header */}
       <header className={styles.header}>
+        <BackButton className={styles.backButton} />
         <h1 className={styles.pageTitle}>{t('recentPlaces.title')}</h1>
+        <div className={styles.headerSpacer} />
       </header>
-
-      {error && (
-        <ErrorMessage message={error} />
-      )}
 
       {/* Main content */}
       <div className={styles.contentContainer}>
         <div className={styles.contentWrapper}>
-          <h2 className={styles.sectionTitle}>{t('recentPlaces.sectionTitle')}</h2>
-
-          {recentPlaces.length === 0 ? (
+          {error ? (
+            <div className={styles.centerMessage}>
+              <p className={styles.errorText}>데이터를 불러오는중에 오류가 발생했습니다.</p>
+            </div>
+          ) : recentPlaces.length === 0 ? (
             <div className={styles.emptyState}>
-              {t('recentPlaces.emptyState').split('\n').map((line, i) => (
-                <p key={i}>{line}</p>
-              ))}
+              <div className={styles.emptyIconWrapper}>
+                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="#DDDDDD" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M12 6V12L16 14" stroke="#DDDDDD" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </div>
+              <h2 className={styles.emptyTitle}>최근 본 장소가 없습니다</h2>
+              <p className={styles.emptyDescription}>
+                관심있는 장소를 둘러보고<br />
+                다양한 공간을 탐험해보세요
+              </p>
+              <button
+                className={styles.exploreButton}
+                onClick={() => navigate('/places')}
+              >
+                장소 둘러보기
+              </button>
             </div>
           ) : (
+            <>
+              <h2 className={styles.sectionTitle}>{t('recentPlaces.sectionTitle')}</h2>
             <div className={styles.placesGrid}>
               {recentPlaces.map((place) => (
                 <GridPlaceCard
@@ -137,6 +153,7 @@ export default function RecentViewPage() {
                 />
               ))}
             </div>
+            </>
           )}
         </div>
       </div>

@@ -104,13 +104,13 @@
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.92);
   border: none;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #1B1E28;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  color: #222222;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
   pointer-events: auto;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
@@ -173,7 +173,7 @@
   background: #fff;
   border-radius: 24px 24px 0 0;
   margin-top: 356px; /* 380px hero - 24px overlap for sheet effect */
-  padding: 24px 20px 100px 20px;
+  padding: 24px 28px 100px 28px;
   min-height: calc(100vh - 356px);
 }
 

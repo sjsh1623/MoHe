@@ -39,6 +39,86 @@
   padding: 0 40px;
 }
 
+/* Center Message - Error State */
+.centerMessage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 200px);
+  padding: 20px;
+  text-align: center;
+}
+
+.errorText {
+  font-size: 15px;
+  color: #717171;
+  margin: 0;
+}
+
+/* Empty State - Airbnb Style */
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 200px);
+  padding: 40px 24px;
+  text-align: center;
+}
+
+.emptyIconWrapper {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #F7F7F7 0%, #EFEFEF 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+
+.emptyIconWrapper svg {
+  opacity: 0.6;
+}
+
+.emptyTitle {
+  font-size: 22px;
+  font-weight: 600;
+  color: #222222;
+  margin: 0 0 12px 0;
+  letter-spacing: -0.02em;
+}
+
+.emptyDescription {
+  font-size: 16px;
+  font-weight: 400;
+  color: #717171;
+  margin: 0 0 32px 0;
+  line-height: 1.5;
+}
+
+.exploreButton {
+  background: #222222;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 14px 24px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.exploreButton:hover {
+  background: #000000;
+  transform: scale(1.02);
+}
+
+.exploreButton:active {
+  transform: scale(0.98);
+}
+
 /* Mobile responsive */
 @media (max-width: 480px) {
   .header {

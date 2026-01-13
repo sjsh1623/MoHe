@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '@/contexts';
 import { authService } from '@/services/authService';
 
 /**
@@ -21,11 +22,16 @@ export const PROTECTED_ROUTES = [
 export function useAuthGuard(requireAuth = false) {
   const navigate = useNavigate();
   const location = useLocation();
-  const currentUser = authService.getCurrentUser();
-  const isGuest = currentUser?.isGuest;
+  const { isAuthenticated, isLoading, user } = useAuth();
   const hasNavigatedRef = useRef(false);
 
+  // Check if user is guest
+  const isGuest = !isAuthenticated || user?.isGuest === true || user?.id === 'guest';
+
   useEffect(() => {
+    // Wait for auth to be initialized
+    if (isLoading) return;
+
     // Check if current route is protected
     const isProtectedRoute = PROTECTED_ROUTES.some(route =>
       location.pathname.startsWith(route)
@@ -45,11 +51,13 @@ export function useAuthGuard(requireAuth = false) {
 
       return () => clearTimeout(timer);
     }
-  }, [requireAuth, isGuest, location.pathname, navigate]);
+  }, [requireAuth, isGuest, isLoading, location.pathname, navigate]);
 
   return {
     isGuest,
-    currentUser,
+    currentUser: user,
+    isAuthenticated,
+    isLoading,
     isProtectedRoute: PROTECTED_ROUTES.some(route =>
       location.pathname.startsWith(route)
     )

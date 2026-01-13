@@ -60,8 +60,33 @@ export default function PlaceDetailPage({ place = null }) {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const [placeData, setPlaceData] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
+  // Memoize preloaded data to prevent infinite loops
+  const hasPreloadedData = Boolean(location.state?.preloadedData);
+
+  const [placeData, setPlaceData] = useState(() => {
+    if (place) return normalizePlaceImages(place);
+    if (location.state?.preloadedData) {
+      const preloaded = normalizePlaceImages(location.state.preloadedData);
+      let validDescription = null;
+      if (preloaded.description?.length > 10 && preloaded.description !== preloaded.category) {
+        validDescription = preloaded.description;
+      } else if (preloaded.reasonWhy?.length > 10 && preloaded.reasonWhy !== preloaded.category) {
+        validDescription = preloaded.reasonWhy;
+      }
+      return {
+        ...preloaded,
+        description: validDescription,
+        address: preloaded.address || preloaded.location,
+        location: preloaded.address || preloaded.location,
+        name: preloaded.title || preloaded.name,
+        // Ensure images array is properly set
+        images: preloaded.images || (preloaded.image ? [preloaded.image] : null) ||
+                (preloaded.imageUrl ? [preloaded.imageUrl] : null)
+      };
+    }
+    return null;
+  });
+  const [isLoading, setIsLoading] = useState(!place && !hasPreloadedData);
   const [error, setError] = useState(null);
   const [reviews, setReviews] = useState([]);
   const [menus, setMenus] = useState([]);
@@ -89,23 +114,62 @@ export default function PlaceDetailPage({ place = null }) {
   }, []);
 
   // Simple scroll listener - NO custom physics, just read scrollTop
+  // Uses location.pathname to find the correct container during page transitions
   useEffect(() => {
     const findScrollParent = () => {
+      // During page transitions, multiple containers may exist
+      // Find the one that matches the current route
+      const currentRoute = location.pathname;
+      const matchingContainer = document.querySelector(`[data-page-container][data-route="${currentRoute}"]`);
+      if (matchingContainer) return matchingContainer;
+
+      // Fallback: find any container with /place/ in its route
+      const placeContainers = document.querySelectorAll('[data-page-container]');
+      for (const container of placeContainers) {
+        const route = container.getAttribute('data-route');
+        if (route && route.startsWith('/place/')) {
+          return container;
+        }
+      }
+
+      // Last fallback
       return document.querySelector('[data-page-container]');
     };
 
-    const scrollParent = findScrollParent();
-    if (!scrollParent) return;
+    // Small delay to ensure the correct container is mounted during transitions
+    const timer = setTimeout(() => {
+      const scrollParent = findScrollParent();
+      if (!scrollParent) return;
 
-    const handleScroll = () => {
-      // Just read the scroll position - no manipulation
-      setScrollTop(scrollParent.scrollTop);
+      const handleScroll = () => {
+        // Just read the scroll position - no manipulation
+        setScrollTop(scrollParent.scrollTop);
+      };
+
+      // Reset scroll to top for this page
+      scrollParent.scrollTop = 0;
+      setScrollTop(0);
+
+      handleScroll();
+      scrollParent.addEventListener('scroll', handleScroll, { passive: true });
+
+      // Store cleanup function
+      const cleanup = () => scrollParent.removeEventListener('scroll', handleScroll);
+      scrollParent._placeDetailCleanup = cleanup;
+    }, 50);
+
+    return () => {
+      clearTimeout(timer);
+      // Clean up scroll listener from any container
+      const containers = document.querySelectorAll('[data-page-container]');
+      containers.forEach(container => {
+        if (container._placeDetailCleanup) {
+          container._placeDetailCleanup();
+          delete container._placeDetailCleanup;
+        }
+      });
     };
-
-    handleScroll();
-    scrollParent.addEventListener('scroll', handleScroll, { passive: true });
-    return () => scrollParent.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [location.pathname]);
 
   // ============================================
   // SCROLL-DRIVEN VISUAL STATES
@@ -150,21 +214,11 @@ export default function PlaceDetailPage({ place = null }) {
   // After hero is fully scrolled, hero section is hidden
   const isHeroHidden = scrollProgress >= 1;
 
-  const preloadedData = location.state?.preloadedData
-    ? normalizePlaceImages(location.state?.preloadedData)
-    : null;
-
   useEffect(() => {
     const loadPlaceDetail = async () => {
       try {
-        setIsLoading(true);
-        setError(null);
-
-        if (place) {
-          setPlaceData(normalizePlaceImages(place));
-          setIsLoading(false);
-          return;
-        }
+        // Skip if place prop is provided (already set in initial state)
+        if (place) return;
 
         if (!id) {
           setError(t('places.detail.errors.idRequired'));
@@ -172,24 +226,7 @@ export default function PlaceDetailPage({ place = null }) {
           return;
         }
 
-        if (preloadedData) {
-          let validDescription = null;
-          if (preloadedData.description?.length > 10 && preloadedData.description !== preloadedData.category) {
-            validDescription = preloadedData.description;
-          } else if (preloadedData.reasonWhy?.length > 10 && preloadedData.reasonWhy !== preloadedData.category) {
-            validDescription = preloadedData.reasonWhy;
-          }
-
-          setPlaceData({
-            ...preloadedData,
-            description: validDescription,
-            address: preloadedData.address || preloadedData.location,
-            location: preloadedData.address || preloadedData.location,
-            name: preloadedData.title || preloadedData.name
-          });
-          setIsLoading(false);
-        }
-
+        // Fetch full data from API (even if we have preloaded data for instant display)
         const response = await placeService.getPlaceById(id);
         if (response.success && response.data.place) {
           const normalizedPlace = normalizePlaceImages(response.data.place);
@@ -215,12 +252,12 @@ export default function PlaceDetailPage({ place = null }) {
               console.warn('Failed to record recent view:', err);
             }
           }
-        } else if (!preloadedData) {
+        } else if (!hasPreloadedData) {
           setError(t('places.detail.errors.notFound'));
         }
       } catch (err) {
         console.error('Failed to load place details:', err);
-        if (!preloadedData) {
+        if (!hasPreloadedData) {
           setError(t('places.detail.errors.loadFailed'));
         }
       } finally {
@@ -229,7 +266,7 @@ export default function PlaceDetailPage({ place = null }) {
     };
 
     loadPlaceDetail();
-  }, [id, place]);
+  }, [id, place, t]);
 
   useEffect(() => {
     const checkBookmarkStatus = async () => {
