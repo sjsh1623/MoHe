@@ -14,9 +14,13 @@
 .header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: calc(var(--app-shell-safe-top, 0px) + 32px) var(--app-shell-horizontal-gutter, 16px) 12px;
+  gap: 4px;
+  padding: calc(var(--app-shell-safe-top, 0px) + 12px) var(--app-shell-horizontal-gutter, 16px) 8px;
   background: transparent;
+}
+
+.headerSpacer {
+  flex: 1;
 }
 
 .logo {

@@ -6,6 +6,8 @@ import PlaceCard from '@/components/ui/cards/PlaceCard';
 import LocationPin from '@/components/ui/indicators/LocationPin';
 import ProfileButton from '@/components/ui/buttons/ProfileButton';
 import OutlineButton from '@/components/ui/buttons/OutlineButton';
+import SearchBar from '@/components/ui/inputs/SearchBar';
+import SearchModal from '@/components/ui/modals/SearchModal';
 import HomePageSkeleton from '@/components/ui/skeletons/HomePageSkeleton';
 import ErrorMessage from '@/components/ui/alerts/ErrorMessage';
 import { useGeolocation, useLocationStorage } from '@/hooks/useGeolocation';
@@ -75,6 +77,7 @@ export default function HomePage() {
   const [categories, setCategories] = useState([]);
   const [categoriesPlaces, setCategoriesPlaces] = useState({});
   const [dynamicMessage, setDynamicMessage] = useState('지금 가기 좋은 플레이스');
+  const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
 
   // Prevent back navigation to login page
   useEffect(() => {
@@ -909,8 +912,16 @@ export default function HomePage() {
       {/* Header - Always shown immediately */}
       <header className={styles.header}>
         <img src={logoHeader} alt="MOHE" className={styles.logo} />
+        <div className={styles.headerSpacer} />
+        <SearchBar onClick={() => setIsSearchModalOpen(true)} />
         <ProfileButton onClick={handleProfileClick} />
       </header>
+
+      {/* Search Modal */}
+      <SearchModal
+        isOpen={isSearchModalOpen}
+        onClose={() => setIsSearchModalOpen(false)}
+      />
 
       {/* Location indicator */}
       <div className={styles.locationSection}>

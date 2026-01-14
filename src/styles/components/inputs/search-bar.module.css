@@ -1,0 +1,41 @@
+/* Simple Search Icon Button */
+.searchBar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    background: transparent;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background 0.2s ease;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    flex-shrink: 0;
+}
+
+.searchBar:hover {
+    background: rgba(0, 0, 0, 0.05);
+}
+
+.searchBar:active {
+    background: rgba(0, 0, 0, 0.08);
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+    .searchBar {
+        width: 32px;
+        height: 32px;
+    }
+
+    .searchBar svg {
+        width: 18px;
+        height: 18px;
+    }
+
+    .searchBar:hover {
+        background: transparent;
+    }
+}

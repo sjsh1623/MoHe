@@ -1,0 +1,430 @@
+/* Soft Toss-style Search Modal */
+.backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.3);
+    z-index: 99998;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: #F4F4F4;
+    z-index: 99999;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* Search Form - Soft header */
+.searchForm {
+    padding: calc(env(safe-area-inset-top, 0px) + 12px) var(--app-shell-horizontal-gutter, 16px) 12px;
+    background: white;
+}
+
+.inputWrapper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #F7F7F7;
+    border-radius: 12px;
+    padding: 10px 14px;
+    transition: all 0.25s ease;
+    border: 1.5px solid transparent;
+}
+
+.inputWrapper:focus-within {
+    background: #FAFAFA;
+    border-color: #E8E8E8;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+}
+
+.inputIcon {
+    flex-shrink: 0;
+    opacity: 0.4;
+}
+
+.input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    font-family: -apple-system, BlinkMacSystemFont, 'Pretendard', sans-serif;
+    font-size: 15px;
+    font-weight: 400;
+    color: #333;
+    outline: none;
+    min-width: 0;
+}
+
+.input::placeholder {
+    color: #999;
+}
+
+.clearBtn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    padding: 4px;
+    cursor: pointer;
+    flex-shrink: 0;
+    border-radius: 50%;
+    transition: transform 0.15s ease;
+}
+
+.clearBtn:active {
+    transform: scale(0.9);
+}
+
+.cancelBtn {
+    font-family: -apple-system, BlinkMacSystemFont, 'Pretendard', sans-serif;
+    font-size: 15px;
+    font-weight: 500;
+    color: #666;
+    background: none;
+    border: none;
+    padding: 8px 4px;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: color 0.15s ease;
+}
+
+.cancelBtn:active {
+    color: #333;
+}
+
+/* Content - Soft card layout */
+.content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px var(--app-shell-horizontal-gutter, 16px);
+    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 24px);
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Section - Soft white cards */
+.section {
+    margin-bottom: 16px;
+    background: white;
+    border-radius: 24px;
+    padding: 24px 20px;
+}
+
+.sectionTitle {
+    font-family: -apple-system, BlinkMacSystemFont, 'Pretendard', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: #999;
+    letter-spacing: 0;
+    margin: 0 0 18px 0;
+}
+
+/* Recent Searches - Soft list */
+.recentList {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.recentItem {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 8px;
+    margin: 0 -8px;
+    border-radius: 16px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.recentItem:hover {
+    background: #F8F8F8;
+}
+
+.recentItem:active {
+    background: #F0F0F0;
+}
+
+.recentItem svg {
+    opacity: 0.35;
+}
+
+.recentItem span {
+    flex: 1;
+    font-family: -apple-system, BlinkMacSystemFont, 'Pretendard', sans-serif;
+    font-size: 15px;
+    font-weight: 400;
+    color: #333;
+}
+
+.removeBtn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    background: none;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    opacity: 0.3;
+    transition: all 0.2s ease;
+}
+
+.removeBtn:hover {
+    opacity: 0.6;
+}
+
+.removeBtn:active {
+    transform: scale(0.9);
+}
+
+/* Categories - Soft chips */
+.categories {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.categoryBtn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    background: #F7F7F7;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.categoryBtn:hover {
+    background: #F0F0F0;
+}
+
+.categoryBtn:active {
+    background: #E8E8E8;
+    transform: scale(0.97);
+}
+
+.categoryEmoji {
+    font-size: 18px;
+    line-height: 1;
+}
+
+.categoryLabel {
+    font-family: -apple-system, BlinkMacSystemFont, 'Pretendard', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    color: #333;
+}
+
+/* Results - Soft card list */
+.results {
+    display: flex;
+    flex-direction: column;
+    background: white;
+    border-radius: 24px;
+    padding: 12px;
+}
+
+.resultItem {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 14px;
+    border-radius: 18px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.resultItem:hover {
+    background: #F8F8F8;
+}
+
+.resultItem:active {
+    background: #F2F2F2;
+}
+
+.resultThumb {
+    width: 56px;
+    height: 56px;
+    border-radius: 16px;
+    overflow: hidden;
+    flex-shrink: 0;
+    background: #F5F5F5;
+}
+
+.resultThumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.thumbPlaceholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.thumbPlaceholder svg {
+    opacity: 0.25;
+}
+
+.resultInfo {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.resultName {
+    font-family: -apple-system, BlinkMacSystemFont, 'Pretendard', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    color: #222;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.resultAddr {
+    font-family: -apple-system, BlinkMacSystemFont, 'Pretendard', sans-serif;
+    font-size: 13px;
+    font-weight: 400;
+    color: #999;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Empty State - Soft */
+.empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 56px 24px;
+    background: white;
+    border-radius: 24px;
+}
+
+.empty p {
+    font-family: -apple-system, BlinkMacSystemFont, 'Pretendard', sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    color: #999;
+    margin: 0;
+}
+
+/* Loading - Soft spinner */
+.loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 48px;
+    background: white;
+    border-radius: 24px;
+}
+
+.spinner {
+    width: 24px;
+    height: 24px;
+    border: 2.5px solid #F0F0F0;
+    border-top-color: #999;
+    border-radius: 50%;
+    animation: spin 0.9s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Mobile */
+@media (max-width: 480px) {
+    .searchForm {
+        padding: calc(env(safe-area-inset-top, 0px) + 10px) var(--app-shell-horizontal-gutter, 16px) 10px;
+    }
+
+    .inputWrapper {
+        padding: 10px 12px;
+        border-radius: 10px;
+        gap: 8px;
+    }
+
+    .input {
+        font-size: 14px;
+    }
+
+    .content {
+        padding: 12px var(--app-shell-horizontal-gutter, 16px);
+        padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 20px);
+    }
+
+    .section {
+        padding: 20px 16px;
+        border-radius: 20px;
+        margin-bottom: 12px;
+    }
+
+    .sectionTitle {
+        margin-bottom: 14px;
+    }
+
+    .categories {
+        gap: 8px;
+    }
+
+    .categoryBtn {
+        padding: 10px 14px;
+        border-radius: 16px;
+    }
+
+    .categoryEmoji {
+        font-size: 16px;
+    }
+
+    .categoryLabel {
+        font-size: 13px;
+    }
+
+    .results {
+        border-radius: 20px;
+        padding: 8px;
+    }
+
+    .resultItem {
+        padding: 12px;
+        gap: 14px;
+        border-radius: 14px;
+    }
+
+    .resultThumb {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+    }
+
+    .resultName {
+        font-size: 14px;
+    }
+
+    .resultAddr {
+        font-size: 12px;
+    }
+
+    .loading,
+    .empty {
+        border-radius: 20px;
+        padding: 40px 20px;
+    }
+}
