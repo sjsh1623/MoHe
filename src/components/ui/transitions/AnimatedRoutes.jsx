@@ -14,6 +14,7 @@ import EmailVerificationPage from '@/pages/auth/EmailVerificationPage.jsx';
 import NicknameSetupPage from '@/pages/auth/NicknameSetupPage.jsx';
 import TermsAgreementPage from '@/pages/auth/TermsAgreementPage.jsx';
 import PasswordSetupPage from '@/pages/auth/PasswordSetupPage.jsx';
+import OAuthCallbackPage from '@/pages/auth/OAuthCallbackPage.jsx';
 import HomePage from '@/pages/HomePage.jsx';
 import PlacesListPage from '@/pages/PlacesListPage.jsx';
 import PlaceDetailPage from '@/pages/PlaceDetailPage.jsx';
@@ -233,6 +234,7 @@ export default function AnimatedRoutes() {
             <Route path="/nickname-setup" element={<NicknameSetupPage />} />
             <Route path="/terms" element={<TermsAgreementPage />} />
             <Route path="/password-setup" element={<PasswordSetupPage />} />
+            <Route path="/oauth/:provider/callback" element={<OAuthCallbackPage />} />
             <Route path="/home" element={<HomePage />} />
             <Route path="/age-range" element={<AgeRangeSelectionPage />} />
             <Route path="/mbti-selection" element={<MBTISelectionPage />} />

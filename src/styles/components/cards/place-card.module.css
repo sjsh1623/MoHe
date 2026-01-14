@@ -77,8 +77,8 @@
   transform: scale(0.9);
 }
 
-.bookmarkBg {
-  display: none;
+.bookmarkButton.bookmarked svg {
+  filter: drop-shadow(0 1px 3px rgba(255, 56, 92, 0.4));
 }
 
 .content {

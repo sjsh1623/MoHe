@@ -74,6 +74,27 @@
   line-height: 1.4;
 }
 
+/* Social login divider */
+.divider {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  margin: 1rem 0;
+}
+
+.dividerLine {
+  flex: 1;
+  height: 1px;
+  background: #e5e8eb;
+}
+
+.dividerText {
+  padding: 0 1rem;
+  font-size: 13px;
+  color: #7D848D;
+  font-family: var(--font-family-base);
+}
+
 /* Mobile WebView optimizations */
 @media (max-width: 480px) {
   .pageContainer {

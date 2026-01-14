@@ -412,8 +412,15 @@ class AuthService {
     }
 
     if (data.success) {
-      this.setAuthData(data.data);
-      return data.data;
+      // Convert snake_case response to camelCase for setAuthData
+      const tokenData = {
+        accessToken: data.data.access_token || data.data.accessToken,
+        refreshToken: data.data.refresh_token || data.data.refreshToken,
+        expiresIn: data.data.expires_in || data.data.expiresIn,
+      };
+      this.setAuthData(tokenData);
+      console.log('[AuthService] Token refresh successful');
+      return tokenData;
     } else {
       this.clearAuthData();
       throw new Error(data.message || 'Token refresh failed');

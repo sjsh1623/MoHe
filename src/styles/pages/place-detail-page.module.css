@@ -143,6 +143,7 @@
   background: transparent;
   border-bottom: 1px solid transparent;
   z-index: 9999;
+  pointer-events: none;
 }
 
 .stickyHeaderContent {
@@ -254,19 +255,20 @@
 
 .menuGalleryItems {
   display: flex;
-  gap: 12px;
+  gap: 8px;
   overflow: hidden;
   justify-content: flex-start;
 }
 
 .menuGalleryItem {
   position: relative;
-  flex: 0 0 auto;
-  width: 72px;
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: 80px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   cursor: pointer;
 }
 
@@ -284,10 +286,10 @@
 
 .menuName {
   color: #1B1E28;
-  font-size: 12px;
+  font-size: 11px;
   font-family: 'Inter', sans-serif;
   font-weight: 400;
-  line-height: 16px;
+  line-height: 14px;
   text-align: center;
   white-space: nowrap;
   overflow: hidden;
@@ -295,40 +297,40 @@
   width: 100%;
 }
 
-/* Menu "+" Overlay */
-.moreOverlay {
+/* Menu "+" More Button with blurred background */
+.menuMoreButton {
   position: relative;
   width: 100%;
   aspect-ratio: 1;
+  border-radius: 12px;
+  overflow: hidden;
 }
 
-.moreOverlay .menuGalleryImage {
+.menuMoreButtonBg {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
+  object-fit: cover;
+  filter: blur(3px);
+  transform: scale(1.1);
 }
 
-.overlayContent {
+.menuMoreButtonOverlay {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.4);
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 12px;
 }
 
-.overlayText {
-  color: white;
-  font-size: 16px;
-  font-family: 'Inter', sans-serif;
-  font-weight: 600;
-  line-height: 20px;
+.menuGalleryItem:active .menuMoreButtonOverlay {
+  background: rgba(0, 0, 0, 0.5);
 }
 
 /* Section */

@@ -7,6 +7,7 @@ import {Stack} from '@/components/ui/layout';
 import FormInput from '@/components/ui/inputs/FormInput';
 import Checkbox from '@/components/ui/inputs/Checkbox';
 import PrimaryButton from '@/components/ui/buttons/PrimaryButton';
+import SocialButtons from '@/components/ui/buttons/SocialButton';
 import TextLink from '@/components/ui/links/TextLink';
 import {AuthContainer, AuthTitle} from '@/components/auth';
 import {useAuthNavigation} from '@/hooks/useAuthNavigation';
@@ -198,6 +199,14 @@ export default function LoginPage() {
                             {t('auth.login.forgotPassword')}
                         </button>
                     </div>
+
+                    <div className={styles.divider}>
+                        <span className={styles.dividerLine} />
+                        <span className={styles.dividerText}>또는</span>
+                        <span className={styles.dividerLine} />
+                    </div>
+
+                    <SocialButtons onError={setError} />
                 </Stack>
         </AuthContainer>
     );

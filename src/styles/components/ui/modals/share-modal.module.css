@@ -1,0 +1,133 @@
+/* Share Modal - Instagram style bottom sheet */
+.backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 20000;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.modal {
+  background: #fff;
+  border-radius: 20px 20px 0 0;
+  width: 100%;
+  max-width: 500px;
+  padding: 12px 20px calc(env(safe-area-inset-bottom, 0px) + 20px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.handle {
+  width: 36px;
+  height: 4px;
+  background: #E0E0E0;
+  border-radius: 2px;
+  margin-bottom: 16px;
+}
+
+.title {
+  font-family: -apple-system, BlinkMacSystemFont, 'Pretendard', sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1B1E28;
+  margin: 0 0 20px 0;
+}
+
+.shareOptions {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  width: 100%;
+  padding: 0 12px;
+  margin-bottom: 24px;
+}
+
+.shareOption {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.shareOption:active {
+  opacity: 0.7;
+}
+
+.shareOption span {
+  font-family: -apple-system, BlinkMacSystemFont, 'Pretendard', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  color: #4E5968;
+}
+
+.iconWrapper {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background: #F2F4F6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #4E5968;
+  transition: transform 0.15s ease;
+}
+
+.shareOption:active .iconWrapper {
+  transform: scale(0.95);
+}
+
+/* KakaoTalk */
+.iconWrapper.kakao {
+  background: #FEE500;
+}
+
+/* Instagram gradient */
+.iconWrapper.instagram {
+  background: linear-gradient(135deg, #833AB4 0%, #FD1D1D 50%, #FCAF45 100%);
+  color: #fff;
+}
+
+.cancelButton {
+  width: 100%;
+  padding: 16px;
+  background: #F2F4F6;
+  border: none;
+  border-radius: 12px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Pretendard', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  color: #4E5968;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.cancelButton:active {
+  background: #E5E8EB;
+}
+
+@media (max-width: 480px) {
+  .shareOptions {
+    gap: 16px;
+  }
+
+  .iconWrapper {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+  }
+
+  .shareOption span {
+    font-size: 11px;
+  }
+}

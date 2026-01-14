@@ -34,12 +34,9 @@ class ApiService {
       await authService.refreshAccessToken();
       return true;
     } catch (error) {
-      const { authService } = await import('./authService.js');
-      authService.clearAuthData();
-      // Redirect to login if we're not already there
-      if (window.location.pathname !== '/login') {
-        window.location.href = '/login';
-      }
+      console.warn('[ApiService] Token refresh failed:', error.message);
+      // Don't clear auth data or redirect here - let the UI handle it
+      // The AuthContext will handle the state update
       return false;
     }
   }
@@ -78,30 +75,44 @@ class ApiService {
   }
 
   /**
+   * Ensure token is valid before making authenticated requests
+   */
+  async ensureValidToken() {
+    try {
+      const { authService } = await import('./authService.js');
+      const token = authService.getToken();
+
+      if (!token) {
+        return false;
+      }
+
+      // Check if token is expired or expiring soon
+      if (authService.isTokenExpired(token) || authService.isTokenExpiringSoon(token)) {
+        console.log('[ApiService] Token expired/expiring, attempting refresh');
+        await authService.refreshAccessToken();
+        return true;
+      }
+
+      return true;
+    } catch (error) {
+      console.error('[ApiService] Token validation failed:', error);
+      return false;
+    }
+  }
+
+  /**
    * Generic fetch wrapper with error handling
    */
   async request(endpoint, options = {}) {
     const method = options.method || 'GET';
-    console.log(`🚀 REFRESH-SAFE VERSION: Making request: ${method} ${endpoint} - Rate limiting DISABLED`); // Add this line
-    
-    // Add small delay to prevent rapid successive calls on refresh
-    if (options.preventRapidRefresh !== false) {
-      await new Promise(resolve => setTimeout(resolve, 50));
-    }
-    
-    // Rate limiting COMPLETELY DISABLED
-    // if (this.isRateLimited(endpoint, method)) {
-    //   console.warn(`Rate limited: ${method} ${endpoint}`);
-    //   throw new ApiError(429, 'Too many requests, please wait a moment');
-    // }
+    console.log(`🚀 Making request: ${method} ${endpoint}`);
 
-    // Request deduplication DISABLED
-    // const cacheKey = this.createCacheKey(endpoint, method, options.body);
-    // if (method === 'GET' && this.requestCache.has(cacheKey)) {
-    //   const cachedPromise = this.requestCache.get(cacheKey);
-    //   console.log(`Using cached request: ${endpoint}`);
-    //   return cachedPromise;
-    // }
+    // Try to ensure valid token for authenticated requests (but don't fail if refresh fails)
+    if (options.requireAuth) {
+      await this.ensureValidToken();
+      // Don't throw error here - let the actual request fail with 401 if needed
+      // The 401 handler will attempt refresh and retry
+    }
 
     const url = `${this.baseURL}${endpoint}`;
     const config = {
@@ -114,15 +125,7 @@ class ApiService {
     };
 
     // Execute request directly without caching
-    const requestPromise = this.executeRequest(url, config);
-    
-    // if (method === 'GET') {
-    //   this.requestCache.set(cacheKey, requestPromise);
-    //   // Clean up cache after 5 seconds
-    //   setTimeout(() => this.requestCache.delete(cacheKey), 5000);
-    // }
-    
-    return requestPromise;
+    return this.executeRequest(url, config);
   }
 
   /**
@@ -133,8 +136,9 @@ class ApiService {
       const response = await fetch(url, config);
       
       if (!response.ok) {
-        // Handle 401 unauthorized
+        // Handle 401 unauthorized only (not 403 - that's a permission issue)
         if (response.status === 401 && config.requireAuth) {
+          console.log('[ApiService] Got 401, attempting token refresh');
           const refreshed = await this.handleUnauthorized();
           if (refreshed) {
             // Retry the request with new token
@@ -145,6 +149,7 @@ class ApiService {
                 ...config.headers,
               },
             };
+            console.log('[ApiService] Retrying request with refreshed token');
             const retryResponse = await fetch(url, newConfig);
             if (!retryResponse.ok) {
               const errorData = await retryResponse.json().catch(() => ({}));
@@ -160,10 +165,10 @@ class ApiService {
         }
 
         const errorData = await response.json().catch(() => ({}));
-        
+
         // Handle common backend issues with friendly messages
         let errorMessage = errorData.message || `HTTP Error ${response.status}`;
-        
+
         if (response.status === 500) {
           if (errorData.message?.includes('not yet implemented') || errorData.message?.includes('Implementation needed')) {
             errorMessage = '이 기능은 현재 개발 중입니다. 곧 사용할 수 있습니다.';
@@ -179,7 +184,7 @@ class ApiService {
         } else if (response.status === 403) {
           errorMessage = '접근 권한이 없습니다.';
         }
-        
+
         throw new ApiError(
           response.status,
           errorMessage,

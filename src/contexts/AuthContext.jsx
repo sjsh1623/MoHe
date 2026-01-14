@@ -11,6 +11,7 @@ export function AuthProvider({ children }) {
   const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState(null);
   const refreshTimerRef = useRef(null);
+  const isRefreshingRef = useRef(false);
 
   /**
    * Schedule token refresh before expiry
@@ -37,28 +38,61 @@ export function AuthProvider({ children }) {
       console.log(`[AuthContext] Scheduling token refresh in ${Math.round(delay / 1000 / 60)} minutes`);
       refreshTimerRef.current = setTimeout(async () => {
         console.log('[AuthContext] Executing scheduled token refresh');
+        if (isRefreshingRef.current) {
+          console.log('[AuthContext] Already refreshing, skipping');
+          return;
+        }
+        isRefreshingRef.current = true;
         try {
           await authService.refreshAccessToken();
           setUser(authService.getCurrentUser());
           scheduleTokenRefresh(); // Schedule next refresh
         } catch (error) {
           console.error('[AuthContext] Scheduled refresh failed:', error);
-          setIsAuthenticated(false);
-          setUser(null);
+          // Don't immediately log out - retry after delay
+          setTimeout(() => {
+            if (!isRefreshingRef.current) {
+              scheduleTokenRefresh();
+            }
+          }, 30000); // Retry after 30 seconds
+        } finally {
+          isRefreshingRef.current = false;
         }
       }, delay);
     } else {
-      // Token already needs refresh
+      // Token already needs refresh - do it once, not in a loop
+      if (isRefreshingRef.current) {
+        console.log('[AuthContext] Already refreshing, skipping immediate refresh');
+        return;
+      }
+
       console.log('[AuthContext] Token needs immediate refresh');
+      isRefreshingRef.current = true;
+
       authService.refreshAccessToken()
         .then(() => {
           setUser(authService.getCurrentUser());
-          scheduleTokenRefresh();
+          // Schedule next refresh with a minimum delay to prevent loops
+          const newToken = authService.getToken();
+          const newExpiryTime = authService.getTokenExpiryTime(newToken);
+          if (newExpiryTime && (newExpiryTime - Date.now()) > 60000) {
+            scheduleTokenRefresh();
+          } else {
+            console.warn('[AuthContext] New token still expiring soon, not rescheduling');
+          }
         })
         .catch((error) => {
           console.error('[AuthContext] Immediate refresh failed:', error);
-          setIsAuthenticated(false);
-          setUser(null);
+          // Don't immediately log out - let user continue until API calls fail
+          // Only schedule a retry after some delay
+          setTimeout(() => {
+            if (!isRefreshingRef.current) {
+              scheduleTokenRefresh();
+            }
+          }, 30000); // Retry after 30 seconds
+        })
+        .finally(() => {
+          isRefreshingRef.current = false;
         });
     }
   }, []);

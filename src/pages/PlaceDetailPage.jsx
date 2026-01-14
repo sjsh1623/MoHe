@@ -6,10 +6,12 @@ import { AnimatePresence, motion } from 'framer-motion';
 import styles from '@/styles/pages/place-detail-page.module.css';
 import PlaceDetailSkeleton from '@/components/ui/skeletons/PlaceDetailSkeleton';
 import ErrorMessage from '@/components/ui/alerts/ErrorMessage';
-import { activityService, placeService } from '@/services/apiService';
+import { activityService, placeService, bookmarkService } from '@/services/apiService';
 import { authService } from '@/services/authService';
+import { useAuth } from '@/contexts/AuthContext';
 import { buildImageUrl, buildImageUrlList, normalizePlaceImages } from '@/utils/image';
 import MenuFullscreenModal from '@/components/ui/modals/MenuFullscreenModal';
+import ShareModal from '@/components/ui/modals/ShareModal';
 
 // ============================================
 // CONFIGURATION
@@ -59,6 +61,7 @@ export default function PlaceDetailPage({ place = null }) {
   const { id } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
 
   // Memoize preloaded data to prevent infinite loops
   const hasPreloadedData = Boolean(location.state?.preloadedData);
@@ -97,6 +100,7 @@ export default function PlaceDetailPage({ place = null }) {
 
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [isBookmarkLoading, setIsBookmarkLoading] = useState(false);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [maxVisibleMenus, setMaxVisibleMenus] = useState(5);
   const menuGalleryRef = useRef(null);
 
@@ -245,7 +249,7 @@ export default function PlaceDetailPage({ place = null }) {
             console.warn('Failed to load menus:', err);
           }
 
-          if (authService.isAuthenticated()) {
+          if (isAuthenticated) {
             try {
               await activityService.recordRecentView(id);
             } catch (err) {
@@ -266,43 +270,49 @@ export default function PlaceDetailPage({ place = null }) {
     };
 
     loadPlaceDetail();
-  }, [id, place, t]);
+  }, [id, place, t, isAuthenticated]);
 
   useEffect(() => {
     const checkBookmarkStatus = async () => {
-      if (!id || !authService.isAuthenticated()) return;
+      if (!id || !isAuthenticated) return;
       try {
-        const response = await activityService.getBookmarks();
-        if (response.success && response.data?.bookmarks) {
-          const isPlaceBookmarked = response.data.bookmarks.some(
-            bookmark => bookmark.placeId === id || bookmark.id === id
-          );
-          setIsBookmarked(isPlaceBookmarked);
+        // Use direct bookmark check API for this specific place
+        const response = await bookmarkService.isBookmarked(id);
+        if (response.success) {
+          setIsBookmarked(response.data?.isBookmarked || false);
         }
       } catch (err) {
         console.warn('Failed to check bookmark status:', err);
+        setIsBookmarked(false);
       }
     };
     checkBookmarkStatus();
-  }, [id]);
+  }, [id, isAuthenticated]);
 
   const calculateMaxMenus = useCallback(() => {
     if (!menuGalleryRef.current) return;
     const containerWidth = menuGalleryRef.current.offsetWidth;
-    const minItemWidth = 56;
+    const minItemWidth = 60; // Minimum width per item
     const gap = 8;
     const maxItems = Math.floor((containerWidth + gap) / (minItemWidth + gap));
-    setMaxVisibleMenus(Math.max(2, Math.min(5, maxItems)));
+    setMaxVisibleMenus(Math.max(3, Math.min(5, maxItems)));
   }, []);
 
   useEffect(() => {
-    calculateMaxMenus();
+    // Delay calculation to ensure ref is mounted
+    const timer = setTimeout(calculateMaxMenus, 100);
     window.addEventListener('resize', calculateMaxMenus);
-    return () => window.removeEventListener('resize', calculateMaxMenus);
-  }, [calculateMaxMenus]);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('resize', calculateMaxMenus);
+    };
+  }, [calculateMaxMenus, menus]);
 
-  const handleToggleBookmark = async () => {
-    if (!authService.isAuthenticated()) {
+  const handleToggleBookmark = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (!isAuthenticated) {
       navigate('/login', { state: { from: `/place/${id}` } });
       return;
     }
@@ -311,10 +321,10 @@ export default function PlaceDetailPage({ place = null }) {
     setIsBookmarkLoading(true);
     try {
       if (isBookmarked) {
-        await activityService.removeBookmark(id);
+        await bookmarkService.removeBookmark(id);
         setIsBookmarked(false);
       } else {
-        await activityService.addBookmark(id);
+        await bookmarkService.addBookmark(id);
         setIsBookmarked(true);
       }
     } catch (err) {
@@ -324,24 +334,8 @@ export default function PlaceDetailPage({ place = null }) {
     }
   };
 
-  const handleShare = async () => {
-    const shareData = {
-      title: placeData?.name || placeData?.title || 'Mohe',
-      text: `${placeData?.name || placeData?.title} - Mohe에서 발견한 장소`,
-      url: window.location.href,
-    };
-
-    try {
-      if (navigator.share && navigator.canShare?.(shareData)) {
-        await navigator.share(shareData);
-      } else {
-        await navigator.clipboard.writeText(window.location.href);
-      }
-    } catch (err) {
-      if (err.name !== 'AbortError') {
-        console.error('Share failed:', err);
-      }
-    }
+  const handleShare = () => {
+    setIsShareModalOpen(true);
   };
 
   if (isLoading) return <PlaceDetailSkeleton />;
@@ -383,6 +377,7 @@ export default function PlaceDetailPage({ place = null }) {
         </button>
         <div className={styles.actionButtonsRight}>
           <button
+            type="button"
             className={styles.actionButton}
             onClick={handleShare}
             aria-label="공유하기"
@@ -395,14 +390,22 @@ export default function PlaceDetailPage({ place = null }) {
             </svg>
           </button>
           <button
+            type="button"
             className={`${styles.actionButton} ${isBookmarked ? styles.bookmarked : ''}`}
             onClick={handleToggleBookmark}
             disabled={isBookmarkLoading}
             aria-label={isBookmarked ? '북마크 해제' : '북마크'}
             style={{ boxShadow: `0 2px 8px rgba(0, 0, 0, ${0.12 * buttonShadowOpacity})` }}
           >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill={isBookmarked ? 'currentColor' : 'none'}>
-              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+              <path
+                d="M19 21L12 16L5 21V5C5 4.46957 5.21071 3.96086 5.58579 3.58579C5.96086 3.21071 6.46957 3 7 3H17C17.5304 3 18.0391 3.21071 18.4142 3.58579C18.7893 3.96086 19 4.46957 19 5V21Z"
+                stroke={isBookmarked ? '#FF385C' : '#222222'}
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                fill={isBookmarked ? '#FF385C' : 'none'}
+              />
             </svg>
           </button>
         </div>
@@ -514,10 +517,9 @@ export default function PlaceDetailPage({ place = null }) {
 
           if (totalMenuImages === 0) return null;
 
-          const shouldShowOverlay = totalMenuImages > maxVisibleMenus;
-          const visibleCount = shouldShowOverlay ? maxVisibleMenus - 1 : Math.min(totalMenuImages, maxVisibleMenus);
+          const shouldShowMoreButton = totalMenuImages > maxVisibleMenus;
+          const visibleCount = shouldShowMoreButton ? maxVisibleMenus - 1 : Math.min(totalMenuImages, maxVisibleMenus);
           const displayMenus = menusWithImages.slice(0, visibleCount);
-          const remainingCount = totalMenuImages - visibleCount;
 
           return (
             <div className={styles.menuGallery} ref={menuGalleryRef}>
@@ -540,20 +542,22 @@ export default function PlaceDetailPage({ place = null }) {
                     )}
                   </div>
                 ))}
-                {shouldShowOverlay && (
+                {shouldShowMoreButton && (
                   <div
                     className={styles.menuGalleryItem}
-                    onClick={() => { setSelectedMenuIndex(visibleCount); setIsMenuModalOpen(true); }}
+                    onClick={() => navigate(`/place/${id}/menu`, { state: { menus: menusWithImages, placeName: placeData.name } })}
                   >
-                    <div className={styles.moreOverlay}>
+                    <div className={styles.menuMoreButton}>
                       <img
                         src={buildImageUrl(menusWithImages[visibleCount]?.imagePath)}
-                        alt="더보기"
-                        className={styles.menuGalleryImage}
+                        alt=""
+                        className={styles.menuMoreButtonBg}
                         draggable={false}
                       />
-                      <div className={styles.overlayContent}>
-                        <span className={styles.overlayText}>+{remainingCount}</span>
+                      <div className={styles.menuMoreButtonOverlay}>
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M12 5V19M5 12H19" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
                       </div>
                     </div>
                     <span className={styles.menuName}>더보기</span>
@@ -583,7 +587,7 @@ export default function PlaceDetailPage({ place = null }) {
         <div className={styles.section}>
           <div className={styles.reviewHeader}>
             <h2 className={styles.sectionTitle}>리뷰 <span className={styles.reviewCount}>{reviews.length}개</span></h2>
-            <button className={styles.writeBtn} onClick={() => navigate(authService.isAuthenticated() ? `/place/${id}/review/write` : '/login', { state: { from: `/place/${id}/review/write` } })}>
+            <button className={styles.writeBtn} onClick={() => navigate(isAuthenticated ? `/place/${id}/review/write` : '/login', { state: { from: `/place/${id}/review/write` } })}>
               리뷰 쓰기
             </button>
           </div>
@@ -651,6 +655,19 @@ export default function PlaceDetailPage({ place = null }) {
           onClose={() => setIsMenuModalOpen(false)}
           menus={menus.filter(m => m.imagePath)}
           initialIndex={selectedMenuIndex}
+        />,
+        portalContainer
+      )}
+
+      {/* Share Modal */}
+      {portalContainer && createPortal(
+        <ShareModal
+          isOpen={isShareModalOpen}
+          onClose={() => setIsShareModalOpen(false)}
+          title={placeData?.name || placeData?.title || 'Mohe'}
+          description={`${placeData?.name || placeData?.title} - Mohe에서 발견한 장소`}
+          url={window.location.href}
+          imageUrl={images[0]}
         />,
         portalContainer
       )}
