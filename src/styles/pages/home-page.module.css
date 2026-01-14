@@ -1,6 +1,6 @@
-/* Home page layout */
+/* Home page - Airbnb/Netflix inspired */
 .pageContainer {
-  background: transparent;
+  background: #fff;
   width: 100%;
   max-width: min(100%, var(--app-shell-max-width, 428px));
   min-height: 100%;
@@ -14,9 +14,12 @@
 .header {
   display: flex;
   align-items: center;
-  gap: 4px;
-  padding: calc(var(--app-shell-safe-top, 0px) + 12px) var(--app-shell-horizontal-gutter, 16px) 8px;
-  background: transparent;
+  gap: 8px;
+  padding: calc(var(--app-shell-safe-top, 0px) + 16px) var(--app-shell-horizontal-gutter, 16px) 12px;
+  background: #fff;
+  position: sticky;
+  top: 0;
+  z-index: 100;
 }
 
 .headerSpacer {
@@ -24,13 +27,13 @@
 }
 
 .logo {
-  height: 22px;
+  height: 24px;
   width: auto;
   object-fit: contain;
 }
 
 .locationSection {
-  padding: 16px var(--app-shell-horizontal-gutter, 16px) 8px;
+  padding: 8px var(--app-shell-horizontal-gutter, 16px) 16px;
 }
 
 .errorWrapper {
@@ -46,8 +49,8 @@
 .content {
   display: flex;
   flex-direction: column;
-  gap: 32px;
-  padding-bottom: 24px;
+  gap: 28px;
+  padding-bottom: 32px;
 }
 
 .bannerWrapper {
@@ -59,107 +62,126 @@
   display: inline-flex;
   text-decoration: none;
   flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+.cardLink:hover {
+  transform: scale(1.02);
+}
+
+.cardLink:active {
+  transform: scale(0.98);
 }
 
 .cardLink:focus-visible {
-  outline: 2px solid #007aff;
+  outline: 2px solid #222;
   outline-offset: 4px;
+  border-radius: 16px;
 }
 
 .placeholderMessage {
-  padding: 16px 0;
+  padding: 24px 0;
   text-align: center;
-  font-family: 'Inter', system-ui, sans-serif;
-  font-size: 0.875rem;
-  color: #666666;
+  font-family: -apple-system, BlinkMacSystemFont, 'Pretendard', sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  color: #717171;
 }
 
 .placeholderMessageDense {
-  padding: 16px var(--app-shell-horizontal-gutter, 16px);
+  padding: 20px var(--app-shell-horizontal-gutter, 16px);
 }
 
+/* Footer - Netflix style dark */
 .footer {
-  background: #f8f9fa;
+  background: #1a1a1a;
   width: 100%;
   margin-top: auto;
-  padding-top: 40px;
-  border-top: 1px solid #e9ecef;
+  padding-top: 32px;
 }
 
 .footerContent {
-  padding: 0 var(--app-shell-horizontal-gutter, 16px) calc(var(--app-shell-safe-bottom, 0px) + 32px);
+  padding: 0 var(--app-shell-horizontal-gutter, 16px) calc(var(--app-shell-safe-bottom, 0px) + 28px);
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 16px;
 }
 
 .footerLogo {
-  font-family: 'Inter', system-ui, sans-serif;
-  font-size: 1.125rem;
-  font-weight: 800;
-  color: #1b1e28;
-  letter-spacing: -0.5px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Pretendard', sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: -0.3px;
 }
 
 .footerLinks {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px 16px;
+  gap: 6px 14px;
 }
 
 .footerLink {
-  font-family: 'Inter', system-ui, sans-serif;
-  font-size: 0.8125rem;
-  font-weight: 500;
-  color: #495057;
+  font-family: -apple-system, BlinkMacSystemFont, 'Pretendard', sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  color: #808080;
   text-decoration: none;
-  transition: color 0.2s ease;
+  transition: color 0.15s ease;
 }
 
 .footerLink:hover {
-  color: #1b1e28;
+  color: #fff;
 }
 
 .footerDivider {
   width: 100%;
   height: 1px;
-  background: #dee2e6;
+  background: #333;
   margin: 4px 0;
 }
 
 .footerBottom {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 }
 
 .footerText {
-  font-family: 'Inter', system-ui, sans-serif;
-  font-size: 0.75rem;
+  font-family: -apple-system, BlinkMacSystemFont, 'Pretendard', sans-serif;
+  font-size: 11px;
   font-weight: 400;
-  line-height: 1.6;
-  color: #868e96;
+  line-height: 1.5;
+  color: #666;
   margin: 0;
 }
 
 .footerEmail {
-  font-family: 'Inter', system-ui, sans-serif;
-  font-size: 0.75rem;
-  font-weight: 500;
-  color: #495057;
+  font-family: -apple-system, BlinkMacSystemFont, 'Pretendard', sans-serif;
+  font-size: 11px;
+  font-weight: 400;
+  color: #808080;
   text-decoration: none;
 }
 
 .footerEmail:hover {
-  color: #1b1e28;
+  color: #fff;
 }
 
 @media (max-width: 480px) {
   .pageContainer {
-    gap: 20px;
+    gap: 16px;
+  }
+
+  .header {
+    padding: calc(var(--app-shell-safe-top, 0px) + 12px) var(--app-shell-horizontal-gutter, 16px) 10px;
   }
 
   .content {
-    gap: 28px;
+    gap: 24px;
+  }
+
+  .footer {
+    padding-top: 28px;
   }
 }

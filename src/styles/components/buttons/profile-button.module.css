@@ -1,41 +1,52 @@
-/* Profile Button Component */
+/* Simple Hamburger Menu Button */
 .profileButton {
-    width: 25px;
-    height: 20px;
-    background: none;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 4px;
+    width: 36px;
+    height: 36px;
+    background: transparent;
     border: none;
+    border-radius: 8px;
     cursor: pointer;
     padding: 0;
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: opacity 0.2s ease;
-}
-
-.profileButton:hover {
-    opacity: 0.7;
-}
-
-.profileButton:active {
-    opacity: 0.5;
-}
-
-.profileButton svg {
-    display: block;
-    width: 30px;
-    height: 30px;
-}
-
-/* Touch interactions */
-.profileButton {
+    transition: background 0.2s ease;
     -webkit-tap-highlight-color: transparent;
     touch-action: manipulation;
 }
 
+.profileButton:hover {
+    background: rgba(0, 0, 0, 0.05);
+}
+
+.profileButton:active {
+    background: rgba(0, 0, 0, 0.08);
+}
+
+.line {
+    display: block;
+    width: 18px;
+    height: 2px;
+    background: #222222;
+    border-radius: 1px;
+}
+
 /* Responsive design */
 @media (max-width: 480px) {
+    .profileButton {
+        width: 32px;
+        height: 32px;
+        gap: 3px;
+    }
+
+    .line {
+        width: 16px;
+        height: 1.5px;
+    }
+
     .profileButton:hover {
-        opacity: 1; /* Remove hover effects on mobile */
+        background: transparent;
     }
 }

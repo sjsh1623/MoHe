@@ -3,7 +3,6 @@
   position: fixed;
   bottom: calc(var(--app-shell-safe-bottom, 0px) + 1.5rem);
   left: 50%;
-  transform: translateX(-50%);
   display: flex;
   align-items: center;
   gap: 12px;
@@ -15,21 +14,39 @@
   box-shadow:
     0 2px 4px rgba(0, 0, 0, 0.06),
     0 8px 24px rgba(0, 0, 0, 0.12);
-  transition: all 0.2s ease;
   z-index: 10000;
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
+  /* Smooth slide animation */
+  transition:
+    transform 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.3s ease,
+    box-shadow 0.2s ease;
 }
 
-.floatingButton:hover {
+/* Visible state - slide up into view */
+.floatingButton.visible {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Hidden state - slide down out of view */
+.floatingButton.hidden {
+  transform: translateX(-50%) translateY(100px);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.floatingButton.visible:hover {
   box-shadow:
     0 4px 8px rgba(0, 0, 0, 0.08),
     0 12px 32px rgba(0, 0, 0, 0.16);
-  transform: translateX(-50%) scale(1.02);
+  transform: translateX(-50%) translateY(0) scale(1.02);
 }
 
-.floatingButton:active {
-  transform: translateX(-50%) scale(0.98);
+.floatingButton.visible:active {
+  transform: translateX(-50%) translateY(0) scale(0.98);
   box-shadow:
     0 2px 4px rgba(0, 0, 0, 0.04),
     0 4px 12px rgba(0, 0, 0, 0.08);

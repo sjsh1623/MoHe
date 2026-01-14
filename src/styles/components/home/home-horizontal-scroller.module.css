@@ -1,3 +1,4 @@
+/* Horizontal scroller - Netflix style */
 .scroller {
   width: 100%;
   overflow-x: auto;
@@ -13,8 +14,8 @@
 
 .track {
   display: flex;
-  gap: 16px;
-  padding: 4px var(--app-shell-horizontal-gutter, 16px) 16px;
+  gap: 14px;
+  padding: 4px var(--app-shell-horizontal-gutter, 16px) 12px;
   scroll-snap-type: x mandatory;
 }
 
@@ -26,5 +27,6 @@
 @media (max-width: 480px) {
   .track {
     gap: 12px;
+    padding: 2px var(--app-shell-horizontal-gutter, 16px) 8px;
   }
 }

@@ -5,11 +5,12 @@ export default function FloatingButton({
   onClick,
   className = '',
   children,
+  isVisible = true,
   ...props
 }) {
   return (
     <button
-      className={`${styles.floatingButton} ${className}`}
+      className={`${styles.floatingButton} ${isVisible ? styles.visible : styles.hidden} ${className}`}
       onClick={onClick}
       {...props}
     >

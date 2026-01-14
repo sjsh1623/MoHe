@@ -1,7 +1,8 @@
+/* Section - Netflix/Airbnb style */
 .section {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
 }
 
 .headerRow {
@@ -12,11 +13,12 @@
 }
 
 .title {
-  font-family: 'Inter', system-ui, sans-serif;
-  font-size: 1.375rem; /* 22px */
-  font-weight: 600;
-  color: #1b1e28;
+  font-family: -apple-system, BlinkMacSystemFont, 'Pretendard', sans-serif;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #222;
   margin: 0;
+  letter-spacing: -0.3px;
 }
 
 .actionSlot {
@@ -27,12 +29,12 @@
 
 .description {
   padding: 0 var(--app-shell-horizontal-gutter, 16px);
-  margin: 0;
-  font-family: 'Inter', system-ui, sans-serif;
-  font-size: 0.875rem;
+  margin: -4px 0 0 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Pretendard', sans-serif;
+  font-size: 14px;
   font-weight: 400;
-  color: #7d848d;
-  line-height: 1.5;
+  color: #717171;
+  line-height: 1.4;
 }
 
 .body {
@@ -45,16 +47,19 @@
 
 .footer {
   padding: 0 var(--app-shell-horizontal-gutter, 16px);
-  margin-top: 8px;
+  margin-top: 4px;
 }
 
 @media (max-width: 480px) {
   .section {
-    gap: 10px;
-    margin-bottom: 28px;
+    gap: 12px;
   }
 
   .title {
-    font-size: 1.25rem;
+    font-size: 1.125rem;
+  }
+
+  .description {
+    font-size: 13px;
   }
 }
