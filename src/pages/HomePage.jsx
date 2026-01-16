@@ -15,7 +15,7 @@ import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
 import { weatherService, contextualRecommendationService, bookmarkService, addressService, guestRecommendationService, placeService, homeService, categoryService } from '@/services/apiService';
 import { authService } from '@/services/authService';
 import bannerLeft from '@/assets/image/banner_left.png';
-import logoHeader from '@/assets/image/logo-header.png';
+import logoHeader from '@/assets/image/logo-header.svg';
 import { buildImageUrl, normalizePlaceImages } from '@/utils/image';
 import { HomeSection, HomeHorizontalScroller, HomeBanner } from '@/components/ui/home';
 
