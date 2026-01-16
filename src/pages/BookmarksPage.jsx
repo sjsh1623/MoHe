@@ -33,7 +33,19 @@ function BookmarksPage() {
         // Load user's bookmarks from backend
         const response = await bookmarkService.getUserBookmarks();
         if (response.success) {
-          const bookmarks = response.data?.bookmarks ?? response.data ?? [];
+          const bookmarksRaw = response.data?.bookmarks ?? response.data ?? [];
+          // Transform bookmark data structure: { id, place: {...}, createdAt } -> place object with placeId
+          const bookmarks = bookmarksRaw.map(bookmark => {
+            const placeData = bookmark.place || bookmark;
+            return {
+              id: placeData.id || bookmark.id,
+              name: placeData.name,
+              location: placeData.location,
+              image: placeData.image,
+              rating: placeData.rating,
+              createdAt: bookmark.createdAt
+            };
+          });
           setBookmarkedPlaces(bookmarks);
         } else {
           setError(t('bookmarks.errors.loadFailed'));
@@ -91,6 +103,7 @@ function BookmarksPage() {
                 location={place.location}
                 image={place.image || place.imageUrl}
                 rating={place.rating}
+                onClick={() => navigate(`/place/${place.id}`)}
               />
             ))}
           </div>

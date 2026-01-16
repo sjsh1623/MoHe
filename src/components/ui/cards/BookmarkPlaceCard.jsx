@@ -2,9 +2,9 @@ import React from 'react';
 import styles from '@/styles/components/cards/bookmark-place-card.module.css';
 import { buildImageUrl } from '@/utils/image';
 
-export default function BookmarkPlaceCard({ name, location, image, rating }) {
+export default function BookmarkPlaceCard({ name, location, image, rating, onClick }) {
   return (
-    <div className={styles.card}>
+    <div className={styles.card} onClick={onClick} style={{ cursor: onClick ? 'pointer' : 'default' }}>
       <div className={styles.imageContainer}>
         <img 
           src={buildImageUrl(image) || 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=176&h=159&fit=crop&crop=center'} 

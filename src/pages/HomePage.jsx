@@ -67,20 +67,21 @@ export default function HomePage() {
   const { saveLocation, getStoredLocation } = useLocationStorage();
   const [weather, setWeather] = useState(null);
   const [recommendations, setRecommendations] = useState([]);
-  const [currentLocation, setCurrentLocation] = useState(null);
+  const [currentLocation, setCurrentLocation] = useState(() => getStoredLocation());
   const [locationPermissionRequested, setLocationPermissionRequested] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isInitialLoading, setIsInitialLoading] = useState(true); // Only for first load
   const [error, setError] = useState(null);
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(() => authService.getCurrentUser());
   const [popularPlaces, setPopularPlaces] = useState([]);
   const [homeImages, setHomeImages] = useState([]);
   const [nearbyPlaces, setNearbyPlaces] = useState([]);
-  const [addressLoading, setAddressLoading] = useState(true);
+  const [addressLoading, setAddressLoading] = useState(!getStoredLocation()?.address);
   const [categories, setCategories] = useState([]);
   const [categoriesPlaces, setCategoriesPlaces] = useState({});
   const [dynamicMessage, setDynamicMessage] = useState('지금 가기 좋은 플레이스');
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
   const { recentlyViewed, addRecentlyViewed } = useRecentlyViewed();
+  const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
 
   // Prevent back navigation to login page
   useEffect(() => {
@@ -101,17 +102,14 @@ export default function HomePage() {
   // Initialize app only once on mount
   useEffect(() => {
     let isMounted = true; // Cleanup flag
-    
+
     const initializeApp = async () => {
       if (!isMounted) return;
-      
+
       try {
-        // Reset state on each initialization
+        // Don't reset state if we already have data (coming back from detail page)
         setError(null);
-        setRecommendations([]);
-        setPopularPlaces([]);
-        setIsLoading(true);
-        
+
         // Initialize user (authenticated or guest)
         let currentUser = authService.getCurrentUser();
         if (!currentUser) {
@@ -126,25 +124,32 @@ export default function HomePage() {
             currentUser = await authService.createGuestSession();
           }
         }
-        
+
         if (!isMounted) return;
         setUser(currentUser);
 
-        // Initialize location
-        await initializeLocationData();
-        
+        // Initialize location only if not already set
+        if (!currentLocation) {
+          await initializeLocationData();
+        } else {
+          // Location already exists, just load weather if needed
+          if (!weather) {
+            loadWeatherData(currentLocation.latitude, currentLocation.longitude);
+          }
+        }
+
       } catch (error) {
         if (isMounted) {
           console.error('Failed to initialize app:', error);
           setError('앱 초기화 중 오류가 발생했습니다.');
-          setIsLoading(false);
+          setIsInitialLoading(false);
         }
       }
     };
 
     const initializeLocationData = async () => {
       if (!isMounted) return;
-      
+
       // Check for stored location first
       const storedLocation = getStoredLocation();
       if (storedLocation) {
@@ -198,7 +203,7 @@ export default function HomePage() {
     };
 
     initializeApp();
-    
+
     return () => {
       isMounted = false; // Cleanup
     };
@@ -356,7 +361,8 @@ export default function HomePage() {
           console.log('HomePage: About to set recommendations with data:', recommendationsData);
           console.log('HomePage: Recommendations data length:', recommendationsData.length);
           setRecommendations(recommendationsData);
-          setIsLoading(false);
+          setIsInitialLoading(false);
+          setHasLoadedOnce(true);
           console.log('HomePage: Successfully set recommendations and loading to false');
         }
 
@@ -364,7 +370,7 @@ export default function HomePage() {
         if (isMounted) {
           console.error('Failed to load recommendations:', error);
           setRecommendations([]);
-          
+
           if (!user.isGuest) {
             if (error.message?.includes('403') || error.message?.includes('Forbidden')) {
               setError('인증이 필요합니다. 다시 로그인해주세요.');
@@ -372,8 +378,9 @@ export default function HomePage() {
               setError('추천 장소를 불러오는데 실패했습니다.');
             }
           }
-          
-          setIsLoading(false);
+
+          setIsInitialLoading(false);
+          setHasLoadedOnce(true);
         }
       }
     };
@@ -1131,7 +1138,8 @@ export default function HomePage() {
   // Retry function for error handling
   const handleRetry = () => {
     setError(null);
-    setIsLoading(true);
+    setIsInitialLoading(true);
+    setHasLoadedOnce(false);
     window.location.reload(); // Simple retry by reloading
   };
 
@@ -1236,8 +1244,8 @@ export default function HomePage() {
         </div>
       )}
 
-      {/* Main content - Show skeleton while loading */}
-      {isLoading ? (
+      {/* Main content - Show skeleton only on initial load when no data exists */}
+      {isInitialLoading && !hasLoadedOnce && recommendations.length === 0 ? (
         <HomePageSkeleton />
       ) : (
         <div className={styles.contentContainer}>
