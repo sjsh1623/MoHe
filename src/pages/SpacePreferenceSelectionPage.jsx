@@ -79,8 +79,10 @@ export default function SpacePreferenceSelectionPage() {
                                 }`}
                                 onClick={() => handleSpaceToggle(space.id)}
                             >
-                                <div className={styles.optionTitle}>{space.title}</div>
-                                <div className={styles.optionDescription}>{space.description}</div>
+                                <div className={styles.optionContent}>
+                                    <div className={styles.optionTitle}>{space.title}</div>
+                                    <div className={styles.optionDescription}>{space.description}</div>
+                                </div>
                             </button>
                         ))}
                     </div>

@@ -1,375 +1,218 @@
-/* MBTI Selection Page */
+/* MBTI Selection Page - Simple & Clean */
 
 .container {
-  background-color: #ffffff;
+  background: #FFFFFF;
   width: 100%;
-  height: 100vh;
-  overflow: hidden;
+  min-height: 100dvh;
   display: flex;
   justify-content: center;
-  align-items: center;
 }
 
 .content {
   width: 100%;
-  max-width: 440px;
-  height: 100vh;
-  position: relative;
-  padding: 0 20px;
+  max-width: 480px;
+  min-height: 100dvh;
+  padding: 0 24px;
   display: flex;
   flex-direction: column;
 }
 
-/* Header - matching PlacesListPage standard */
 .header {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 50px 5px 10px;
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  background: white;
-  z-index: 100;
+  height: 56px;
+  flex-shrink: 0;
 }
 
-.header button {
-  position: absolute;
-  left: 10px;
-  top: 55%;
-  transform: translateY(-25%);
-}
-
-/* Main Content Area */
 .mainContent {
   flex: 1;
   display: flex;
   flex-direction: column;
-  padding-top: 86px;
+  padding-top: 20px;
 }
 
-/* Content Header */
 .contentHeader {
-  margin-bottom: 30px;
-  text-align: left;
-  padding: 0 18px;
+  margin-bottom: 48px;
 }
 
 .title {
-  font-family: "Inter", sans-serif;
   font-size: 24px;
   font-weight: 600;
-  color: #000000;
-  line-height: 1.4;
-  margin: 0 0 16px 0;
+  color: #1A1A1A;
+  line-height: 1.35;
+  margin: 0 0 8px 0;
 }
 
 .subtitle {
-  font-family: "Inter", sans-serif;
-  font-size: 18px;
-  font-weight: 600;
-  color: #7d848d;
-  line-height: 1.2;
+  font-size: 15px;
+  font-weight: 400;
+  color: #8E8E8E;
   margin: 0;
 }
 
-/* MBTI Grid */
-.mbtiGrid {
+/* MBTI Container */
+.mbtiContainer {
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  margin: 40px 20px;
-  padding: 0 50px;
-}
-
-.mbtiRow {
-  display: flex;
-  justify-content: space-between;
   align-items: center;
+  flex: 1;
 }
 
-.mbtiLetter {
-  width: 60px;
-  height: 60px;
-  background: none;
+/* MBTI Grid - 4 columns, 2 rows */
+.mbtiGrid {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 48px;
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Letter Button */
+.letter {
+  width: 64px;
+  height: 64px;
   border: none;
-  font-family: "Inter", sans-serif;
-  font-size: 75px;
+  border-radius: 16px;
+  background: #F5F5F5;
+  font-size: 24px;
   font-weight: 600;
-  text-align: center;
-  line-height: 1;
+  color: #CCCCCC;
   cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  transition: all 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.mbtiLetter.selected {
-  color: #000000;
+.letter:active {
+  transform: scale(0.95);
+}
+
+.letter.selected {
+  background: #FF5A5F;
+  color: #FFFFFF;
+}
+
+/* Result */
+.result {
+  font-size: 36px;
   font-weight: 700;
+  color: #FF5A5F;
+  letter-spacing: 0.15em;
+  transition: opacity 0.15s ease;
 }
 
-.mbtiLetter.unselected {
-  color: #e4e4e4;
-  font-weight: 600;
+/* MBTI 성향 설명 */
+.descriptionContainer {
+  width: 100%;
+  max-width: 320px;
+  margin-top: 24px;
+  padding: 0 8px;
+  transition: opacity 0.15s ease;
 }
 
-.mbtiLetter:hover {
-  transform: scale(1.1);
-}
-
-/* MBTI Display */
-.mbtiDisplay {
-  font-family: "Inter", sans-serif;
-  font-size: 30px;
-  font-weight: 600;
-  color: #000000;
-  text-align: left;
-  margin: 20px 0 16px 42px;
-  height: 30px;
-  line-height: 1;
-  transition: all 0.3s ease;
-}
-
-.mbtiDisplay.update {
-  animation: gentleFadeIn 0.4s ease-out;
-}
-
-.mbtiDisplay.complete {
-  animation: completeFadeIn 0.6s ease-out;
-}
-
-/* Description */
 .description {
-  width: min(356px, 85vw);
-  min-height: 150px;
-  margin: 0 42px;
-  font-family: "Inter", sans-serif;
-  font-weight: 500;
-  color: #000000;
-  font-size: 15px;
-  line-height: 1.67;
+  font-size: 14px;
+  font-weight: 400;
+  color: #7D848D;
+  line-height: 1.7;
+  text-align: center;
+  margin: 0;
   white-space: pre-line;
-  transition: all 0.3s ease;
 }
 
-.description.fadeIn {
-  animation: softFadeIn 0.6s ease-out;
+.result.pulse {
+  animation: pulse 0.2s ease;
 }
 
-
-@keyframes gentleFadeIn {
-  0% {
-    opacity: 0.3;
-  }
-  100% {
-    opacity: 1;
-  }
+@keyframes pulse {
+  0% { opacity: 0.5; }
+  100% { opacity: 1; }
 }
 
-@keyframes completeFadeIn {
-  0% {
-    opacity: 0;
-  }
-  100% {
-    opacity: 1;
-  }
-}
-
-@keyframes softFadeIn {
-  0% {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Progress Bar */
+/* Progress */
 .progressContainer {
   display: flex;
   justify-content: center;
   gap: 8px;
-  margin: 40px 0 20px 0;
+  margin: auto 0 24px 0;
 }
 
 .progressStep {
-  width: 70px;
+  width: 32px;
   height: 4px;
-  background-color: #e5e5e5;
+  background: #EEEEEE;
   border-radius: 2px;
-  transition: background-color 0.3s ease;
 }
 
 .progressStep.active {
-  background-color: #0d6efd;
+  background: #FF5A5F;
 }
 
 /* Buttons */
 .nextButton {
   width: 100%;
-  max-width: 320px;
-  height: 56px;
-  background-color: #909090;
-  color: white;
+  height: 52px;
+  background: #EEEEEE;
+  color: #FFFFFF;
   border: none;
-  border-radius: 16px;
-  font-family: "Inter", sans-serif;
+  border-radius: 14px;
   font-size: 16px;
   font-weight: 600;
   cursor: not-allowed;
-  margin: 0 auto 16px auto;
-  transition: background-color 0.2s ease;
+  margin-bottom: 12px;
+  transition: background 0.2s ease;
 }
 
 .nextButton.ready {
-  background-color: #0d6efd;
+  background: #FF5A5F;
   cursor: pointer;
 }
 
-.nextButton.ready:hover {
-  background-color: #0056cc;
-}
-
 .nextButton.ready:active {
-  transform: scale(0.98);
+  opacity: 0.8;
 }
 
 .skipButton {
   background: none;
   border: none;
-  font-family: "Inter", sans-serif;
-  font-size: 12px;
-  font-weight: 500;
-  color: #7d848d;
+  font-size: 14px;
+  font-weight: 400;
+  color: #8E8E8E;
   text-decoration: underline;
   cursor: pointer;
-  margin: 0 auto 40px auto;
   padding: 8px;
+  margin: 0 auto 24px auto;
 }
 
-.skipButton:hover {
-  color: #5a6169;
-}
+/* Responsive */
+@media (max-width: 360px) {
+  .mbtiGrid {
+    gap: 12px;
+  }
 
-/* Responsive Design */
-@media (max-height: 800px) {
-  .mainContent {
-    padding-top: 76px;
-  }
-  
-  .contentHeader {
-    margin-bottom: 20px;
-  }
-  
-  .title {
+  .letter {
+    width: 56px;
+    height: 56px;
     font-size: 20px;
   }
-  
-  .subtitle {
-    font-size: 16px;
-  }
-  
-  .mbtiGrid {
-    margin: 20px 0;
-    gap: 16px;
-  }
-  
-  .mbtiLetter {
-    width: 50px;
-    height: 50px;
-    font-size: 60px;
-  }
-  
-  .description {
-    min-height: 120px;
-    font-size: 14px;
-  }
-}
 
-@media (max-height: 700px) {
-  .mainContent {
-    padding-top: 70px;
+  .result {
+    font-size: 32px;
   }
-  
-  .contentHeader {
-    margin-bottom: 16px;
+
+  .descriptionContainer {
+    margin-top: 20px;
   }
-  
-  .title {
-    font-size: 18px;
-  }
-  
-  .subtitle {
-    font-size: 14px;
-  }
-  
-  .mbtiGrid {
-    margin: 16px 0;
-    gap: 12px;
-    padding: 0 30px;
-  }
-  
-  .mbtiLetter {
-    width: 45px;
-    height: 45px;
-    font-size: 50px;
-  }
-  
-  .mbtiDisplay {
-    font-size: 24px;
-    margin: 12px 0 8px 42px;
-  }
-  
+
   .description {
-    min-height: 100px;
     font-size: 13px;
-    line-height: 1.5;
-  }
-  
-  .progressContainer {
-    margin: 20px 0 16px 0;
-  }
-  
-  .nextButton {
-    height: 48px;
   }
 }
 
-@media (max-width: 480px) {
+/* iOS Safe Area */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
   .content {
-    padding: 0 16px;
+    padding-bottom: env(safe-area-inset-bottom);
   }
-  
-  .contentHeader {
-    padding: 0 10px;
-  }
-  
-  .mbtiGrid {
-    padding: 0 20px;
-  }
-  
-  .mbtiDisplay {
-    margin-left: 30px;
-  }
-  
-  .description {
-    margin: 0 30px;
-  }
-  
-  .progressStep {
-    width: 60px;
-  }
-}
-
-/* Focus states for accessibility */
-.mbtiLetter:focus-visible,
-.nextButton:focus-visible,
-.skipButton:focus-visible {
-  outline: 2px solid #0d6efd;
-  outline-offset: 2px;
 }

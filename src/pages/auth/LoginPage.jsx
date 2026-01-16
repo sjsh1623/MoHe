@@ -187,6 +187,14 @@ export default function LoginPage() {
                         {isLoading ? t('auth.login.loggingIn') : t('auth.login.loginButton')}
                     </PrimaryButton>
 
+                    <div className={styles.divider}>
+                        <span className={styles.dividerLine} />
+                        <span className={styles.dividerText}>또는</span>
+                        <span className={styles.dividerLine} />
+                    </div>
+
+                    <SocialButtons onError={setError} />
+
                     <div className={styles.linksContainer}>
                         <Link to="/signup" className={styles.link}>
                             {t('auth.login.signup')}
@@ -199,14 +207,6 @@ export default function LoginPage() {
                             {t('auth.login.forgotPassword')}
                         </button>
                     </div>
-
-                    <div className={styles.divider}>
-                        <span className={styles.dividerLine} />
-                        <span className={styles.dividerText}>또는</span>
-                        <span className={styles.dividerLine} />
-                    </div>
-
-                    <SocialButtons onError={setError} />
                 </Stack>
         </AuthContainer>
     );

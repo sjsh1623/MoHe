@@ -1,9 +1,10 @@
-/* Space Preference Selection Page */
+/* Space Preference Selection Page - Airbnb Style */
 
 .container {
   background-color: #ffffff;
   width: 100%;
   height: 100vh;
+  height: 100dvh;
   overflow: hidden;
   display: flex;
   justify-content: center;
@@ -14,13 +15,14 @@
   width: 100%;
   max-width: 440px;
   height: 100vh;
+  height: 100dvh;
   position: relative;
   padding: 0 20px;
   display: flex;
   flex-direction: column;
 }
 
-/* Header - matching MBTI page standard */
+/* Header */
 .header {
   display: flex;
   align-items: center;
@@ -51,87 +53,117 @@
 
 /* Content Header */
 .contentHeader {
-  margin-bottom: 30px;
+  margin-bottom: 24px;
   text-align: left;
-  padding: 0 18px;
+  padding: 0 4px;
 }
 
 .title {
-  font-family: "Inter", sans-serif;
-  font-size: 24px;
+  font-family: "Inter", -apple-system, sans-serif;
+  font-size: 22px;
   font-weight: 600;
-  color: #000000;
-  line-height: 1.2;
-  margin: 0 0 16px 0;
+  color: #222222;
+  line-height: 1.3;
+  margin: 0 0 8px 0;
 }
 
 .subtitle {
-  font-family: "Inter", sans-serif;
-  font-size: 18px;
-  font-weight: 600;
-  color: #7d848d;
-  line-height: 1.2;
+  font-family: "Inter", -apple-system, sans-serif;
+  font-size: 15px;
+  font-weight: 400;
+  color: #717171;
+  line-height: 1.4;
   margin: 0;
 }
 
-/* Options Container */
+/* Options Container - Airbnb List Style */
 .optionsContainer {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  margin: 0 18px 20px 18px;
+  gap: 0;
   flex: 1;
+  overflow-y: auto;
 }
 
-/* Option Cards */
+/* Option Cards - Airbnb Checkbox List Style */
 .optionCard {
   width: 100%;
-  min-height: 93px;
   background: #ffffff;
-  border-radius: 10px;
-  border: 1.5px solid #7d848d;
-  padding: 20px 21px;
+  border: none;
+  border-bottom: 1px solid #EBEBEB;
+  padding: 18px 4px;
   text-align: left;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: background-color 0.15s ease;
   display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 4px;
+  align-items: center;
+  gap: 16px;
+  position: relative;
 }
 
-.optionCard.selected {
-  border-color: #0d6efd;
+.optionCard:first-child {
+  border-top: 1px solid #EBEBEB;
 }
 
-.optionCard.unselected {
-  border-color: #7d848d;
+.optionCard::before {
+  content: '';
+  width: 24px;
+  height: 24px;
+  border: 2px solid #DDDDDD;
+  border-radius: 4px;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+  background: white;
+}
+
+.optionCard.selected::before {
+  background: #FF5A5F;
+  border-color: #FF5A5F;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z'/%3E%3C/svg%3E");
+  background-size: 16px;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 .optionCard:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background-color: #F7F7F7;
 }
 
 .optionCard:active {
-  transform: translateY(0);
+  background-color: #EBEBEB;
+}
+
+.optionCard.selected {
+  background-color: transparent;
+}
+
+.optionCard.selected:hover {
+  background-color: #F7F7F7;
+}
+
+/* Text Content */
+.optionContent {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
 }
 
 .optionTitle {
-  font-family: "Inter", sans-serif;
-  font-size: 17px;
-  font-weight: 700;
-  color: #000000;
-  line-height: 1;
+  font-family: "Inter", -apple-system, sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  color: #222222;
+  line-height: 1.3;
   margin: 0;
 }
 
 .optionDescription {
-  font-family: "Inter", sans-serif;
+  font-family: "Inter", -apple-system, sans-serif;
   font-size: 14px;
   font-weight: 400;
-  color: #7d848d;
-  line-height: 1;
+  color: #717171;
+  line-height: 1.3;
   margin: 0;
 }
 
@@ -146,39 +178,39 @@
 .progressStep {
   width: 70px;
   height: 4px;
-  background-color: #e5e5e5;
+  background-color: #EBEBEB;
   border-radius: 2px;
   transition: background-color 0.3s ease;
 }
 
 .progressStep.active {
-  background-color: #0d6efd;
+  background-color: #FF5A5F;
 }
 
 /* Buttons */
 .nextButton {
   width: 100%;
   max-width: 335px;
-  height: 56px;
-  background-color: #909090;
+  height: 52px;
+  background-color: #DDDDDD;
   color: white;
   border: none;
-  border-radius: 16px;
-  font-family: "Inter", sans-serif;
+  border-radius: 8px;
+  font-family: "Inter", -apple-system, sans-serif;
   font-size: 16px;
   font-weight: 600;
   cursor: not-allowed;
-  margin: 0 auto 16px auto;
-  transition: background-color 0.2s ease;
+  margin: 0 auto 12px auto;
+  transition: all 0.2s ease;
 }
 
 .nextButton.ready {
-  background-color: #0d6efd;
+  background-color: #FF5A5F;
   cursor: pointer;
 }
 
 .nextButton.ready:hover {
-  background-color: #0056cc;
+  background-color: #FF385C;
 }
 
 .nextButton.ready:active {
@@ -188,18 +220,18 @@
 .skipButton {
   background: none;
   border: none;
-  font-family: "Inter", sans-serif;
-  font-size: 12px;
+  font-family: "Inter", -apple-system, sans-serif;
+  font-size: 14px;
   font-weight: 500;
-  color: #7d848d;
+  color: #717171;
   text-decoration: underline;
   cursor: pointer;
-  margin: 0 auto 40px auto;
+  margin: 0 auto 32px auto;
   padding: 8px;
 }
 
 .skipButton:hover {
-  color: #5a6169;
+  color: #222222;
 }
 
 /* Responsive Design */
@@ -207,34 +239,17 @@
   .mainContent {
     padding-top: 76px;
   }
-  
+
   .contentHeader {
     margin-bottom: 20px;
   }
-  
+
   .title {
     font-size: 20px;
   }
-  
-  .subtitle {
-    font-size: 16px;
-  }
-  
-  .optionsContainer {
-    gap: 4px;
-  }
-  
+
   .optionCard {
-    min-height: 80px;
-    padding: 16px 21px;
-  }
-  
-  .optionTitle {
-    font-size: 16px;
-  }
-  
-  .optionDescription {
-    font-size: 13px;
+    padding: 14px 4px;
   }
 }
 
@@ -242,41 +257,40 @@
   .mainContent {
     padding-top: 70px;
   }
-  
+
   .contentHeader {
     margin-bottom: 16px;
   }
-  
+
   .title {
     font-size: 18px;
   }
-  
+
   .subtitle {
     font-size: 14px;
   }
-  
-  .optionsContainer {
-    gap: 3px;
-    margin-bottom: 16px;
-  }
-  
+
   .optionCard {
-    min-height: 70px;
-    padding: 14px 21px;
+    padding: 12px 4px;
   }
-  
+
+  .optionCard::before {
+    width: 22px;
+    height: 22px;
+  }
+
   .optionTitle {
     font-size: 15px;
   }
-  
+
   .optionDescription {
-    font-size: 12px;
+    font-size: 13px;
   }
-  
+
   .progressContainer {
     margin: 16px 0;
   }
-  
+
   .nextButton {
     height: 48px;
   }
@@ -286,15 +300,7 @@
   .content {
     padding: 0 16px;
   }
-  
-  .contentHeader {
-    padding: 0 14px;
-  }
-  
-  .optionsContainer {
-    margin: 0 14px 20px 14px;
-  }
-  
+
   .progressStep {
     width: 60px;
   }
@@ -304,6 +310,16 @@
 .optionCard:focus-visible,
 .nextButton:focus-visible,
 .skipButton:focus-visible {
-  outline: 2px solid #0d6efd;
+  outline: 2px solid #FF5A5F;
   outline-offset: 2px;
+}
+
+/* WebView touch optimizations */
+.optionCard,
+.nextButton,
+.skipButton {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
 }

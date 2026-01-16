@@ -55,22 +55,22 @@
 }
 
 .ageButton:hover {
-    border-color: #0d6efd;
+    border-color: #FF5A5F;
 }
 
 .ageButton.selected {
-    border-color: #0d6efd;
+    border-color: #FF5A5F;
     border-width: 1.5px;
     background: white;
     color: #7D848D;
 }
 
 .ageButton.selected .ageNumber {
-    color: #0d6efd;
+    color: #FF5A5F;
 }
 
 .ageButton.selected svg path {
-    fill: #0d6efd;
+    fill: #FF5A5F;
 }
 
 .ageContent {
@@ -168,6 +168,6 @@
 
 /* Focus states for accessibility */
 .ageButton:focus-visible {
-    outline: 2px solid #0d6efd;
+    outline: 2px solid #FF5A5F;
     outline-offset: 2px;
 }
