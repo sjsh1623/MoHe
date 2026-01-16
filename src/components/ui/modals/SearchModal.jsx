@@ -126,12 +126,12 @@ export default function SearchModal({ isOpen, onClose }) {
   };
 
   const popularCategories = [
-    { emoji: '☕', label: '카페' },
-    { emoji: '🍽️', label: '맛집' },
-    { emoji: '🍜', label: '혼밥' },
-    { emoji: '🥂', label: '데이트' },
-    { emoji: '🌿', label: '힐링' },
-    { emoji: '📸', label: '인스타' },
+    { label: '카페' },
+    { label: '맛집' },
+    { label: '혼밥' },
+    { label: '데이트' },
+    { label: '힐링' },
+    { label: '인스타' },
   ];
 
   return (
@@ -278,7 +278,6 @@ export default function SearchModal({ isOpen, onClose }) {
                         className={styles.categoryBtn}
                         onClick={() => handleRecentClick(cat.label)}
                       >
-                        <span className={styles.categoryEmoji}>{cat.emoji}</span>
                         <span className={styles.categoryLabel}>{cat.label}</span>
                       </button>
                     ))}
