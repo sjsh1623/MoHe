@@ -2,11 +2,13 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import styles from '@/styles/components/ui/modals/search-modal.module.css';
-import { placeService } from '@/services/apiService';
+import { unifiedSearchService } from '@/services/apiService';
 import { buildImageUrl } from '@/utils/image';
+import { useGeolocation } from '@/hooks/useGeolocation';
 
 export default function SearchModal({ isOpen, onClose }) {
   const navigate = useNavigate();
+  const { location } = useGeolocation();
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
   const [recentSearches, setRecentSearches] = useState([]);
@@ -49,7 +51,7 @@ export default function SearchModal({ isOpen, onClose }) {
     };
   }, [isOpen]);
 
-  // Debounced search
+  // Debounced search using unified search API (Embedding + keyword hybrid)
   const searchPlaces = useCallback(async (searchQuery) => {
     if (!searchQuery.trim()) {
       setResults([]);
@@ -58,9 +60,13 @@ export default function SearchModal({ isOpen, onClose }) {
 
     setIsLoading(true);
     try {
-      const response = await placeService.searchPlaces(searchQuery, { size: 8 });
+      // Use unified search API with location if available
+      const lat = location?.latitude;
+      const lon = location?.longitude;
+      const response = await unifiedSearchService.search(searchQuery, lat, lon, { limit: 8 });
+
       if (response.success && response.data) {
-        const places = response.data.content || response.data || [];
+        const places = response.data.places || response.data || [];
         setResults(places);
       } else {
         setResults([]);
@@ -71,7 +77,7 @@ export default function SearchModal({ isOpen, onClose }) {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [location]);
 
   // Handle input change with debounce
   const handleInputChange = (e) => {

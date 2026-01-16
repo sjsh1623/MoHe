@@ -966,6 +966,95 @@ export class CategoryService extends ApiService {
 }
 
 /**
+ * Unified Search API service - Embedding 기반 의미론적 검색
+ * 장소명, 지역명, 음식, 활동 등 다양한 검색 지원
+ */
+export class UnifiedSearchService extends ApiService {
+  /**
+   * 통합 검색 (Embedding + 키워드 하이브리드)
+   * @param {string} query - 검색어 (장소명, 지역명, 음식, 활동, 분위기 등)
+   * @param {number} latitude - 사용자 위도 (선택)
+   * @param {number} longitude - 사용자 경도 (선택)
+   * @param {object} options - 추가 옵션 (limit 등)
+   */
+  async search(query, latitude, longitude, options = {}) {
+    const params = new URLSearchParams({
+      q: query,
+      limit: (options.limit || 20).toString()
+    });
+
+    if (latitude && longitude) {
+      params.append('lat', latitude.toString());
+      params.append('lon', longitude.toString());
+    }
+
+    return this.get(`/api/search?${params}`, {
+      requireAuth: false
+    });
+  }
+
+  /**
+   * 음식 검색 (Embedding 특화)
+   * @param {string} query - 음식/메뉴 검색어 (파스타, 라멘, 브런치 등)
+   */
+  async searchFood(query, latitude, longitude, options = {}) {
+    const params = new URLSearchParams({
+      q: query,
+      limit: (options.limit || 20).toString()
+    });
+
+    if (latitude && longitude) {
+      params.append('lat', latitude.toString());
+      params.append('lon', longitude.toString());
+    }
+
+    return this.get(`/api/search/food?${params}`, {
+      requireAuth: false
+    });
+  }
+
+  /**
+   * 활동 검색 (Embedding 특화)
+   * @param {string} query - 활동/목적 검색어 (데이트, 혼밥, 모임 등)
+   */
+  async searchActivity(query, latitude, longitude, options = {}) {
+    const params = new URLSearchParams({
+      q: query,
+      limit: (options.limit || 20).toString()
+    });
+
+    if (latitude && longitude) {
+      params.append('lat', latitude.toString());
+      params.append('lon', longitude.toString());
+    }
+
+    return this.get(`/api/search/activity?${params}`, {
+      requireAuth: false
+    });
+  }
+
+  /**
+   * 지역 검색
+   * @param {string} query - 지역명 검색어 (성수동, 강남역, 홍대 등)
+   */
+  async searchLocation(query, latitude, longitude, options = {}) {
+    const params = new URLSearchParams({
+      q: query,
+      limit: (options.limit || 20).toString()
+    });
+
+    if (latitude && longitude) {
+      params.append('lat', latitude.toString());
+      params.append('lon', longitude.toString());
+    }
+
+    return this.get(`/api/search/location?${params}`, {
+      requireAuth: false
+    });
+  }
+}
+
+/**
  * Review API service for user-generated reviews
  * Uses the existing Comment API endpoints
  */
@@ -1028,5 +1117,6 @@ export const guestRecommendationService = new GuestRecommendationService();
 export const homeService = new HomeService();
 export const categoryService = new CategoryService();
 export const reviewService = new ReviewService();
+export const unifiedSearchService = new UnifiedSearchService();
 
 export default ApiService;

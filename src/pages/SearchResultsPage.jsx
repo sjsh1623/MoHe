@@ -6,7 +6,7 @@ import styles from '@/styles/pages/search-results-page.module.css';
 import { Container } from '@/components/ui/layout';
 import SearchResultsSkeleton from '@/components/ui/skeletons/SearchResultsSkeleton';
 import ErrorMessage from '@/components/ui/alerts/ErrorMessage';
-import { placeService, bookmarkService, contextualRecommendationService } from '@/services/apiService';
+import { placeService, bookmarkService, unifiedSearchService } from '@/services/apiService';
 import { authService } from '@/services/authService';
 import { useGeolocation } from '@/hooks/useGeolocation';
 import { useDebounce } from '@/hooks/useDebounce';
@@ -57,16 +57,11 @@ export default function SearchResultsPage() {
           lon = location.longitude;
         }
 
-        // Get contextual recommendations or search results
+        // Get unified search results (Embedding + keyword hybrid)
         let response;
         if (debouncedQuery) {
-          // Use contextual search for queries
-          response = await contextualRecommendationService.getContextualRecommendations(
-            debouncedQuery,
-            lat,
-            lon,
-            { limit: 20 }
-          );
+          // Use unified search API for queries (supports food, activity, location, etc.)
+          response = await unifiedSearchService.search(debouncedQuery, lat, lon, { limit: 20 });
         } else {
           // Use general place search for no query
           response = await placeService.getNearbyPlaces(lat, lon, {
