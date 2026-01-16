@@ -59,26 +59,51 @@ const generateState = () => {
 
 /**
  * Store OAuth state for verification
+ * Uses localStorage for Capacitor native apps (sessionStorage doesn't persist across browser switches)
  */
 const storeOAuthState = (state, provider) => {
-  sessionStorage.setItem('oauth_state', state);
-  sessionStorage.setItem('oauth_provider', provider);
+  const storage = Capacitor.isNativePlatform() ? localStorage : sessionStorage;
+  storage.setItem('oauth_state', state);
+  storage.setItem('oauth_provider', provider);
+  storage.setItem('oauth_timestamp', Date.now().toString());
 };
 
 /**
  * Verify OAuth state
+ * Includes timestamp check to prevent replay attacks (5 minute expiry)
  */
 const verifyOAuthState = (state) => {
-  const storedState = sessionStorage.getItem('oauth_state');
-  return state === storedState;
+  const storage = Capacitor.isNativePlatform() ? localStorage : sessionStorage;
+  const storedState = storage.getItem('oauth_state');
+  const timestamp = storage.getItem('oauth_timestamp');
+
+  // Check if state matches
+  if (state !== storedState) {
+    return false;
+  }
+
+  // Check if not expired (5 minutes)
+  if (timestamp) {
+    const elapsed = Date.now() - parseInt(timestamp, 10);
+    if (elapsed > 5 * 60 * 1000) {
+      return false;
+    }
+  }
+
+  return true;
 };
 
 /**
  * Clear OAuth state
  */
 const clearOAuthState = () => {
+  // Clear from both storages to be safe
   sessionStorage.removeItem('oauth_state');
   sessionStorage.removeItem('oauth_provider');
+  sessionStorage.removeItem('oauth_timestamp');
+  localStorage.removeItem('oauth_state');
+  localStorage.removeItem('oauth_provider');
+  localStorage.removeItem('oauth_timestamp');
 };
 
 /**

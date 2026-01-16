@@ -1,22 +1,65 @@
-.contentContainer {
-  padding: 0;
-  width: 100%;
+/* Home Page Skeleton - Matches actual HomePage structure */
+
+/* Shimmer animation */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    #f0f0f0 25%,
+    #e8e8e8 50%,
+    #f0f0f0 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite ease-in-out;
+}
+
+/* Content container - matches home-page.module.css .content */
+.content {
   display: flex;
   flex-direction: column;
   gap: 28px;
+  padding-bottom: 32px;
 }
 
+/* Section - matches home-section.module.css */
 .section {
-  margin-bottom: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
 }
 
-.sectionTitle {
-  margin-bottom: 16px;
+.headerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--app-shell-horizontal-gutter, 16px);
 }
 
-.horizontalScroll {
-  width: calc(100% + 20px);
-  margin: 0 -10px;
+.titleSkeleton {
+  width: 180px;
+  height: 24px;
+  border-radius: 6px;
+  background: linear-gradient(
+    90deg,
+    #f0f0f0 25%,
+    #e8e8e8 50%,
+    #f0f0f0 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite ease-in-out;
+}
+
+/* Horizontal scroller - matches home-horizontal-scroller.module.css */
+.scroller {
+  width: 100%;
   overflow-x: auto;
   overflow-y: hidden;
   -webkit-overflow-scrolling: touch;
@@ -24,82 +67,109 @@
   -ms-overflow-style: none;
 }
 
-.horizontalScroll::-webkit-scrollbar {
+.scroller::-webkit-scrollbar {
   display: none;
 }
 
-.cardsContainer {
+.track {
   display: flex;
-  gap: 16px;
-  scroll-snap-type: x mandatory;
-  padding: 4px 0 16px;
+  gap: 14px;
+  padding: 4px var(--app-shell-horizontal-gutter, 16px) 12px;
 }
 
-.cardWrapper {
+.track > * {
   flex-shrink: 0;
-  scroll-snap-align: start;
-  width: min(54.55vw, 240px);
 }
 
-.cardWrapper:first-child {
-  margin-left: 42px;
+/* Banner section - matches home-page.module.css .bannerWrapper */
+.bannerWrapper {
+  padding: 0 var(--app-shell-horizontal-gutter, 16px);
 }
 
-.cardWrapper:last-child {
-  margin-right: 42px;
-}
-
-.moodSection {
-  margin: 0;
-}
-
-.moodCard {
-  background: #F6F6F6;
+.bannerSkeleton {
+  background: #f6f6f6;
   border-radius: 24px;
   padding: 20px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  width: 100%;
-  box-sizing: border-box;
   gap: 12px;
 }
 
-.moodContent {
+.bannerContent {
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
-.moodTitle {
-  font-family: 'Inter', system-ui, sans-serif;
-  font-size: 1.125rem;
-  font-weight: 600;
-  margin: 0 0 8px 0;
+.bannerTitleSkeleton {
+  width: 100px;
+  height: 22px;
+  border-radius: 4px;
+  background: linear-gradient(
+    90deg,
+    #e8e8e8 25%,
+    #ddd 50%,
+    #e8e8e8 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite ease-in-out;
 }
 
-.moodDescription {
-  font-family: 'Inter', system-ui, sans-serif;
-  font-size: 0.9375rem;
-  color: #444;
-  margin: 0;
-  line-height: 1.4;
+.bannerDescSkeleton {
+  width: 100%;
+  height: 16px;
+  border-radius: 4px;
+  background: linear-gradient(
+    90deg,
+    #e8e8e8 25%,
+    #ddd 50%,
+    #e8e8e8 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite ease-in-out;
 }
 
-.moodImage img {
+.bannerImageSkeleton {
   width: 96px;
-  height: auto;
-  display: block;
+  height: 96px;
+  border-radius: 12px;
+  flex-shrink: 0;
+  background: linear-gradient(
+    90deg,
+    #e8e8e8 25%,
+    #ddd 50%,
+    #e8e8e8 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite ease-in-out;
 }
 
 @media (max-width: 480px) {
-  .cardWrapper:first-child {
-    margin-left: 32px;
+  .content {
+    gap: 24px;
   }
 
-  .cardWrapper:last-child {
-    margin-right: 32px;
+  .section {
+    gap: 12px;
   }
 
-  .moodCard {
+  .track {
+    gap: 12px;
+    padding: 2px var(--app-shell-horizontal-gutter, 16px) 8px;
+  }
+
+  .titleSkeleton {
+    height: 20px;
+  }
+
+  .bannerSkeleton {
     padding: 16px;
+  }
+
+  .bannerImageSkeleton {
+    width: 80px;
+    height: 80px;
   }
 }

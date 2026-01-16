@@ -15,6 +15,15 @@
       "showSpinner": false,
       "splashFullScreen": true,
       "splashImmersive": true
+    },
+    "App": {
+      "launchShowDuration": 0
     }
+  },
+  "android": {
+    "allowMixedContent": true
+  },
+  "ios": {
+    "scheme": "mohe"
   }
 }

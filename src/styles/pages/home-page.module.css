@@ -57,6 +57,62 @@
   padding: 0 var(--app-shell-horizontal-gutter, 16px);
 }
 
+/* Quick Action Chips */
+.quickActionsSection {
+  padding: 0;
+  margin-bottom: -8px;
+}
+
+.quickActionsScroller {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding: 0 var(--app-shell-horizontal-gutter, 16px) 8px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.quickActionsScroller::-webkit-scrollbar {
+  display: none;
+}
+
+.quickActionChip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
+  background: #f5f5f5;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.quickActionChip:hover {
+  background: #ebebeb;
+}
+
+.quickActionChip:active {
+  transform: scale(0.96);
+  background: #e0e0e0;
+}
+
+.quickActionEmoji {
+  font-size: 16px;
+  line-height: 1;
+}
+
+.quickActionLabel {
+  font-family: -apple-system, BlinkMacSystemFont, 'Pretendard', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+  white-space: nowrap;
+}
+
 .cardLink {
   cursor: pointer;
   display: inline-flex;

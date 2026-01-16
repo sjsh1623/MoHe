@@ -96,7 +96,9 @@ export default function PlaceDetailPage({ place = null }) {
   const [isMenuModalOpen, setIsMenuModalOpen] = useState(false);
   const [selectedMenuIndex, setSelectedMenuIndex] = useState(0);
   const [showReviewsFullView, setShowReviewsFullView] = useState(false);
+  const [focusedReviewId, setFocusedReviewId] = useState(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const modalContentRef = useRef(null);
 
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [isBookmarkLoading, setIsBookmarkLoading] = useState(false);
@@ -593,7 +595,15 @@ export default function PlaceDetailPage({ place = null }) {
           </div>
           <div className={styles.reviewList}>
             {reviews.length > 0 ? reviews.map((review) => (
-              <div key={review.id} className={styles.reviewCard}>
+              <div
+                key={review.id}
+                className={styles.reviewCard}
+                onClick={() => {
+                  setFocusedReviewId(review.id);
+                  setShowReviewsFullView(true);
+                }}
+                style={{ cursor: 'pointer' }}
+              >
                 <p>{review.reviewText}</p>
                 <div className={styles.reviewFooter}>
                   <span>{review.authorName || review.nickname || '익명'}</span>
@@ -614,39 +624,60 @@ export default function PlaceDetailPage({ place = null }) {
         </div>
       </div>
 
-      {/* Reviews Full View Modal */}
-      <AnimatePresence>
-        {showReviewsFullView && (
-          <motion.div
-            className={styles.modal}
-            initial={{ x: '100%' }}
-            animate={{ x: 0 }}
-            exit={{ x: '100%' }}
-            transition={{ type: 'tween', duration: 0.25 }}
-          >
-            <div className={styles.modalHeader}>
-              <button onClick={() => setShowReviewsFullView(false)}>
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                  <path d="M15 18L9 12L15 6" stroke="#1B1E28" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              </button>
-              <h2>리뷰 {reviews.length}개</h2>
-              <div style={{ width: 40 }} />
-            </div>
-            <div className={styles.modalContent}>
-              {reviews.map((review) => (
-                <div key={review.id} className={styles.reviewCard}>
-                  <p>{review.reviewText}</p>
-                  <div className={styles.reviewFooter}>
-                    <span>{review.authorName || review.nickname || '익명'}</span>
-                    <span>{formatDate(review.createdAt)}</span>
+      {/* Reviews Full View Modal - rendered via portal */}
+      {portalContainer && createPortal(
+        <AnimatePresence>
+          {showReviewsFullView && (
+            <motion.div
+              className={styles.modal}
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ type: 'tween', duration: 0.25 }}
+              data-place-detail-portal
+              onAnimationComplete={() => {
+                // Scroll to focused review after animation completes
+                if (focusedReviewId && modalContentRef.current) {
+                  const reviewElement = modalContentRef.current.querySelector(`[data-review-id="${focusedReviewId}"]`);
+                  if (reviewElement) {
+                    reviewElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                  }
+                  // Clear focus after 1.5 seconds
+                  setTimeout(() => {
+                    setFocusedReviewId(null);
+                  }, 1500);
+                }
+              }}
+            >
+              <div className={styles.modalHeader}>
+                <button onClick={() => { setShowReviewsFullView(false); setFocusedReviewId(null); }}>
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                    <path d="M15 18L9 12L15 6" stroke="#1B1E28" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </button>
+                <h2>리뷰 {reviews.length}개</h2>
+                <div style={{ width: 40 }} />
+              </div>
+              <div className={styles.modalContent} ref={modalContentRef}>
+                {reviews.map((review) => (
+                  <div
+                    key={review.id}
+                    data-review-id={review.id}
+                    className={`${styles.reviewCard} ${focusedReviewId === review.id ? styles.reviewCardFocused : ''}`}
+                  >
+                    <p>{review.reviewText}</p>
+                    <div className={styles.reviewFooter}>
+                      <span>{review.authorName || review.nickname || '익명'}</span>
+                      <span>{formatDate(review.createdAt)}</span>
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+                ))}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>,
+        portalContainer
+      )}
 
       {/* Menu Modal - rendered via portal to escape stacking context */}
       {portalContainer && createPortal(

@@ -1,6 +1,7 @@
 import React, { useRef, useEffect, useCallback } from 'react';
-import { Routes, Route, useLocation, useNavigationType } from 'react-router-dom';
+import { Routes, Route, useLocation, useNavigationType, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
+import { initializeDeepLinkListener } from '@/utils/capacitorDeepLink';
 
 // Global scroll position store
 const scrollPositions = new Map();
@@ -79,8 +80,14 @@ const AUTH_ROUTES = new Set([
 export default function AnimatedRoutes() {
   const location = useLocation();
   const navigationType = useNavigationType();
+  const navigate = useNavigate();
   const prevLocation = useRef(location.pathname);
   const currentContainerRef = useRef(null);
+
+  // Initialize deep link listener for Capacitor
+  useEffect(() => {
+    initializeDeepLinkListener(navigate);
+  }, [navigate]);
 
   // Determine slide direction based on browser navigation action
   const getSlideDirection = () => {

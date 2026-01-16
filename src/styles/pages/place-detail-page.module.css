@@ -426,6 +426,31 @@
   min-width: 280px;
   max-width: 300px;
   flex-shrink: 0;
+  transition: transform 0.3s ease, background-color 0.3s ease;
+}
+
+.reviewCard:active {
+  background: #F2F4F6;
+}
+
+.reviewCardFocused {
+  background: #FFF8F9;
+  animation: subtlePulse 0.6s ease-out;
+}
+
+@keyframes subtlePulse {
+  0% {
+    transform: scale(1);
+    background-color: #FFE8EC;
+  }
+  50% {
+    transform: scale(1.02);
+    background-color: #FFF0F2;
+  }
+  100% {
+    transform: scale(1);
+    background-color: #FFF8F9;
+  }
 }
 
 .reviewCard p {
@@ -468,7 +493,7 @@
   background: #F8F9FA;
 }
 
-/* Modal */
+/* Modal - Reviews Full View */
 .modal {
   position: fixed;
   top: 0;
@@ -476,7 +501,7 @@
   right: 0;
   bottom: 0;
   background: #fff;
-  z-index: 200;
+  z-index: 10001; /* Higher than fixedActionsLayer (10000) and stickyHeader (9999) */
   display: flex;
   flex-direction: column;
 }

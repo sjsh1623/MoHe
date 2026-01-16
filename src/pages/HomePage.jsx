@@ -11,6 +11,7 @@ import SearchModal from '@/components/ui/modals/SearchModal';
 import HomePageSkeleton from '@/components/ui/skeletons/HomePageSkeleton';
 import ErrorMessage from '@/components/ui/alerts/ErrorMessage';
 import { useGeolocation, useLocationStorage } from '@/hooks/useGeolocation';
+import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
 import { weatherService, contextualRecommendationService, bookmarkService, addressService, guestRecommendationService, placeService, homeService, categoryService } from '@/services/apiService';
 import { authService } from '@/services/authService';
 import bannerLeft from '@/assets/image/banner_left.png';
@@ -73,11 +74,13 @@ export default function HomePage() {
   const [user, setUser] = useState(null);
   const [popularPlaces, setPopularPlaces] = useState([]);
   const [homeImages, setHomeImages] = useState([]);
+  const [nearbyPlaces, setNearbyPlaces] = useState([]);
   const [addressLoading, setAddressLoading] = useState(true);
   const [categories, setCategories] = useState([]);
   const [categoriesPlaces, setCategoriesPlaces] = useState({});
   const [dynamicMessage, setDynamicMessage] = useState('지금 가기 좋은 플레이스');
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
+  const { recentlyViewed, addRecentlyViewed } = useRecentlyViewed();
 
   // Prevent back navigation to login page
   useEffect(() => {
@@ -346,9 +349,9 @@ export default function HomePage() {
         if (!isMounted) return;
 
         if (!user.isGuest && recommendationsData.length > 0) {
-          await loadBookmarkStatus(recommendationsData);
+          recommendationsData = await loadBookmarkStatus(recommendationsData);
         }
-        
+
         if (isMounted) {
           console.log('HomePage: About to set recommendations with data:', recommendationsData);
           console.log('HomePage: Recommendations data length:', recommendationsData.length);
@@ -456,25 +459,16 @@ export default function HomePage() {
       // Skip bookmark status loading for guest users and when no authentication
       if (user.isGuest || !places.length || !authService.isAuthenticated()) {
         console.log('Skipping bookmark status checks for guest user or unauthenticated state');
-        places.forEach(place => place.isBookmarked = false);
-        return;
+        return places.map(place => ({ ...place, isBookmarked: false }));
       }
 
       try {
         console.log('Loading bookmark status for', places.length, 'places');
-        const bookmarkPromises = places.map(async (place) => {
-          try {
-            const response = await bookmarkService.isBookmarked(place.id);
-            place.isBookmarked = response.success ? response.data.isBookmarked : false;
-          } catch (error) {
-            console.warn(`Failed to check bookmark status for place ${place.id}:`, error);
-            place.isBookmarked = false;
-          }
-        });
-        
-        await Promise.all(bookmarkPromises);
+        // Use efficient bulk bookmark status check
+        return await bookmarkService.applyBookmarkStatus(places);
       } catch (error) {
         console.warn('Failed to load bookmark status:', error);
+        return places;
       }
     };
 
@@ -504,7 +498,7 @@ export default function HomePage() {
         if (response.success && isMounted) {
           console.log('✅ Bookmark-based places loaded:', response.data.length);
           // Transform the data to match the expected format
-          const transformedPlaces = response.data.map(place => {
+          let transformedPlaces = response.data.map(place => {
             // Use shortAddress field from backend
             // Backend sends: shortAddress = formatted address, address = full address
             const addressStr = place.shortAddress || place.address || '';
@@ -523,6 +517,12 @@ export default function HomePage() {
               isBookmarked: place.isBookmarked || false
             });
           });
+
+          // Apply bookmark status for authenticated users
+          if (authService.isAuthenticated()) {
+            transformedPlaces = await bookmarkService.applyBookmarkStatus(transformedPlaces);
+          }
+
           setPopularPlaces(transformedPlaces);
         } else if (isMounted) {
           console.warn('⚠️ Bookmark-based places API returned no success:', response);
@@ -545,6 +545,257 @@ export default function HomePage() {
     };
   }, [currentLocation]);
 
+  // Load nearby places
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadNearbyPlaces = async () => {
+      if (!currentLocation || !isMounted) return;
+
+      try {
+        console.log('Loading nearby places for location:', currentLocation);
+        const response = await placeService.getNearbyPlaces(
+          currentLocation.latitude,
+          currentLocation.longitude,
+          { radius: 3000, limit: 10 } // 3km radius
+        );
+
+        if (response.success && isMounted && response.data?.length > 0) {
+          console.log('✅ Nearby places loaded:', response.data.length);
+          let transformedPlaces = response.data.map(place => {
+            const addressStr = place.shortAddress || place.address || '';
+            const formattedLocation = formatPlaceAddress(addressStr);
+
+            return normalizePlaceImages({
+              id: place.id,
+              name: place.name || place.title,
+              title: place.title || place.name,
+              rating: place.rating,
+              location: formattedLocation,
+              image: place.imageUrl || place.image,
+              images: place.images || [],
+              isBookmarked: place.isBookmarked || false,
+              distance: place.distance
+            });
+          });
+
+          // Apply bookmark status for authenticated users
+          if (authService.isAuthenticated()) {
+            transformedPlaces = await bookmarkService.applyBookmarkStatus(transformedPlaces);
+          }
+
+          setNearbyPlaces(transformedPlaces);
+        } else if (isMounted) {
+          setNearbyPlaces([]);
+        }
+      } catch (error) {
+        console.warn('⚠️ Failed to load nearby places:', error);
+        if (isMounted) {
+          setNearbyPlaces([]);
+        }
+      }
+    };
+
+    if (currentLocation) {
+      loadNearbyPlaces();
+    }
+
+    return () => {
+      isMounted = false;
+    };
+  }, [currentLocation]);
+
+  // Large category pool (~60 entries) - shuffled on each render
+  // API uses English keys (cafe, restaurant, bar, etc.)
+  // Multiple titles can use the same API key for variety
+  const allCategories = [
+    // 카페 관련 (cafe)
+    { key: 'cafe', title: '오늘의 카페' },
+    { key: 'cafe', title: '커피 한 잔 어때요' },
+    { key: 'cafe', title: '분위기 좋은 카페' },
+    { key: 'cafe', title: '여유로운 카페 타임' },
+    { key: 'cafe', title: '감성 카페 추천' },
+    { key: 'cafe', title: '조용한 카페 찾기' },
+
+    // 음식점 관련 (restaurant)
+    { key: 'restaurant', title: '맛집 탐방' },
+    { key: 'restaurant', title: '오늘 뭐 먹지' },
+    { key: 'restaurant', title: '점심 메뉴 추천' },
+    { key: 'restaurant', title: '저녁 식사 어디서' },
+    { key: 'restaurant', title: '숨은 맛집 발견' },
+    { key: 'restaurant', title: '입소문 맛집' },
+
+    // 바/술집 관련 (bar)
+    { key: 'bar', title: '분위기 좋은 바' },
+    { key: 'bar', title: '오늘 밤 한 잔' },
+    { key: 'bar', title: '퇴근 후 한 잔' },
+    { key: 'bar', title: '칵테일 한 잔 어때요' },
+    { key: 'bar', title: '분위기 있는 술집' },
+
+    // 베이커리 (bakery)
+    { key: 'bakery', title: '빵지순례' },
+    { key: 'bakery', title: '갓 구운 빵 냄새' },
+    { key: 'bakery', title: '오늘의 빵집' },
+    { key: 'bakery', title: '동네 베이커리' },
+    { key: 'bakery', title: '빵순이 빵돌이 모여라' },
+
+    // 브런치 (brunch_cafe)
+    { key: 'brunch_cafe', title: '브런치 맛집' },
+    { key: 'brunch_cafe', title: '늦은 아침 브런치' },
+    { key: 'brunch_cafe', title: '주말 브런치 어때요' },
+    { key: 'brunch_cafe', title: '여유로운 브런치' },
+
+    // 디저트 (dessert_cafe)
+    { key: 'dessert_cafe', title: '달콤한 디저트' },
+    { key: 'dessert_cafe', title: '디저트가 땡길 때' },
+    { key: 'dessert_cafe', title: '오늘의 당충전' },
+    { key: 'dessert_cafe', title: '케이크 맛집' },
+    { key: 'dessert_cafe', title: '달달한 휴식' },
+
+    // 와인바 (wine_bar)
+    { key: 'wine_bar', title: '와인 한 잔 어때요' },
+    { key: 'wine_bar', title: '오늘은 와인 기분' },
+    { key: 'wine_bar', title: '분위기 있는 와인바' },
+    { key: 'wine_bar', title: '로맨틱 와인 타임' },
+
+    // 수제맥주 (craft_beer)
+    { key: 'craft_beer', title: '수제맥주 한 잔' },
+    { key: 'craft_beer', title: '맥주 한 잔 하실래요' },
+    { key: 'craft_beer', title: '크래프트 비어 투어' },
+    { key: 'craft_beer', title: '시원한 맥주가 필요해' },
+
+    // 갤러리 (gallery)
+    { key: 'gallery', title: '갤러리 나들이' },
+    { key: 'gallery', title: '예술이 필요한 날' },
+    { key: 'gallery', title: '감성 충전 갤러리' },
+    { key: 'gallery', title: '오늘은 갤러리 데이트' },
+
+    // 박물관 (museum)
+    { key: 'museum', title: '박물관 탐방' },
+    { key: 'museum', title: '역사 속으로' },
+    { key: 'museum', title: '박물관에서의 하루' },
+    { key: 'museum', title: '문화 나들이' },
+
+    // 전시 (exhibition)
+    { key: 'exhibition', title: '전시 관람' },
+    { key: 'exhibition', title: '오늘의 전시회' },
+    { key: 'exhibition', title: '전시 보러 갈까요' },
+    { key: 'exhibition', title: '특별 전시 추천' },
+
+    // 공방 (workshop)
+    { key: 'workshop', title: '오늘은 뭘 만들어볼까요' },
+    { key: 'workshop', title: '손으로 만드는 시간' },
+    { key: 'workshop', title: '공방 체험 추천' },
+    { key: 'workshop', title: '원데이 클래스' },
+    { key: 'workshop', title: '창작의 즐거움' },
+
+    // 공원 (park)
+    { key: 'park', title: '산책하기 좋은 곳' },
+    { key: 'park', title: '자연 속 힐링' },
+    { key: 'park', title: '공원에서 여유롭게' },
+    { key: 'park', title: '피크닉 명소' },
+    { key: 'park', title: '바람 쐬러 갈까요' },
+
+    // 쇼핑몰 (shopping_mall)
+    { key: 'shopping_mall', title: '쇼핑하기 좋은 곳' },
+    { key: 'shopping_mall', title: '쇼핑 나들이' },
+    { key: 'shopping_mall', title: '윈도우 쇼핑 어때요' },
+    { key: 'shopping_mall', title: '오늘은 쇼핑 데이' },
+
+    // 영화관 (cinema)
+    { key: 'cinema', title: '영화 보러 갈까요' },
+    { key: 'cinema', title: '오늘의 영화관' },
+    { key: 'cinema', title: '팝콘과 영화' },
+    { key: 'cinema', title: '영화 한 편 어때요' },
+
+    // 서점 (bookstore)
+    { key: 'bookstore', title: '서점 나들이' },
+    { key: 'bookstore', title: '책 향기 가득한 곳' },
+    { key: 'bookstore', title: '독서의 계절' },
+    { key: 'bookstore', title: '동네 책방 탐방' },
+
+    // 북카페 (library_cafe)
+    { key: 'library_cafe', title: '책과 함께하는 시간' },
+    { key: 'library_cafe', title: '책 읽기 좋은 카페' },
+    { key: 'library_cafe', title: '북카페 추천' },
+
+    // 한식 (korean_food)
+    { key: 'korean_food', title: '한식이 땡길 때' },
+    { key: 'korean_food', title: '정갈한 한식 한 상' },
+    { key: 'korean_food', title: '엄마 손맛이 그리울 때' },
+
+    // 일식 (japanese_food)
+    { key: 'japanese_food', title: '일식 맛집' },
+    { key: 'japanese_food', title: '오늘은 일식 기분' },
+    { key: 'japanese_food', title: '스시가 먹고 싶을 때' },
+
+    // 중식 (chinese_food)
+    { key: 'chinese_food', title: '중식 맛집' },
+    { key: 'chinese_food', title: '짜장면이 땡길 때' },
+    { key: 'chinese_food', title: '오늘은 중국 요리' },
+
+    // 양식 (western_food)
+    { key: 'western_food', title: '양식 맛집' },
+    { key: 'western_food', title: '파스타가 먹고 싶을 때' },
+    { key: 'western_food', title: '스테이크 맛집' },
+
+    // 아시안 (asian_food)
+    { key: 'asian_food', title: '아시안 푸드' },
+    { key: 'asian_food', title: '이국적인 맛 여행' },
+    { key: 'asian_food', title: '동남아 음식 탐방' },
+
+    // 펍 (pub)
+    { key: 'pub', title: '동네 펍 추천' },
+    { key: 'pub', title: '아늑한 펍에서' },
+
+    // 라운지바 (lounge_bar)
+    { key: 'lounge_bar', title: '라운지에서 여유롭게' },
+    { key: 'lounge_bar', title: '도심 속 라운지' },
+
+    // 루프탑 (rooftop)
+    { key: 'rooftop', title: '루프탑에서 야경을' },
+    { key: 'rooftop', title: '하늘 아래 루프탑' },
+
+    // 스파/웰니스 (spa)
+    { key: 'spa', title: '힐링이 필요할 때' },
+    { key: 'spa', title: '스파에서 휴식을' },
+
+    // 헬스/피트니스 (fitness)
+    { key: 'fitness', title: '운동하기 좋은 곳' },
+    { key: 'fitness', title: '건강한 하루' },
+
+    // 요가/필라테스 (yoga)
+    { key: 'yoga', title: '요가로 시작하는 아침' },
+    { key: 'yoga', title: '필라테스 스튜디오' },
+
+    // 플라워카페 (flower_cafe)
+    { key: 'flower_cafe', title: '꽃과 함께하는 시간' },
+    { key: 'flower_cafe', title: '플라워 카페 추천' },
+
+    // 펫프렌들리 (pet_friendly)
+    { key: 'pet_friendly', title: '반려동물과 함께' },
+    { key: 'pet_friendly', title: '펫 프렌들리 장소' },
+
+    // 사진관/스튜디오 (photo_studio)
+    { key: 'photo_studio', title: '인생샷 명소' },
+    { key: 'photo_studio', title: '사진 찍기 좋은 곳' },
+  ];
+
+  // Shuffle and select categories for display
+  const getShuffledCategories = () => {
+    const shuffled = [...allCategories].sort(() => Math.random() - 0.5);
+    // Remove duplicates by key (keep only first occurrence of each key)
+    const seen = new Set();
+    const unique = shuffled.filter(cat => {
+      if (seen.has(cat.key)) return false;
+      seen.add(cat.key);
+      return true;
+    });
+    return unique;
+  };
+
+  const [fixedCategories] = useState(() => getShuffledCategories());
+
   // Load category-based recommendations
   useEffect(() => {
     let isMounted = true;
@@ -553,74 +804,93 @@ export default function HomePage() {
       if (!currentLocation || !isMounted) return;
 
       try {
-        console.log('Loading suggested categories for location:', currentLocation);
+        console.log('Loading categories for location:', currentLocation);
 
-        // Get suggested categories
-        const categoriesResponse = await categoryService.getSuggestedCategories(
-          currentLocation.latitude,
-          currentLocation.longitude
-        );
+        // Load places for each fixed category
+        const placesPromises = fixedCategories.map(async (category) => {
+          try {
+            const placesResponse = await categoryService.getPlacesByCategory(
+              category.key,
+              currentLocation.latitude,
+              currentLocation.longitude,
+              { limit: 10 }
+            );
 
-        if (categoriesResponse.success && isMounted && categoriesResponse.data.length > 0) {
-          console.log('✅ Suggested categories loaded:', categoriesResponse.data.length);
-          setCategories(categoriesResponse.data);
+            if (placesResponse.success && placesResponse.data.length > 0) {
+              console.log(`Places loaded for category ${category.key}:`, placesResponse.data.length);
 
-          // Load places for each category
-          const placesPromises = categoriesResponse.data.map(async (category) => {
-            try {
-              const placesResponse = await categoryService.getPlacesByCategory(
-                category.name,
-                currentLocation.latitude,
-                currentLocation.longitude,
-                { limit: 10 }
-              );
+              const transformedPlaces = placesResponse.data.map(place => {
+                const addressStr = place.shortAddress || place.address || '';
+                const formattedLocation = formatPlaceAddress(addressStr);
 
-              if (placesResponse.success && placesResponse.data.length > 0) {
-                console.log(`✅ Places loaded for category ${category.name}:`, placesResponse.data.length);
-
-                // Transform places data
-                const transformedPlaces = placesResponse.data.map(place => {
-                  const addressStr = place.shortAddress || place.address || '';
-                  const formattedLocation = formatPlaceAddress(addressStr);
-
-                  return normalizePlaceImages({
-                    id: place.id,
-                    name: place.name || place.title,
-                    title: place.title || place.name,
-                    rating: place.rating,
-                    location: formattedLocation,
-                    image: place.imageUrl || place.image,
-                    images: place.images || [],
-                    isBookmarked: place.isBookmarked || false
-                  });
+                return normalizePlaceImages({
+                  id: place.id,
+                  name: place.name || place.title,
+                  title: place.title || place.name,
+                  rating: place.rating,
+                  location: formattedLocation,
+                  image: place.imageUrl || place.image,
+                  images: place.images || [],
+                  isBookmarked: place.isBookmarked || false
                 });
+              });
 
-                return { category: category.name, places: transformedPlaces };
-              }
-              return { category: category.name, places: [] };
-            } catch (error) {
-              console.warn(`Failed to load places for category ${category.name}:`, error);
-              return { category: category.name, places: [] };
+              return { ...category, places: transformedPlaces };
             }
-          });
-
-          const placesResults = await Promise.all(placesPromises);
-
-          if (isMounted) {
-            // Create object with category names as keys
-            const placesMap = {};
-            placesResults.forEach(result => {
-              placesMap[result.category] = result.places;
-            });
-            setCategoriesPlaces(placesMap);
+            return { ...category, places: [] };
+          } catch (error) {
+            console.warn(`Failed to load places for category ${category.key}:`, error);
+            return { ...category, places: [] };
           }
-        } else if (isMounted) {
-          console.warn('⚠️ No suggested categories available');
-          setCategories([]);
-          setCategoriesPlaces({});
+        });
+
+        const placesResults = await Promise.all(placesPromises);
+
+        if (isMounted) {
+          // Filter categories that have places
+          const categoriesWithPlaces = placesResults.filter(r => r.places.length > 0);
+          setCategories(categoriesWithPlaces);
+
+          const placesMap = {};
+
+          // Apply bookmark status for authenticated users
+          if (authService.isAuthenticated()) {
+            const allPlaces = categoriesWithPlaces.flatMap(r => r.places);
+            if (allPlaces.length > 0) {
+              const placesWithBookmarks = await bookmarkService.applyBookmarkStatus(allPlaces);
+              const bookmarkMap = new Map(placesWithBookmarks.map(p => [p.id, p.isBookmarked]));
+
+              categoriesWithPlaces.forEach(result => {
+                placesMap[result.key] = {
+                  title: result.title,
+                  places: result.places.map(place => ({
+                    ...place,
+                    isBookmarked: bookmarkMap.get(place.id) || false
+                  }))
+                };
+              });
+            } else {
+              categoriesWithPlaces.forEach(result => {
+                placesMap[result.key] = {
+                  title: result.title,
+                  places: result.places
+                };
+              });
+            }
+          } else {
+            categoriesWithPlaces.forEach(result => {
+              placesMap[result.key] = {
+                title: result.title,
+                places: result.places
+              };
+            });
+          }
+
+          setCategoriesPlaces(placesMap);
+          console.log('Categories loaded:', categoriesWithPlaces.length);
         }
       } catch (error) {
-        console.warn('⚠️ Failed to load category recommendations:', error);
+        console.warn('Failed to load category recommendations:', error);
         if (isMounted) {
           setCategories([]);
           setCategoriesPlaces({});
@@ -678,10 +948,10 @@ export default function HomePage() {
     try {
       // Try backend MBTI recommendations first
       const response = await homeService.getHomeImages();
-      
+
       if (response.success && response.data.length > 0 && isMounted) {
         console.log('✅ MBTI recommendations loaded from database:', response.data.length);
-        setHomeImages(response.data.map(place => {
+        let transformedPlaces = response.data.map(place => {
           // Use shortAddress field from backend
           const addressStr = place.shortAddress || place.address || '';
           const formattedLocation = formatPlaceAddress(addressStr);
@@ -690,7 +960,14 @@ export default function HomePage() {
             ...place,
             location: formattedLocation
           });
-        }));
+        });
+
+        // Apply bookmark status for authenticated users
+        if (authService.isAuthenticated()) {
+          transformedPlaces = await bookmarkService.applyBookmarkStatus(transformedPlaces);
+        }
+
+        setHomeImages(transformedPlaces);
       } else if (isMounted) {
         // No fallback - keep empty array to show only real database data
         console.log('🎯 No backend data available, showing empty state');
@@ -795,27 +1072,42 @@ export default function HomePage() {
 
   const handlePlaceClick = (placeId) => {
     console.log('Place clicked:', placeId);
-    
+
     // Find place in database arrays only - no fallback data
     let selectedPlace = recommendations.find(place => place.id === placeId) ||
                        homeImages.find(place => place.id === placeId) ||
-                       popularPlaces.find(place => place.id === placeId);
-    
+                       popularPlaces.find(place => place.id === placeId) ||
+                       nearbyPlaces.find(place => place.id === placeId) ||
+                       recentlyViewed.find(place => place.id === placeId);
+
+    // Also check category places
+    if (!selectedPlace) {
+      for (const categoryData of Object.values(categoriesPlaces)) {
+        if (categoryData.places) {
+          selectedPlace = categoryData.places.find(place => place.id === placeId);
+          if (selectedPlace) break;
+        }
+      }
+    }
+
     // If not found in any array, navigate without preloaded data
     if (!selectedPlace) {
       navigate(`/place/${placeId}`);
       return;
     }
-    
+
+    // Add to recently viewed
+    addRecentlyViewed(selectedPlace);
+
     console.log('Selected place data:', selectedPlace);
     const preloadedImage = buildImageUrl(
       selectedPlace.image || selectedPlace.imageUrl || selectedPlace.images?.[0]
     );
-    navigate(`/place/${placeId}`, { 
-      state: { 
-        preloadedImage, 
-        preloadedData: selectedPlace 
-      } 
+    navigate(`/place/${placeId}`, {
+      state: {
+        preloadedImage,
+        preloadedData: selectedPlace
+      }
     });
   };
 
@@ -950,6 +1242,11 @@ export default function HomePage() {
       ) : (
         <div className={styles.contentContainer}>
           <div className={styles.content}>
+            {/* Recently Viewed Places */}
+            {recentlyViewed.length > 0 && renderPlacesSection('최근 본 장소', recentlyViewed, {
+              sectionKey: 'recently-viewed'
+            })}
+
             {renderPlacesSection(dynamicMessage, recommendations, {
               emptyMessage: '현재 추천 장소를 불러오고 있습니다.',
               sectionKey: 'primary-recommendations'
@@ -965,6 +1262,12 @@ export default function HomePage() {
               />
             </div>
 
+            {/* Nearby Places Section */}
+            {nearbyPlaces.length > 0 && renderPlacesSection('내 주변 장소', nearbyPlaces, {
+              description: '가까운 거리에 있는 장소들이에요',
+              sectionKey: 'nearby-places'
+            })}
+
             {homeImages.length > 0
               ? renderPlacesSection(
                   user && user.id && user.id !== 'guest' ? '당신을 위한 추천' : '지금 이 시간 추천',
@@ -973,33 +1276,31 @@ export default function HomePage() {
                 )
               : null}
 
-            {categories.length > 0
-              ? categories
-                  .map((category) => {
-                    const categoryPlaces = categoriesPlaces[category.name] || [];
-                    if (categoryPlaces.length === 0) {
-                      return null;
-                    }
+            {/* Category-based Sections */}
+            {categories.length > 0 && categories.map((category) => {
+              const categoryData = categoriesPlaces[category.key];
+              if (!categoryData || !categoryData.places || categoryData.places.length === 0) {
+                return null;
+              }
+              return renderPlacesSection(
+                categoryData.title || category.title,
+                categoryData.places,
+                {
+                  sectionKey: `category-${category.key}`,
+                }
+              );
+            })}
 
-                    return renderPlacesSection(
-                      `${category.emoji} 오늘은 ${category.name} 어때요?`,
-                      categoryPlaces,
-                      {
-                        description: category.description,
-                        sectionKey: `category-${category.name}`,
-                      }
-                    );
-                  })
-                  .filter(Boolean)
-              : renderPlacesSection('오늘은 이런 곳 어떠세요?', popularPlaces, {
-                  emptyMessage: '현재 인기 장소를 불러오고 있습니다.',
-                  footer: (
-                    <OutlineButton onClick={handleSeeMore}>
-                      더 많은 장소 보기
-                    </OutlineButton>
-                  ),
-                  sectionKey: 'popular-places',
-                })}
+            {/* Fallback if no category sections loaded */}
+            {categories.length === 0 && popularPlaces.length > 0 &&
+              renderPlacesSection('오늘은 이런 곳 어떠세요?', popularPlaces, {
+                footer: (
+                  <OutlineButton onClick={handleSeeMore}>
+                    더 많은 장소 보기
+                  </OutlineButton>
+                ),
+                sectionKey: 'popular-places',
+              })}
           </div>
         </div>
       )}

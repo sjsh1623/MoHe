@@ -77,7 +77,15 @@ export default function SearchResultsPage() {
 
         if (response.success) {
           const data = response.data?.places || response.data || [];
-          setSearchResults(data.map(normalizePlaceImages));
+          let normalizedResults = data.map(normalizePlaceImages);
+
+          // Apply bookmark status for authenticated users
+          const user = authService.getCurrentUser();
+          if (user && !user.isGuest && authService.isAuthenticated()) {
+            normalizedResults = await bookmarkService.applyBookmarkStatus(normalizedResults);
+          }
+
+          setSearchResults(normalizedResults);
         } else {
           setError('검색 결과를 불러오는데 실패했습니다.');
         }

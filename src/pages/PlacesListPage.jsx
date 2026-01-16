@@ -55,7 +55,13 @@ export default function PlacesListPage() {
       if (response.success) {
         const data = response.data || {};
         const newPlaces = data.places || [];
-        const normalizedPlaces = newPlaces.map(normalizePlaceImages);
+        let normalizedPlaces = newPlaces.map(normalizePlaceImages);
+
+        // Apply bookmark status for authenticated users
+        const currentUser = authService.getCurrentUser();
+        if (currentUser && !currentUser.isGuest && authService.isAuthenticated()) {
+          normalizedPlaces = await bookmarkService.applyBookmarkStatus(normalizedPlaces);
+        }
 
         if (append) {
           setPlaces(prev => [...prev, ...normalizedPlaces]);

@@ -5,6 +5,8 @@
     background: white;
     display: flex;
     flex-direction: column;
+    position: relative;
+    z-index: 10001; /* Higher than PlaceDetailPage's fixedActionsLayer (10000) */
 }
 
 .header {

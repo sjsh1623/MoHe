@@ -555,13 +555,20 @@ export class PlaceService extends ApiService {
  * Bookmarks API service
  */
 export class BookmarkService extends ApiService {
+  // Cache for bookmark IDs
+  _bookmarkIdsCache = null;
+  _cacheTimestamp = null;
+  _cacheTTL = 60000; // 1 minute cache TTL
+
   /**
    * Toggle bookmark for a place
    */
   async toggleBookmark(placeId) {
-    return this.post(`/api/bookmarks/toggle`, { placeId }, {
+    const result = await this.post(`/api/bookmarks/toggle`, { placeId }, {
       requireAuth: true
     });
+    this._invalidateCache();
+    return result;
   }
 
   /**
@@ -582,18 +589,22 @@ export class BookmarkService extends ApiService {
    * Add bookmark explicitly
    */
   async addBookmark(placeId) {
-    return this.post(`/api/bookmarks`, { placeId }, {
+    const result = await this.post(`/api/bookmarks`, { placeId }, {
       requireAuth: true
     });
+    this._invalidateCache();
+    return result;
   }
 
   /**
    * Remove bookmark explicitly
    */
   async removeBookmark(placeId) {
-    return this.delete(`/api/bookmarks/${placeId}`, {
+    const result = await this.delete(`/api/bookmarks/${placeId}`, {
       requireAuth: true
     });
+    this._invalidateCache();
+    return result;
   }
 
   /**
@@ -603,6 +614,71 @@ export class BookmarkService extends ApiService {
     return this.get(`/api/bookmarks/${placeId}`, {
       requireAuth: true
     });
+  }
+
+  /**
+   * Get all bookmarked place IDs (with caching)
+   * Returns a Set of place IDs for efficient lookup
+   */
+  async getBookmarkedIds() {
+    // Check cache validity
+    if (this._bookmarkIdsCache && this._cacheTimestamp) {
+      const elapsed = Date.now() - this._cacheTimestamp;
+      if (elapsed < this._cacheTTL) {
+        return this._bookmarkIdsCache;
+      }
+    }
+
+    try {
+      // Fetch all bookmarks (use large size to get all)
+      const response = await this.getUserBookmarks({ page: 0, size: 1000 });
+      if (response.success) {
+        const bookmarks = response.data?.bookmarks ?? response.data ?? [];
+        const ids = new Set(bookmarks.map(b => b.id || b.placeId));
+        this._bookmarkIdsCache = ids;
+        this._cacheTimestamp = Date.now();
+        return ids;
+      }
+    } catch (error) {
+      console.warn('Failed to fetch bookmark IDs:', error);
+    }
+
+    return new Set();
+  }
+
+  /**
+   * Apply bookmark status to a list of places
+   * @param {Array} places - Array of place objects
+   * @returns {Array} Places with isBookmarked field set
+   */
+  async applyBookmarkStatus(places) {
+    if (!places || places.length === 0) return places;
+
+    try {
+      const bookmarkedIds = await this.getBookmarkedIds();
+      return places.map(place => ({
+        ...place,
+        isBookmarked: bookmarkedIds.has(place.id)
+      }));
+    } catch (error) {
+      console.warn('Failed to apply bookmark status:', error);
+      return places;
+    }
+  }
+
+  /**
+   * Invalidate the cache (call after add/remove/toggle)
+   */
+  _invalidateCache() {
+    this._bookmarkIdsCache = null;
+    this._cacheTimestamp = null;
+  }
+
+  /**
+   * Clear cache (call on logout)
+   */
+  clearCache() {
+    this._invalidateCache();
   }
 }
 
