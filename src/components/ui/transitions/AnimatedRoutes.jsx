@@ -34,6 +34,7 @@ import SearchResultsPage from '@/pages/SearchResultsPage.jsx';
 import ImageTestPage from '@/pages/ImageTestPage.jsx';
 import WriteReviewPage from '@/pages/WriteReviewPage.jsx';
 import MenuListPage from '@/pages/MenuListPage.jsx';
+import LocationTestPage from '@/pages/LocationTestPage.jsx';
 
 // Navigation flow hierarchy (lower = earlier in flow)
 const ROUTE_HIERARCHY = {
@@ -260,6 +261,7 @@ export default function AnimatedRoutes() {
             <Route path="/place/:id/menu" element={<MenuListPage />} />
             <Route path="/place/:id/review/write" element={<WriteReviewPage />} />
             <Route path="/image-test" element={<ImageTestPage />} />
+            <Route path="/location-test" element={<LocationTestPage />} />
           </Routes>
         </motion.div>
       </AnimatePresence>

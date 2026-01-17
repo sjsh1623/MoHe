@@ -1,5 +1,5 @@
 {
-  "appId": "com.mohe.app",
+  "appId": "com.andrewlim.mohe",
   "appName": "Mohe",
   "webDir": "dist",
   "server": {
@@ -9,9 +9,10 @@
     "SplashScreen": {
       "launchShowDuration": 2000,
       "launchAutoHide": true,
-      "backgroundColor": "#ffffff",
+      "backgroundColor": "#fdfbf7",
       "androidSplashResourceName": "splash",
       "androidScaleType": "CENTER_CROP",
+      "iosContentMode": "scaleAspectFit",
       "showSpinner": false,
       "splashFullScreen": true,
       "splashImmersive": true

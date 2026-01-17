@@ -1,0 +1,12 @@
+{
+  "ios": {
+    "splash": {
+      "contentMode": "scaleAspectFit"
+    }
+  },
+  "android": {
+    "splash": {
+      "scaleType": "CENTER_INSIDE"
+    }
+  }
+}

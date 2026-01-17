@@ -1,7 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
+import { Geolocation } from '@capacitor/geolocation';
+import { Capacitor } from '@capacitor/core';
 
 /**
  * Custom hook for handling geolocation with permission management
+ * Uses Capacitor Geolocation for native platforms (iOS/Android) and falls back to web API
  */
 export const useGeolocation = (options = {}) => {
   const [location, setLocation] = useState(null);
@@ -18,6 +21,20 @@ export const useGeolocation = (options = {}) => {
 
   // Check geolocation permission status
   const checkPermission = useCallback(async () => {
+    // Use Capacitor for native platforms
+    if (Capacitor.isNativePlatform()) {
+      try {
+        const permissionStatus = await Geolocation.checkPermissions();
+        const state = permissionStatus.location;
+        setPermission(state);
+        return state;
+      } catch (err) {
+        console.warn('Capacitor permission check failed:', err);
+        return 'prompt';
+      }
+    }
+
+    // Fallback to web API
     if (!navigator.permissions) {
       return 'unsupported';
     }
@@ -25,12 +42,12 @@ export const useGeolocation = (options = {}) => {
     try {
       const result = await navigator.permissions.query({ name: 'geolocation' });
       setPermission(result.state);
-      
+
       // Listen for permission changes
       result.onchange = () => {
         setPermission(result.state);
       };
-      
+
       return result.state;
     } catch (err) {
       console.warn('Permission API not supported:', err);
@@ -39,69 +56,141 @@ export const useGeolocation = (options = {}) => {
   }, []);
 
   // Get current position
-  const getCurrentPosition = useCallback(() => {
-    if (!navigator.geolocation) {
-      const err = {
-        code: 'GEOLOCATION_NOT_SUPPORTED',
-        message: '이 브라우저에서는 위치 서비스가 지원되지 않습니다.'
-      };
-      setError(err);
-      return Promise.reject(err);
-    }
-
-    // Prevent multiple simultaneous requests
-    if (loading) {
-      return Promise.reject(new Error('Location request already in progress'));
-    }
-
+  const getCurrentPosition = useCallback(async () => {
     setLoading(true);
     setError(null);
 
-    return new Promise((resolve, reject) => {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const locationData = {
-            latitude: position.coords.latitude,
-            longitude: position.coords.longitude,
-            accuracy: position.coords.accuracy,
-            timestamp: position.timestamp,
-            address: null // Will be populated by address service
-          };
-          
-          setLocation(locationData);
-          setLoading(false);
-          resolve(locationData);
-        },
-        (err) => {
-          const errorInfo = {
-            code: err.code,
-            message: getGeolocationErrorMessage(err.code)
-          };
-          setError(errorInfo);
-          setLoading(false);
-          reject(errorInfo);
-        },
-        defaultOptions
-      );
-    });
+    try {
+      const isNative = Capacitor.isNativePlatform();
+      const platform = Capacitor.getPlatform();
+      console.log('🔍 Platform check - isNative:', isNative, 'platform:', platform);
+
+      // Use Capacitor for native platforms
+      if (isNative) {
+        console.log('🌍 Using Capacitor Geolocation for native platform');
+        console.log('⚙️ Geolocation options:', {
+          enableHighAccuracy: defaultOptions.enableHighAccuracy,
+          timeout: defaultOptions.timeout,
+          maximumAge: defaultOptions.maximumAge
+        });
+
+        const position = await Geolocation.getCurrentPosition({
+          enableHighAccuracy: defaultOptions.enableHighAccuracy,
+          timeout: defaultOptions.timeout,
+          maximumAge: defaultOptions.maximumAge
+        });
+
+        console.log('📍 Capacitor location received:', position);
+        console.log('📍 Coordinates:', position.coords.latitude, position.coords.longitude);
+
+        const locationData = {
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+          accuracy: position.coords.accuracy,
+          timestamp: position.timestamp,
+          address: null
+        };
+
+        setLocation(locationData);
+        setLoading(false);
+        return locationData;
+      }
+
+      // Fallback to web API
+      if (!navigator.geolocation) {
+        const err = {
+          code: 'GEOLOCATION_NOT_SUPPORTED',
+          message: '이 브라우저에서는 위치 서비스가 지원되지 않습니다.'
+        };
+        setError(err);
+        setLoading(false);
+        throw err;
+      }
+
+      return new Promise((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            const locationData = {
+              latitude: position.coords.latitude,
+              longitude: position.coords.longitude,
+              accuracy: position.coords.accuracy,
+              timestamp: position.timestamp,
+              address: null
+            };
+
+            setLocation(locationData);
+            setLoading(false);
+            resolve(locationData);
+          },
+          (err) => {
+            const errorInfo = {
+              code: err.code,
+              message: getGeolocationErrorMessage(err.code)
+            };
+            setError(errorInfo);
+            setLoading(false);
+            reject(errorInfo);
+          },
+          defaultOptions
+        );
+      });
+    } catch (err) {
+      console.error('❌ Geolocation error:', err);
+      console.error('❌ Error details - code:', err.code, 'message:', err.message);
+      console.error('❌ Full error object:', JSON.stringify(err, null, 2));
+
+      const errorInfo = {
+        code: err.code || 'UNKNOWN',
+        message: err.message || (err.code ? getGeolocationErrorMessage(err.code) : '위치 정보를 가져올 수 없습니다.'),
+        originalError: err
+      };
+      setError(errorInfo);
+      setLoading(false);
+      throw errorInfo;
+    }
   }, [defaultOptions]);
 
   // Request location permission and get position
   const requestLocation = useCallback(async () => {
     try {
-      // Check permission first
-      const permissionState = await checkPermission();
-      
-      if (permissionState === 'denied') {
-        throw {
-          code: 'PERMISSION_DENIED',
-          message: '위치 권한이 거부되었습니다. 브라우저 설정에서 위치 권한을 허용해주세요.'
-        };
+      // For native platforms, request permission first
+      if (Capacitor.isNativePlatform()) {
+        console.log('🔐 Requesting location permissions on native platform');
+
+        const permissionStatus = await Geolocation.requestPermissions();
+        console.log('📋 Permission status:', permissionStatus);
+
+        if (permissionStatus.location === 'denied') {
+          const err = {
+            code: 'PERMISSION_DENIED',
+            message: '위치 권한이 거부되었습니다. 설정에서 위치 권한을 허용해주세요.'
+          };
+          setError(err);
+          throw err;
+        }
+
+        setPermission(permissionStatus.location);
+      } else {
+        console.log('🌐 Checking location permissions on web');
+
+        // For web, check permission first
+        const permissionState = await checkPermission();
+
+        if (permissionState === 'denied') {
+          const err = {
+            code: 'PERMISSION_DENIED',
+            message: '위치 권한이 거부되었습니다. 브라우저 설정에서 위치 권한을 허용해주세요.'
+          };
+          setError(err);
+          throw err;
+        }
       }
 
       // Get current position
+      console.log('📍 Getting current position');
       return await getCurrentPosition();
     } catch (err) {
+      console.error('❌ requestLocation error:', err);
       setError(err);
       throw err;
     }

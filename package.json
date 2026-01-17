@@ -19,6 +19,7 @@
     "@capacitor/browser": "^7.0.3",
     "@capacitor/cli": "^7.4.4",
     "@capacitor/core": "^7.4.4",
+    "@capacitor/geolocation": "^7.1.7",
     "@capacitor/ios": "^7.4.4",
     "@capacitor/splash-screen": "^7.0.3",
     "framer-motion": "^12.23.12",
@@ -31,6 +32,7 @@
     "react-transition-group": "^4.4.5"
   },
   "devDependencies": {
+    "@capacitor/assets": "^3.0.5",
     "@eslint/js": "^9.30.1",
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.1.6",
