@@ -21,7 +21,18 @@
       "Bash(npx cap add ios)",
       "Bash(pod install)",
       "Bash(sudo gem install:*)",
-      "Bash(open:*)"
+      "Bash(open:*)",
+      "Bash(find:*)",
+      "Bash(ls:*)",
+      "Bash(npx capacitor-assets generate)",
+      "Bash(pod:*)",
+      "Bash(xcode-select:*)",
+      "Bash(xcodebuild:*)",
+      "Bash(sudo xcode-select:*)",
+      "Bash(brew --version:*)",
+      "Bash(brew install:*)",
+      "Bash(sips:*)",
+      "Bash(npx capacitor-assets:*)"
     ],
     "deny": [],
     "ask": []
