@@ -174,13 +174,17 @@ export default function HomePage() {
         setAddressLoading(true);
         try {
           const locationData = await requestLocation();
-          if (locationData && isMounted) {
-            console.log('📍 Setting location from geolocation:', locationData);
+          // Validate location data before using
+          if (locationData &&
+              typeof locationData.latitude === 'number' &&
+              typeof locationData.longitude === 'number' &&
+              isMounted) {
             setCurrentLocation(locationData);
-            console.log('🏠 Geolocation set, should trigger popular places loading');
             // Resolve address for the location
             await resolveAddress(locationData.latitude, locationData.longitude);
             await loadWeatherData(locationData.latitude, locationData.longitude);
+          } else if (isMounted) {
+            throw new Error('Invalid location data received');
           }
         } catch (error) {
           console.warn('Failed to get location:', error);
@@ -191,9 +195,7 @@ export default function HomePage() {
             address: null // Will be resolved by address API
           };
           if (isMounted) {
-            console.log('📍 Setting default location (Seoul):', defaultLocation);
             setCurrentLocation(defaultLocation);
-            console.log('🏠 Default location set, should trigger popular places loading');
             // Resolve address for default location
             await resolveAddress(defaultLocation.latitude, defaultLocation.longitude);
             await loadWeatherData(defaultLocation.latitude, defaultLocation.longitude);
@@ -211,14 +213,18 @@ export default function HomePage() {
 
   // Resolve address from coordinates
   const resolveAddress = async (latitude, longitude) => {
-    if (!latitude || !longitude) {
+    // Validate latitude and longitude are valid numbers
+    if (typeof latitude !== 'number' || typeof longitude !== 'number' ||
+        isNaN(latitude) || isNaN(longitude) ||
+        latitude < -90 || latitude > 90 ||
+        longitude < -180 || longitude > 180) {
       setAddressLoading(false);
       return null;
     }
 
     setAddressLoading(true);
     try {
-      const addressResponse = await addressService.reverseGeocode(latitude, longitude);
+      const addressResponse = await addressService.reverseGeocode(Number(latitude), Number(longitude));
       if (addressResponse.success) {
         const formattedAddress = formatDisplayAddress(addressResponse.data);
         setCurrentLocation(prev => {
@@ -254,8 +260,14 @@ export default function HomePage() {
 
   // Load weather data for location
   const loadWeatherData = async (latitude, longitude) => {
+    // Validate latitude and longitude before API call
+    if (typeof latitude !== 'number' || typeof longitude !== 'number' ||
+        isNaN(latitude) || isNaN(longitude)) {
+      return;
+    }
+
     try {
-      const weatherResponse = await weatherService.getWeatherContext(latitude, longitude);
+      const weatherResponse = await weatherService.getWeatherContext(Number(latitude), Number(longitude));
       if (weatherResponse.success) {
         setWeather(weatherResponse.data);
       }

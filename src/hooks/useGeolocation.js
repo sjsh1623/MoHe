@@ -62,32 +62,26 @@ export const useGeolocation = (options = {}) => {
 
     try {
       const isNative = Capacitor.isNativePlatform();
-      const platform = Capacitor.getPlatform();
-      console.log('🔍 Platform check - isNative:', isNative, 'platform:', platform);
 
       // Use Capacitor for native platforms
       if (isNative) {
-        console.log('🌍 Using Capacitor Geolocation for native platform');
-        console.log('⚙️ Geolocation options:', {
-          enableHighAccuracy: defaultOptions.enableHighAccuracy,
-          timeout: defaultOptions.timeout,
-          maximumAge: defaultOptions.maximumAge
-        });
-
         const position = await Geolocation.getCurrentPosition({
           enableHighAccuracy: defaultOptions.enableHighAccuracy,
           timeout: defaultOptions.timeout,
           maximumAge: defaultOptions.maximumAge
         });
 
-        console.log('📍 Capacitor location received:', position);
-        console.log('📍 Coordinates:', position.coords.latitude, position.coords.longitude);
+        // Safely extract coordinates with validation
+        const coords = position?.coords;
+        if (!coords || typeof coords.latitude !== 'number' || typeof coords.longitude !== 'number') {
+          throw new Error('Invalid coordinates received from Capacitor Geolocation');
+        }
 
         const locationData = {
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude,
-          accuracy: position.coords.accuracy,
-          timestamp: position.timestamp,
+          latitude: Number(coords.latitude),
+          longitude: Number(coords.longitude),
+          accuracy: coords.accuracy ? Number(coords.accuracy) : null,
+          timestamp: position.timestamp || Date.now(),
           address: null
         };
 
@@ -110,11 +104,24 @@ export const useGeolocation = (options = {}) => {
       return new Promise((resolve, reject) => {
         navigator.geolocation.getCurrentPosition(
           (position) => {
+            // Safely extract coordinates with validation (same as Capacitor)
+            const coords = position?.coords;
+            if (!coords || typeof coords.latitude !== 'number' || typeof coords.longitude !== 'number') {
+              const error = {
+                code: 'INVALID_COORDS',
+                message: 'Invalid coordinates received from Web Geolocation'
+              };
+              setError(error);
+              setLoading(false);
+              reject(error);
+              return;
+            }
+
             const locationData = {
-              latitude: position.coords.latitude,
-              longitude: position.coords.longitude,
-              accuracy: position.coords.accuracy,
-              timestamp: position.timestamp,
+              latitude: Number(coords.latitude),
+              longitude: Number(coords.longitude),
+              accuracy: coords.accuracy ? Number(coords.accuracy) : null,
+              timestamp: position.timestamp || Date.now(),
               address: null
             };
 
@@ -135,14 +142,9 @@ export const useGeolocation = (options = {}) => {
         );
       });
     } catch (err) {
-      console.error('❌ Geolocation error:', err);
-      console.error('❌ Error details - code:', err.code, 'message:', err.message);
-      console.error('❌ Full error object:', JSON.stringify(err, null, 2));
-
       const errorInfo = {
         code: err.code || 'UNKNOWN',
-        message: err.message || (err.code ? getGeolocationErrorMessage(err.code) : '위치 정보를 가져올 수 없습니다.'),
-        originalError: err
+        message: err.message || (err.code ? getGeolocationErrorMessage(err.code) : '위치 정보를 가져올 수 없습니다.')
       };
       setError(errorInfo);
       setLoading(false);
@@ -155,10 +157,7 @@ export const useGeolocation = (options = {}) => {
     try {
       // For native platforms, request permission first
       if (Capacitor.isNativePlatform()) {
-        console.log('🔐 Requesting location permissions on native platform');
-
         const permissionStatus = await Geolocation.requestPermissions();
-        console.log('📋 Permission status:', permissionStatus);
 
         if (permissionStatus.location === 'denied') {
           const err = {
@@ -171,8 +170,6 @@ export const useGeolocation = (options = {}) => {
 
         setPermission(permissionStatus.location);
       } else {
-        console.log('🌐 Checking location permissions on web');
-
         // For web, check permission first
         const permissionState = await checkPermission();
 
@@ -187,10 +184,8 @@ export const useGeolocation = (options = {}) => {
       }
 
       // Get current position
-      console.log('📍 Getting current position');
       return await getCurrentPosition();
     } catch (err) {
-      console.error('❌ requestLocation error:', err);
       setError(err);
       throw err;
     }
