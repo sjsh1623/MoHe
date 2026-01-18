@@ -174,6 +174,7 @@ export default function HomePage() {
         setAddressLoading(true);
         try {
           const locationData = await requestLocation();
+
           // Validate location data before using
           if (locationData &&
               typeof locationData.latitude === 'number' &&

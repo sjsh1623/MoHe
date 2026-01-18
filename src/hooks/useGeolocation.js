@@ -55,6 +55,91 @@ export const useGeolocation = (options = {}) => {
     }
   }, []);
 
+  /**
+   * Extract coordinates from various position object formats
+   * Handles both Capacitor native and Web Geolocation API formats
+   * @param {object} position - Position object from Geolocation API
+   * @returns {object|null} - Normalized location data or null if invalid
+   */
+  const extractCoordinates = useCallback((position) => {
+    if (!position) return null;
+
+    let latitude = null;
+    let longitude = null;
+    let accuracy = null;
+    let timestamp = Date.now();
+
+    // Try to extract coords from standard structure
+    const coords = position.coords;
+
+    if (coords) {
+      // Standard Web/Capacitor format: position.coords.latitude/longitude
+      if (coords.latitude !== undefined && coords.longitude !== undefined) {
+        latitude = coords.latitude;
+        longitude = coords.longitude;
+        accuracy = coords.accuracy;
+      }
+      // Alternative format: coords might be an array [lat, lng] or {lat, lng}
+      else if (coords.lat !== undefined && coords.lng !== undefined) {
+        latitude = coords.lat;
+        longitude = coords.lng;
+        accuracy = coords.accuracy;
+      }
+      else if (coords.lat !== undefined && coords.lon !== undefined) {
+        latitude = coords.lat;
+        longitude = coords.lon;
+        accuracy = coords.accuracy;
+      }
+      else if (Array.isArray(coords) && coords.length >= 2) {
+        latitude = coords[0];
+        longitude = coords[1];
+        accuracy = coords[2] || null;
+      }
+    }
+
+    // Fallback: Try direct properties on position object
+    if (latitude === null || longitude === null) {
+      if (position.latitude !== undefined && position.longitude !== undefined) {
+        latitude = position.latitude;
+        longitude = position.longitude;
+        accuracy = position.accuracy;
+      }
+      else if (position.lat !== undefined && position.lng !== undefined) {
+        latitude = position.lat;
+        longitude = position.lng;
+        accuracy = position.accuracy;
+      }
+      else if (position.lat !== undefined && position.lon !== undefined) {
+        latitude = position.lat;
+        longitude = position.lon;
+        accuracy = position.accuracy;
+      }
+    }
+
+    // Get timestamp
+    if (position.timestamp) {
+      timestamp = position.timestamp;
+    }
+
+    // Convert to numbers and validate
+    const lat = parseFloat(latitude);
+    const lng = parseFloat(longitude);
+    const acc = accuracy !== null ? parseFloat(accuracy) : null;
+
+    // Validate coordinates are valid numbers within range
+    if (isNaN(lat) || isNaN(lng) || lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+      return null;
+    }
+
+    return {
+      latitude: lat,
+      longitude: lng,
+      accuracy: acc && !isNaN(acc) ? acc : null,
+      timestamp: timestamp,
+      address: null
+    };
+  }, []);
+
   // Get current position
   const getCurrentPosition = useCallback(async () => {
     setLoading(true);
@@ -71,19 +156,12 @@ export const useGeolocation = (options = {}) => {
           maximumAge: defaultOptions.maximumAge
         });
 
-        // Safely extract coordinates with validation
-        const coords = position?.coords;
-        if (!coords || typeof coords.latitude !== 'number' || typeof coords.longitude !== 'number') {
+        // Use flexible coordinate extraction
+        const locationData = extractCoordinates(position);
+
+        if (!locationData) {
           throw new Error('Invalid coordinates received from Capacitor Geolocation');
         }
-
-        const locationData = {
-          latitude: Number(coords.latitude),
-          longitude: Number(coords.longitude),
-          accuracy: coords.accuracy ? Number(coords.accuracy) : null,
-          timestamp: position.timestamp || Date.now(),
-          address: null
-        };
 
         setLocation(locationData);
         setLoading(false);
@@ -104,9 +182,10 @@ export const useGeolocation = (options = {}) => {
       return new Promise((resolve, reject) => {
         navigator.geolocation.getCurrentPosition(
           (position) => {
-            // Safely extract coordinates with validation (same as Capacitor)
-            const coords = position?.coords;
-            if (!coords || typeof coords.latitude !== 'number' || typeof coords.longitude !== 'number') {
+            // Use flexible coordinate extraction
+            const locationData = extractCoordinates(position);
+
+            if (!locationData) {
               const error = {
                 code: 'INVALID_COORDS',
                 message: 'Invalid coordinates received from Web Geolocation'
@@ -116,14 +195,6 @@ export const useGeolocation = (options = {}) => {
               reject(error);
               return;
             }
-
-            const locationData = {
-              latitude: Number(coords.latitude),
-              longitude: Number(coords.longitude),
-              accuracy: coords.accuracy ? Number(coords.accuracy) : null,
-              timestamp: position.timestamp || Date.now(),
-              address: null
-            };
 
             setLocation(locationData);
             setLoading(false);
@@ -150,7 +221,7 @@ export const useGeolocation = (options = {}) => {
       setLoading(false);
       throw errorInfo;
     }
-  }, [defaultOptions]);
+  }, [defaultOptions, extractCoordinates]);
 
   // Request location permission and get position
   const requestLocation = useCallback(async () => {
