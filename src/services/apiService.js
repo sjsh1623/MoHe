@@ -1,11 +1,26 @@
-// Use empty string if VITE_API_BASE_URL is set to empty (for relative API paths)
-// Otherwise use the provided value or default to empty string for relative paths
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL !== undefined
-  ? import.meta.env.VITE_API_BASE_URL
-  : '';
+import { Capacitor } from '@capacitor/core';
+
+// Determine API base URL based on platform
+// - Native apps (iOS/Android): Must use absolute URL since app runs from local files
+// - Web browser: Can use relative paths (leverages Vite proxy in dev, same-origin in prod)
+const getApiBaseUrl = () => {
+  // For native platforms, always use absolute URL
+  if (Capacitor.isNativePlatform()) {
+    // Production API server
+    return 'https://mohe.today';
+  }
+
+  // For web, use environment variable or empty string for relative paths
+  return import.meta.env.VITE_API_BASE_URL !== undefined
+    ? import.meta.env.VITE_API_BASE_URL
+    : '';
+};
+
+const API_BASE_URL = getApiBaseUrl();
 
 // Debug: Log the API base URL being used
-console.log('🔧 API Base URL:', API_BASE_URL || '(empty - using relative paths)');
+console.log('🔧 API Base URL:', API_BASE_URL || '(empty - using relative paths)',
+  '| Platform:', Capacitor.getPlatform());
 
 /**
  * Base API service with common functionality

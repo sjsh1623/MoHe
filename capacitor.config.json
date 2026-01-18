@@ -3,7 +3,14 @@
   "appName": "Mohe",
   "webDir": "dist",
   "server": {
-    "androidScheme": "https"
+    "androidScheme": "https",
+    "iosScheme": "https",
+    "allowNavigation": [
+      "mohe.today",
+      "*.mohe.today",
+      "https://mohe.today/*",
+      "https://*.mohe.today/*"
+    ]
   },
   "plugins": {
     "SplashScreen": {
@@ -25,6 +32,7 @@
     "allowMixedContent": true
   },
   "ios": {
-    "scheme": "mohe"
+    "scheme": "mohe",
+    "contentInset": "automatic"
   }
 }
