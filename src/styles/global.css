@@ -47,15 +47,14 @@
 
 html {
     min-height: 100%;
-    background-color: inherit;
+    background-color: #ffffff;
 }
 
 body {
     margin: 0;
-    padding: 0;
     width: 100%;
     min-height: 100dvh;
-    background: linear-gradient(180deg, #f3f4f6 0%, #e5e7eb 100%);
+    background: #ffffff;
     color: inherit;
     font-family: var(--font-family-base);
     font-size: var(--font-size-body);
@@ -64,11 +63,12 @@ body {
     display: block;
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
+    /* Safe area is handled in index.html */
 }
 
 #root {
     width: 100%;
-    min-height: 100dvh;
+    min-height: 100%;
     display: flex;
     justify-content: center;
     background: transparent;

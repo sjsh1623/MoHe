@@ -32,7 +32,10 @@
       "Bash(brew --version:*)",
       "Bash(brew install:*)",
       "Bash(sips:*)",
-      "Bash(npx capacitor-assets:*)"
+      "Bash(npx capacitor-assets:*)",
+      "Bash(git push:*)",
+      "Bash(grep:*)",
+      "Bash(npm uninstall:*)"
     ],
     "deny": [],
     "ask": []

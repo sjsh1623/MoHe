@@ -7,7 +7,6 @@
   display: flex;
   flex-direction: column;
   border-radius: 0;
-  overflow: hidden;
   box-shadow: none;
   isolation: isolate;
 }
@@ -21,7 +20,9 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 @media (min-width: 540px) {

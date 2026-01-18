@@ -4,7 +4,8 @@
   "webDir": "dist",
   "server": {
     "androidScheme": "https",
-    "iosScheme": "https",
+    "iosScheme": "capacitor",
+    "hostname": "localhost",
     "allowNavigation": [
       "mohe.today",
       "*.mohe.today",
@@ -16,7 +17,7 @@
     "SplashScreen": {
       "launchShowDuration": 2000,
       "launchAutoHide": true,
-      "backgroundColor": "#fdfbf7",
+      "backgroundColor": "#ffffff",
       "androidSplashResourceName": "splash",
       "androidScaleType": "CENTER_CROP",
       "iosContentMode": "scaleAspectFit",
@@ -26,13 +27,18 @@
     },
     "App": {
       "launchShowDuration": 0
+    },
+    "CapacitorHttp": {
+      "enabled": true
     }
   },
   "android": {
-    "allowMixedContent": true
+    "allowMixedContent": true,
+    "backgroundColor": "#ffffff"
   },
   "ios": {
     "scheme": "mohe",
-    "contentInset": "automatic"
+    "backgroundColor": "#ffffff",
+    "webContentsDebuggingEnabled": true
   }
 }

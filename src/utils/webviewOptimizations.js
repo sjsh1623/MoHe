@@ -83,7 +83,7 @@ export const handleWebViewError = (error, errorInfo) => {
 // Memory optimization - clean up unused resources
 export const optimizeMemoryUsage = () => {
   // Force garbage collection if available (development only)
-  if (window.gc && process.env.NODE_ENV === 'development') {
+  if (window.gc && import.meta.env.DEV) {
     window.gc();
   }
   
