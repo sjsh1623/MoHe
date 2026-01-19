@@ -2,12 +2,11 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence } from 'framer-motion';
 import styles from '@/styles/pages/place-detail-page.module.css';
 import PlaceDetailSkeleton from '@/components/ui/skeletons/PlaceDetailSkeleton';
 import ErrorMessage from '@/components/ui/alerts/ErrorMessage';
 import { activityService, placeService, bookmarkService } from '@/services/apiService';
-import { authService } from '@/services/authService';
 import { useAuth } from '@/contexts/AuthContext';
 import { buildImageUrl, buildImageUrlList, normalizePlaceImages } from '@/utils/image';
 import MenuFullscreenModal from '@/components/ui/modals/MenuFullscreenModal';
@@ -17,12 +16,8 @@ import ShareModal from '@/components/ui/modals/ShareModal';
 // CONFIGURATION
 // ============================================
 const SHOW_HEADER_TITLE = false; // Set to true to show place name in sticky header
-const HERO_HEIGHT = 380; // Hero image height in pixels
+const BASE_HERO_HEIGHT = 380; // Base hero image height in pixels (excluding safe area)
 const HEADER_HEIGHT = 56; // Sticky header height (excluding safe area)
-
-// Calculate the scroll position where bottom sheet meets header
-// This is the point where the hero image should be fully covered
-const ATTACHMENT_SCROLL = HERO_HEIGHT - HEADER_HEIGHT;
 
 const formatDate = (dateString) => {
   if (!dateString) return '';
@@ -100,6 +95,11 @@ export default function PlaceDetailPage({ place = null }) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const modalContentRef = useRef(null);
 
+  // Image slider touch handling
+  const touchStartX = useRef(0);
+  const touchEndX = useRef(0);
+  const heroRef = useRef(null);
+
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [isBookmarkLoading, setIsBookmarkLoading] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
@@ -109,6 +109,35 @@ export default function PlaceDetailPage({ place = null }) {
   // Scroll state - pure scroll position, no velocity/acceleration
   const [scrollTop, setScrollTop] = useState(0);
   const [portalContainer, setPortalContainer] = useState(null);
+  const [safeAreaTop, setSafeAreaTop] = useState(0);
+
+  // Get safe area inset on mount
+  useEffect(() => {
+    const updateSafeArea = () => {
+      // Try to get safe area from CSS custom property --sat
+      const satValue = getComputedStyle(document.documentElement).getPropertyValue('--sat').trim();
+      if (satValue && satValue !== '0px') {
+        const parsed = parseInt(satValue, 10);
+        if (!isNaN(parsed) && parsed > 0) {
+          setSafeAreaTop(parsed);
+          return;
+        }
+      }
+      // Fallback: check if Capacitor/iOS and estimate
+      if (window.Capacitor?.isNativePlatform?.() || /iPhone|iPad/.test(navigator.userAgent)) {
+        // Estimate safe area for iOS devices with notch (iPhone X and later)
+        const isNotchDevice = window.screen.height >= 812 || window.screen.width >= 812;
+        setSafeAreaTop(isNotchDevice ? 47 : 20);
+      }
+    };
+    // Delay initial read to ensure CSS is applied
+    const timer = setTimeout(updateSafeArea, 100);
+    window.addEventListener('resize', updateSafeArea);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('resize', updateSafeArea);
+    };
+  }, []);
 
   // Initialize portal container for fixed elements
   useEffect(() => {
@@ -182,6 +211,10 @@ export default function PlaceDetailPage({ place = null }) {
   // Airbnb model: overlay covers image, then header takes over
   // CRITICAL: Only ONE white surface visible at any time to prevent double-white
   // ============================================
+
+  // Dynamic hero height including safe area
+  const HERO_HEIGHT = BASE_HERO_HEIGHT + safeAreaTop;
+  const ATTACHMENT_SCROLL = HERO_HEIGHT - HEADER_HEIGHT;
 
   // Clamp scroll to hero region for visual calculations
   const heroScroll = Math.min(Math.max(0, scrollTop), HERO_HEIGHT);
@@ -340,6 +373,32 @@ export default function PlaceDetailPage({ place = null }) {
     setIsShareModalOpen(true);
   };
 
+  // Image slider touch handlers
+  const handleTouchStart = useCallback((e) => {
+    touchStartX.current = e.touches[0].clientX;
+    touchEndX.current = e.touches[0].clientX;
+  }, []);
+
+  const handleTouchMove = useCallback((e) => {
+    touchEndX.current = e.touches[0].clientX;
+  }, []);
+
+  const handleTouchEnd = useCallback(() => {
+    const diffX = touchStartX.current - touchEndX.current;
+    const minSwipeDistance = 50;
+
+    if (Math.abs(diffX) > minSwipeDistance) {
+      const imageCount = images?.length || 1;
+      if (diffX > 0 && currentImageIndex < imageCount - 1) {
+        // Swipe left - next image
+        setCurrentImageIndex(prev => prev + 1);
+      } else if (diffX < 0 && currentImageIndex > 0) {
+        // Swipe right - previous image
+        setCurrentImageIndex(prev => prev - 1);
+      }
+    }
+  }, [currentImageIndex, images?.length]);
+
   if (isLoading) return <PlaceDetailSkeleton />;
 
   if (error || !placeData) {
@@ -441,11 +500,15 @@ export default function PlaceDetailPage({ place = null }) {
 
       {/* HERO SECTION - Fixed position, content scrolls over it */}
       <div
+        ref={heroRef}
         className={styles.heroSection}
         style={{
           opacity: isHeroHidden ? 0 : 1,
           visibility: isHeroHidden ? 'hidden' : 'visible',
         }}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
       >
         {/* Hero image */}
         <img

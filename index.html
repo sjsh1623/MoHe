@@ -20,17 +20,28 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" crossorigin="anonymous">
     <title>MOHE</title>
     <style>
+      /* CSS custom properties for safe area insets */
+      :root {
+        --sat: env(safe-area-inset-top, 0px);
+        --sar: env(safe-area-inset-right, 0px);
+        --sab: env(safe-area-inset-bottom, 0px);
+        --sal: env(safe-area-inset-left, 0px);
+      }
       /* Prevent flash of black background during load */
       html, body {
         background-color: #ffffff !important;
         margin: 0;
         padding: 0;
       }
-      /* iOS safe area - only top for notch, bottom handled by content */
+      /* iOS safe area - do NOT add padding-top to body for pages with fixed elements */
       body {
-        padding-top: env(safe-area-inset-top, 0px);
         min-height: 100vh;
+        min-height: -webkit-fill-available;
         min-height: 100dvh;
+      }
+      /* Ensure #root respects safe area */
+      #root {
+        min-height: 100%;
       }
     </style>
   </head>

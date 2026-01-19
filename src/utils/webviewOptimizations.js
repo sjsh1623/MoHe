@@ -1,10 +1,36 @@
+import { Capacitor } from '@capacitor/core';
+import { StatusBar, Style } from '@capacitor/status-bar';
+
 /**
  * WebView optimization utilities
  * These functions help ensure smooth performance in WebView environments
  */
 
+/**
+ * Initialize StatusBar for native platforms
+ * Overlay mode allows content to extend behind status bar
+ * CSS env(safe-area-inset-top) will then work correctly
+ */
+const initializeStatusBar = async () => {
+  if (!Capacitor.isNativePlatform()) return;
+
+  try {
+    // Enable overlay mode - content extends behind status bar
+    await StatusBar.setOverlaysWebView({ overlay: true });
+
+    // Dark icons for light background
+    await StatusBar.setStyle({ style: Style.Dark });
+
+    console.log('✅ StatusBar overlay enabled');
+  } catch (error) {
+    console.warn('StatusBar initialization failed:', error);
+  }
+};
+
 // Prevent default WebView behaviors that might interfere with SPA
 export const initializeWebViewOptimizations = () => {
+  // Initialize StatusBar for native apps
+  initializeStatusBar();
   // Set initial body styles to prevent white flashes
   document.body.style.backgroundColor = 'white';
   document.body.style.margin = '0';

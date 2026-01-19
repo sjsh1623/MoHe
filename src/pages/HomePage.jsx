@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styles from '@/styles/pages/home-page.module.css';
 
@@ -625,180 +625,533 @@ export default function HomePage() {
     };
   }, [currentLocation]);
 
-  // Large category pool (~60 entries) - shuffled on each render
-  // API uses English keys (cafe, restaurant, bar, etc.)
-  // Multiple titles can use the same API key for variety
+  // Large category pool - shuffled on each render
+  // Mixed styles: questions, statements, creative phrases
   const allCategories = [
-    // 카페 관련 (cafe)
+    // 카페 (cafe)
     { key: 'cafe', title: '오늘의 카페' },
-    { key: 'cafe', title: '커피 한 잔 어때요' },
-    { key: 'cafe', title: '분위기 좋은 카페' },
-    { key: 'cafe', title: '여유로운 카페 타임' },
-    { key: 'cafe', title: '감성 카페 추천' },
-    { key: 'cafe', title: '조용한 카페 찾기' },
+    { key: 'cafe', title: '커피 한 잔 어때요?' },
+    { key: 'cafe', title: '카페 가고 싶은 날' },
+    { key: 'cafe', title: '조용한 카페가 필요해' },
+    { key: 'cafe', title: '작업하기 좋은 카페' },
+    { key: 'cafe', title: '뷰 맛집 카페' },
+    { key: 'cafe', title: '힙한 카페 투어' },
 
-    // 음식점 관련 (restaurant)
+    // 음식점 (restaurant)
+    { key: 'restaurant', title: '오늘 뭐 먹지?' },
     { key: 'restaurant', title: '맛집 탐방' },
-    { key: 'restaurant', title: '오늘 뭐 먹지' },
-    { key: 'restaurant', title: '점심 메뉴 추천' },
-    { key: 'restaurant', title: '저녁 식사 어디서' },
-    { key: 'restaurant', title: '숨은 맛집 발견' },
-    { key: 'restaurant', title: '입소문 맛집' },
+    { key: 'restaurant', title: '점심 메뉴 고민 중' },
+    { key: 'restaurant', title: '저녁 어디서 먹을까?' },
+    { key: 'restaurant', title: '혼밥하기 좋은 곳' },
+    { key: 'restaurant', title: '회식 장소 찾아요' },
+    { key: 'restaurant', title: '데이트 맛집' },
 
-    // 바/술집 관련 (bar)
+    // 바/술집 (bar)
+    { key: 'bar', title: '오늘 한 잔 어때요?' },
     { key: 'bar', title: '분위기 좋은 바' },
-    { key: 'bar', title: '오늘 밤 한 잔' },
     { key: 'bar', title: '퇴근 후 한 잔' },
-    { key: 'bar', title: '칵테일 한 잔 어때요' },
-    { key: 'bar', title: '분위기 있는 술집' },
+    { key: 'bar', title: '칵테일이 땡겨요' },
+    { key: 'bar', title: '2차는 여기로' },
+    { key: 'bar', title: '조용히 마시기 좋은 곳' },
 
     // 베이커리 (bakery)
     { key: 'bakery', title: '빵지순례' },
     { key: 'bakery', title: '갓 구운 빵 냄새' },
-    { key: 'bakery', title: '오늘의 빵집' },
-    { key: 'bakery', title: '동네 베이커리' },
-    { key: 'bakery', title: '빵순이 빵돌이 모여라' },
+    { key: 'bakery', title: '빵 먹고 싶은 날' },
+    { key: 'bakery', title: '크루아상 맛집' },
+    { key: 'bakery', title: '소금빵이 땡겨요' },
 
     // 브런치 (brunch_cafe)
-    { key: 'brunch_cafe', title: '브런치 맛집' },
-    { key: 'brunch_cafe', title: '늦은 아침 브런치' },
-    { key: 'brunch_cafe', title: '주말 브런치 어때요' },
     { key: 'brunch_cafe', title: '여유로운 브런치' },
+    { key: 'brunch_cafe', title: '늦은 아침 어때요?' },
+    { key: 'brunch_cafe', title: '주말 브런치' },
+    { key: 'brunch_cafe', title: '에그 베네딕트 먹고 싶어' },
 
     // 디저트 (dessert_cafe)
-    { key: 'dessert_cafe', title: '달콤한 디저트' },
     { key: 'dessert_cafe', title: '디저트가 땡길 때' },
-    { key: 'dessert_cafe', title: '오늘의 당충전' },
-    { key: 'dessert_cafe', title: '케이크 맛집' },
-    { key: 'dessert_cafe', title: '달달한 휴식' },
+    { key: 'dessert_cafe', title: '달콤한 유혹' },
+    { key: 'dessert_cafe', title: '오늘의 당 충전' },
+    { key: 'dessert_cafe', title: '케이크 한 조각' },
+    { key: 'dessert_cafe', title: '마카롱 맛집' },
+    { key: 'dessert_cafe', title: '아이스크림 먹으러' },
 
     // 와인바 (wine_bar)
-    { key: 'wine_bar', title: '와인 한 잔 어때요' },
     { key: 'wine_bar', title: '오늘은 와인 기분' },
+    { key: 'wine_bar', title: '와인 한 잔 할까요?' },
     { key: 'wine_bar', title: '분위기 있는 와인바' },
-    { key: 'wine_bar', title: '로맨틱 와인 타임' },
 
     // 수제맥주 (craft_beer)
-    { key: 'craft_beer', title: '수제맥주 한 잔' },
-    { key: 'craft_beer', title: '맥주 한 잔 하실래요' },
-    { key: 'craft_beer', title: '크래프트 비어 투어' },
-    { key: 'craft_beer', title: '시원한 맥주가 필요해' },
+    { key: 'craft_beer', title: '시원한 맥주 한 잔' },
+    { key: 'craft_beer', title: '맥주가 땡기는 날' },
+    { key: 'craft_beer', title: '수제맥주 투어' },
 
     // 갤러리 (gallery)
     { key: 'gallery', title: '갤러리 나들이' },
     { key: 'gallery', title: '예술이 필요한 날' },
     { key: 'gallery', title: '감성 충전 갤러리' },
-    { key: 'gallery', title: '오늘은 갤러리 데이트' },
 
     // 박물관 (museum)
     { key: 'museum', title: '박물관 탐방' },
     { key: 'museum', title: '역사 속으로' },
-    { key: 'museum', title: '박물관에서의 하루' },
     { key: 'museum', title: '문화 나들이' },
 
     // 전시 (exhibition)
-    { key: 'exhibition', title: '전시 관람' },
-    { key: 'exhibition', title: '오늘의 전시회' },
-    { key: 'exhibition', title: '전시 보러 갈까요' },
-    { key: 'exhibition', title: '특별 전시 추천' },
+    { key: 'exhibition', title: '오늘의 전시' },
+    { key: 'exhibition', title: '전시 보러 갈까요?' },
+    { key: 'exhibition', title: '팝업 전시 탐방' },
 
     // 공방 (workshop)
-    { key: 'workshop', title: '오늘은 뭘 만들어볼까요' },
-    { key: 'workshop', title: '손으로 만드는 시간' },
-    { key: 'workshop', title: '공방 체험 추천' },
+    { key: 'workshop', title: '뭔가 만들어볼까?' },
     { key: 'workshop', title: '원데이 클래스' },
-    { key: 'workshop', title: '창작의 즐거움' },
+    { key: 'workshop', title: '손으로 만드는 시간' },
+    { key: 'workshop', title: '나만의 향수 만들기' },
 
     // 공원 (park)
-    { key: 'park', title: '산책하기 좋은 곳' },
-    { key: 'park', title: '자연 속 힐링' },
-    { key: 'park', title: '공원에서 여유롭게' },
+    { key: 'park', title: '산책하기 좋은 날' },
+    { key: 'park', title: '바람 쐬러 갈까?' },
     { key: 'park', title: '피크닉 명소' },
-    { key: 'park', title: '바람 쐬러 갈까요' },
+    { key: 'park', title: '자연 속 힐링' },
 
     // 쇼핑몰 (shopping_mall)
-    { key: 'shopping_mall', title: '쇼핑하기 좋은 곳' },
-    { key: 'shopping_mall', title: '쇼핑 나들이' },
-    { key: 'shopping_mall', title: '윈도우 쇼핑 어때요' },
+    { key: 'shopping_mall', title: '쇼핑 가고 싶어' },
+    { key: 'shopping_mall', title: '윈도우 쇼핑' },
     { key: 'shopping_mall', title: '오늘은 쇼핑 데이' },
 
     // 영화관 (cinema)
-    { key: 'cinema', title: '영화 보러 갈까요' },
-    { key: 'cinema', title: '오늘의 영화관' },
+    { key: 'cinema', title: '영화 한 편 어때요?' },
     { key: 'cinema', title: '팝콘과 영화' },
-    { key: 'cinema', title: '영화 한 편 어때요' },
+    { key: 'cinema', title: '오늘의 영화관' },
 
     // 서점 (bookstore)
-    { key: 'bookstore', title: '서점 나들이' },
+    { key: 'bookstore', title: '책방 나들이' },
     { key: 'bookstore', title: '책 향기 가득한 곳' },
-    { key: 'bookstore', title: '독서의 계절' },
-    { key: 'bookstore', title: '동네 책방 탐방' },
+    { key: 'bookstore', title: '독립서점 투어' },
 
     // 북카페 (library_cafe)
-    { key: 'library_cafe', title: '책과 함께하는 시간' },
-    { key: 'library_cafe', title: '책 읽기 좋은 카페' },
-    { key: 'library_cafe', title: '북카페 추천' },
+    { key: 'library_cafe', title: '책과 커피' },
+    { key: 'library_cafe', title: '조용히 책 읽고 싶어' },
 
     // 한식 (korean_food)
     { key: 'korean_food', title: '한식이 땡길 때' },
-    { key: 'korean_food', title: '정갈한 한식 한 상' },
-    { key: 'korean_food', title: '엄마 손맛이 그리울 때' },
+    { key: 'korean_food', title: '집밥 같은 맛' },
+    { key: 'korean_food', title: '뜨끈한 국밥' },
+    { key: 'korean_food', title: '삼겹살 구워요' },
+    { key: 'korean_food', title: '정갈한 백반' },
 
     // 일식 (japanese_food)
-    { key: 'japanese_food', title: '일식 맛집' },
     { key: 'japanese_food', title: '오늘은 일식 기분' },
-    { key: 'japanese_food', title: '스시가 먹고 싶을 때' },
+    { key: 'japanese_food', title: '스시 먹으러 갈까?' },
+    { key: 'japanese_food', title: '라멘이 땡겨' },
+    { key: 'japanese_food', title: '오마카세 도전' },
+    { key: 'japanese_food', title: '바삭한 돈카츠' },
 
     // 중식 (chinese_food)
-    { key: 'chinese_food', title: '중식 맛집' },
     { key: 'chinese_food', title: '짜장면이 땡길 때' },
-    { key: 'chinese_food', title: '오늘은 중국 요리' },
+    { key: 'chinese_food', title: '오늘은 중식' },
+    { key: 'chinese_food', title: '마라탕 먹을 사람?' },
+    { key: 'chinese_food', title: '딤섬 파티' },
 
     // 양식 (western_food)
-    { key: 'western_food', title: '양식 맛집' },
-    { key: 'western_food', title: '파스타가 먹고 싶을 때' },
-    { key: 'western_food', title: '스테이크 맛집' },
+    { key: 'western_food', title: '파스타가 먹고 싶어' },
+    { key: 'western_food', title: '스테이크 나잇' },
+    { key: 'western_food', title: '피자 한 판' },
+    { key: 'western_food', title: '버거 먹으러' },
+    { key: 'western_food', title: '리조또 어때요?' },
 
     // 아시안 (asian_food)
-    { key: 'asian_food', title: '아시안 푸드' },
     { key: 'asian_food', title: '이국적인 맛 여행' },
-    { key: 'asian_food', title: '동남아 음식 탐방' },
+    { key: 'asian_food', title: '쌀국수 먹을래?' },
+    { key: 'asian_food', title: '태국 음식 탐방' },
+    { key: 'asian_food', title: '향신료 가득 커리' },
 
     // 펍 (pub)
-    { key: 'pub', title: '동네 펍 추천' },
-    { key: 'pub', title: '아늑한 펍에서' },
+    { key: 'pub', title: '동네 펍에서 한 잔' },
+    { key: 'pub', title: '아늑한 펍' },
 
     // 라운지바 (lounge_bar)
     { key: 'lounge_bar', title: '라운지에서 여유롭게' },
-    { key: 'lounge_bar', title: '도심 속 라운지' },
+    { key: 'lounge_bar', title: '호텔 라운지 바' },
 
     // 루프탑 (rooftop)
     { key: 'rooftop', title: '루프탑에서 야경을' },
-    { key: 'rooftop', title: '하늘 아래 루프탑' },
+    { key: 'rooftop', title: '하늘 아래 한 잔' },
+    { key: 'rooftop', title: '노을 보러 갈까?' },
 
-    // 스파/웰니스 (spa)
-    { key: 'spa', title: '힐링이 필요할 때' },
+    // 스파 (spa)
+    { key: 'spa', title: '힐링이 필요해' },
+    { key: 'spa', title: '마사지 받고 싶은 날' },
     { key: 'spa', title: '스파에서 휴식을' },
 
-    // 헬스/피트니스 (fitness)
-    { key: 'fitness', title: '운동하기 좋은 곳' },
-    { key: 'fitness', title: '건강한 하루' },
+    // 피트니스 (fitness)
+    { key: 'fitness', title: '오늘은 운동하는 날' },
+    { key: 'fitness', title: '클라이밍 도전' },
 
-    // 요가/필라테스 (yoga)
-    { key: 'yoga', title: '요가로 시작하는 아침' },
-    { key: 'yoga', title: '필라테스 스튜디오' },
+    // 요가 (yoga)
+    { key: 'yoga', title: '요가로 시작하는 하루' },
+    { key: 'yoga', title: '필라테스 어때요?' },
 
     // 플라워카페 (flower_cafe)
     { key: 'flower_cafe', title: '꽃과 함께하는 시간' },
-    { key: 'flower_cafe', title: '플라워 카페 추천' },
+    { key: 'flower_cafe', title: '플라워 카페' },
 
     // 펫프렌들리 (pet_friendly)
     { key: 'pet_friendly', title: '반려동물과 함께' },
-    { key: 'pet_friendly', title: '펫 프렌들리 장소' },
+    { key: 'pet_friendly', title: '펫 프렌들리' },
+    { key: 'pet_friendly', title: '고양이 카페' },
 
-    // 사진관/스튜디오 (photo_studio)
+    // 사진 (photo_studio)
     { key: 'photo_studio', title: '인생샷 명소' },
     { key: 'photo_studio', title: '사진 찍기 좋은 곳' },
+
+    // 치킨 (chicken)
+    { key: 'chicken', title: '치킨이 땡겨요' },
+    { key: 'chicken', title: '치맥 하자' },
+    { key: 'chicken', title: '바삭한 치킨' },
+
+    // 해산물 (seafood)
+    { key: 'seafood', title: '회 먹으러 갈까?' },
+    { key: 'seafood', title: '조개구이 파티' },
+    { key: 'seafood', title: '신선한 해산물' },
+
+    // 고기 (meat)
+    { key: 'meat', title: '고기 굽는 날' },
+    { key: 'meat', title: '소고기가 땡겨' },
+    { key: 'meat', title: 'BBQ 타임' },
+
+    // 면 요리 (noodle)
+    { key: 'noodle', title: '면 요리가 땡길 때' },
+    { key: 'noodle', title: '칼국수 먹으러' },
+    { key: 'noodle', title: '시원한 냉면' },
+    { key: 'noodle', title: '우동 한 그릇' },
+
+    // 분식 (snack_bar)
+    { key: 'snack_bar', title: '분식 먹고 싶어' },
+    { key: 'snack_bar', title: '떡볶이 땡기는 날' },
+    { key: 'snack_bar', title: '김밥 한 줄' },
+
+    // 죽/국밥 (porridge)
+    { key: 'porridge', title: '해장이 필요해' },
+    { key: 'porridge', title: '따뜻한 국물 생각나' },
+    { key: 'porridge', title: '뜨끈한 죽 한 그릇' },
+
+    // 샐러드 (salad)
+    { key: 'salad', title: '건강한 한 끼' },
+    { key: 'salad', title: '오늘은 샐러드' },
+    { key: 'salad', title: '비건 식당' },
+
+    // 이자카야 (izakaya)
+    { key: 'izakaya', title: '이자카야 가자' },
+    { key: 'izakaya', title: '사케 한 잔' },
+
+    // 노포 (pojangmacha)
+    { key: 'pojangmacha', title: '추억의 맛집' },
+    { key: 'pojangmacha', title: '오래된 그 집' },
+
+    // 테라스 (terrace)
+    { key: 'terrace', title: '테라스에서 먹자' },
+    { key: 'terrace', title: '야외에서 식사' },
+
+    // 심야 (late_night)
+    { key: 'late_night', title: '늦은 밤 갈 곳' },
+    { key: 'late_night', title: '야식 먹으러' },
+
+    // 키즈 (kids_friendly)
+    { key: 'kids_friendly', title: '아이와 함께' },
+    { key: 'kids_friendly', title: '키즈 카페' },
+    { key: 'kids_friendly', title: '가족 식사' },
+
+    // 뷰 (view)
+    { key: 'view', title: '뷰 맛집' },
+    { key: 'view', title: '야경 보러 갈까?' },
+    { key: 'view', title: '한강뷰 카페' },
+
+    // 족발/보쌈 (jokbal)
+    { key: 'jokbal', title: '족발이 땡겨' },
+    { key: 'jokbal', title: '보쌈 먹을 사람?' },
+    { key: 'jokbal', title: '야식은 역시 족발' },
+
+    // 곱창 (gopchang)
+    { key: 'gopchang', title: '곱창 먹으러' },
+    { key: 'gopchang', title: '막창 구워요' },
+
+    // 탕/찌개 (stew)
+    { key: 'stew', title: '뜨끈한 찌개' },
+    { key: 'stew', title: '탕이 생각나' },
+    { key: 'stew', title: '김치찌개 먹자' },
+    { key: 'stew', title: '순두부찌개 맛집' },
+
+    // 샤브샤브 (shabu)
+    { key: 'shabu', title: '샤브샤브 어때?' },
+    { key: 'shabu', title: '훠궈 먹으러' },
+
+    // 뷔페 (buffet)
+    { key: 'buffet', title: '오늘은 뷔페' },
+    { key: 'buffet', title: '맘껏 먹는 날' },
+    { key: 'buffet', title: '호텔 뷔페' },
+
+    // 호프 (hof)
+    { key: 'hof', title: '호프집 가자' },
+    { key: 'hof', title: '맥주 한 잔 하러' },
+
+    // 막걸리 (makgeolli)
+    { key: 'makgeolli', title: '막걸리 한 잔' },
+    { key: 'makgeolli', title: '파전에 막걸리' },
+    { key: 'makgeolli', title: '전통주 바' },
+
+    // 한옥 (hanok)
+    { key: 'hanok', title: '한옥에서 쉬어가요' },
+    { key: 'hanok', title: '한옥 카페' },
+
+    // 레트로 (retro)
+    { key: 'retro', title: '레트로 감성' },
+    { key: 'retro', title: '복고풍 카페' },
+    { key: 'retro', title: '뉴트로 핫플' },
+
+    // 대형카페 (large_cafe)
+    { key: 'large_cafe', title: '넓은 카페' },
+    { key: 'large_cafe', title: '단체로 갈 카페' },
+
+    // 프라이빗 (private)
+    { key: 'private', title: '조용히 얘기할 곳' },
+    { key: 'private', title: '룸 있는 식당' },
+    { key: 'private', title: '단체 모임 장소' },
+
+    // 인스타감성 (instagrammable)
+    { key: 'instagrammable', title: '인스타 감성' },
+    { key: 'instagrammable', title: '요즘 핫플' },
+    { key: 'instagrammable', title: '사진 맛집' },
+
+    // 신상 (new_place)
+    { key: 'new_place', title: '새로 생긴 곳' },
+    { key: 'new_place', title: '요즘 뜨는 곳' },
+    { key: 'new_place', title: '신상 맛집' },
+
+    // 가성비 (value)
+    { key: 'value', title: '가성비 맛집' },
+    { key: 'value', title: '가격 대비 최고' },
+
+    // 파인다이닝 (fine_dining)
+    { key: 'fine_dining', title: '특별한 날에' },
+    { key: 'fine_dining', title: '파인다이닝' },
+    { key: 'fine_dining', title: '기념일 레스토랑' },
+
+    // 오므라이스 (omurice)
+    { key: 'omurice', title: '폭신한 오므라이스' },
+    { key: 'omurice', title: '오므라이스 먹으러' },
+
+    // 카레 (curry)
+    { key: 'curry', title: '카레가 먹고 싶어' },
+    { key: 'curry', title: '일본식 카레' },
+
+    // 멕시칸 (mexican)
+    { key: 'mexican', title: '타코 파티' },
+    { key: 'mexican', title: '부리또 먹으러' },
+
+    // 지중해 (mediterranean)
+    { key: 'mediterranean', title: '지중해 음식' },
+    { key: 'mediterranean', title: '건강하게 지중해식' },
+
+    // 이탈리안 (italian)
+    { key: 'italian', title: '정통 이탈리안' },
+    { key: 'italian', title: '트라토리아' },
+
+    // 프렌치 (french)
+    { key: 'french', title: '프렌치 레스토랑' },
+    { key: 'french', title: '비스트로에서' },
+
+    // 보드게임 (board_game)
+    { key: 'board_game', title: '보드게임 하자' },
+    { key: 'board_game', title: '게임하며 놀기' },
+
+    // 방탈출 (escape_room)
+    { key: 'escape_room', title: '방탈출 도전' },
+    { key: 'escape_room', title: '스릴 즐기러' },
+
+    // 노래방 (karaoke)
+    { key: 'karaoke', title: '노래 부르러' },
+    { key: 'karaoke', title: '노래방 가자' },
+
+    // 볼링 (bowling)
+    { key: 'bowling', title: '볼링 치러' },
+
+    // 당구 (billiards)
+    { key: 'billiards', title: '당구 한 게임' },
+
+    // 골프 (golf)
+    { key: 'golf', title: '스크린 골프' },
+    { key: 'golf', title: '골프 연습하러' },
+
+    // 수영 (swimming)
+    { key: 'swimming', title: '수영하러 갈까?' },
+
+    // 테니스 (tennis)
+    { key: 'tennis', title: '테니스 치러' },
+
+    // 캠핑 (camping)
+    { key: 'camping', title: '캠핑 가자' },
+    { key: 'camping', title: '글램핑 어때?' },
+    { key: 'camping', title: '자연에서 하룻밤' },
+
+    // 펜션 (pension)
+    { key: 'pension', title: '펜션에서 쉬자' },
+    { key: 'pension', title: '조용히 쉬러' },
+
+    // 호텔 (hotel)
+    { key: 'hotel', title: '호캉스 가자' },
+    { key: 'hotel', title: '호텔에서 하룻밤' },
+
+    // 워터파크 (waterpark)
+    { key: 'waterpark', title: '물놀이 하러' },
+
+    // 놀이공원 (amusement_park)
+    { key: 'amusement_park', title: '놀이공원 가자' },
+
+    // 동물원 (zoo)
+    { key: 'zoo', title: '동물원 나들이' },
+
+    // 아쿠아리움 (aquarium)
+    { key: 'aquarium', title: '아쿠아리움' },
+
+    // 식물원 (botanical_garden)
+    { key: 'botanical_garden', title: '식물원 산책' },
+    { key: 'botanical_garden', title: '수목원에서 힐링' },
+
+    // 등산 (hiking)
+    { key: 'hiking', title: '등산 가자' },
+    { key: 'hiking', title: '가벼운 트레킹' },
+
+    // 드라이브 (drive)
+    { key: 'drive', title: '드라이브 코스' },
+    { key: 'drive', title: '야경 드라이브' },
+
+    // 계절명소 (seasonal)
+    { key: 'seasonal', title: '꽃 구경 가자' },
+    { key: 'seasonal', title: '단풍 보러' },
+
+    // 전통시장 (traditional_market)
+    { key: 'traditional_market', title: '시장 구경' },
+    { key: 'traditional_market', title: '시장 먹거리' },
+
+    // 백화점 (department)
+    { key: 'department', title: '백화점 쇼핑' },
+    { key: 'department', title: '아울렛 가자' },
+
+    // 빈티지 (vintage)
+    { key: 'vintage', title: '빈티지샵 투어' },
+    { key: 'vintage', title: '구제 쇼핑' },
+
+    // 네일 (nail)
+    { key: 'nail', title: '네일 받으러' },
+
+    // 헤어 (hair)
+    { key: 'hair', title: '머리 하러' },
+    { key: 'hair', title: '바버샵' },
+
+    // 피부관리 (skincare)
+    { key: 'skincare', title: '피부 관리 받으러' },
+
+    // 타투 (tattoo)
+    { key: 'tattoo', title: '타투샵 탐방' },
+
+    // 사우나 (sauna)
+    { key: 'sauna', title: '찜질방 가자' },
+    { key: 'sauna', title: '사우나 하러' },
+
+    // 만화카페 (manga_cafe)
+    { key: 'manga_cafe', title: '만화책 읽으러' },
+
+    // PC방 (pc_room)
+    { key: 'pc_room', title: '게임하러' },
+
+    // VR (vr)
+    { key: 'vr', title: 'VR 체험' },
+
+    // 포차 (indoor_pocha)
+    { key: 'indoor_pocha', title: '포차에서 한 잔' },
+    { key: 'indoor_pocha', title: '포차 감성' },
+
+    // 생선구이 (grilled_fish)
+    { key: 'grilled_fish', title: '생선구이 먹으러' },
+    { key: 'grilled_fish', title: '고등어 구워요' },
+
+    // 장어 (eel)
+    { key: 'eel', title: '장어 먹으러' },
+    { key: 'eel', title: '보양식 먹자' },
+
+    // 닭요리 (chicken_dish)
+    { key: 'chicken_dish', title: '닭볶음탕 먹자' },
+    { key: 'chicken_dish', title: '찜닭 어때?' },
+    { key: 'chicken_dish', title: '삼계탕 먹으러' },
+    { key: 'chicken_dish', title: '닭갈비 가자' },
+
+    // 오리 (duck)
+    { key: 'duck', title: '오리고기 먹으러' },
+    { key: 'duck', title: '훈제오리 맛집' },
+
+    // 양꼬치 (lamb_skewer)
+    { key: 'lamb_skewer', title: '양꼬치 먹자' },
+    { key: 'lamb_skewer', title: '양꼬치에 칭따오' },
+
+    // 대창 (beef_tripe)
+    { key: 'beef_tripe', title: '대창 구워요' },
+
+    // 순대 (sundae)
+    { key: 'sundae', title: '순대 먹으러' },
+    { key: 'sundae', title: '뜨끈한 순대국' },
+
+    // 야식 (late_night_food)
+    { key: 'late_night_food', title: '야식 시킬까?' },
+    { key: 'late_night_food', title: '늦은 밤 뭐 먹지?' },
+
+    // 샌드위치 (sandwich)
+    { key: 'sandwich', title: '샌드위치 한 입' },
+    { key: 'sandwich', title: '간단하게 샌드위치' },
+
+    // 핫도그 (hotdog)
+    { key: 'hotdog', title: '핫도그 먹으러' },
+
+    // 토스트 (toast)
+    { key: 'toast', title: '토스트 맛집' },
+
+    // 만두 (dumpling)
+    { key: 'dumpling', title: '만두 먹자' },
+    { key: 'dumpling', title: '군만두가 땡겨' },
+
+    // 떡 (rice_cake)
+    { key: 'rice_cake', title: '떡 사러' },
+
+    // 주스 (juice)
+    { key: 'juice', title: '생과일 주스' },
+    { key: 'juice', title: '스무디 마시러' },
+
+    // 차 (tea)
+    { key: 'tea', title: '차 한 잔' },
+    { key: 'tea', title: '찻집 가자' },
+
+    // 빙수 (bingsu)
+    { key: 'bingsu', title: '빙수 먹자' },
+    { key: 'bingsu', title: '시원한 거 먹고 싶어' },
+
+    // 와플 (waffle)
+    { key: 'waffle', title: '와플 먹으러' },
+    { key: 'waffle', title: '크로플 맛집' },
+
+    // 도넛 (donut)
+    { key: 'donut', title: '도넛 먹자' },
+
+    // 타르트 (tart)
+    { key: 'tart', title: '타르트 먹으러' },
+    { key: 'tart', title: '에그타르트 맛집' },
+
+    // 초콜릿 (chocolate)
+    { key: 'chocolate', title: '핫초코 마시러' },
+    { key: 'chocolate', title: '달달한 초콜릿' },
+
+    // 쿠키 (cookie)
+    { key: 'cookie', title: '쿠키 먹자' },
+
+    // 스콘 (scone)
+    { key: 'scone', title: '스콘 맛집' },
   ];
 
   // Shuffle and select categories for display
@@ -816,53 +1169,64 @@ export default function HomePage() {
 
   const [fixedCategories] = useState(() => getShuffledCategories());
 
-  // Load category-based recommendations
+  // Lazy loading state for categories
+  const INITIAL_CATEGORIES_COUNT = 10; // Load 10 categories initially for better UX
+  const CATEGORIES_BATCH_SIZE = 5; // Load 5 more categories when scrolling
+  const [loadedCategoryCount, setLoadedCategoryCount] = useState(INITIAL_CATEGORIES_COUNT);
+  const [isLoadingMoreCategories, setIsLoadingMoreCategories] = useState(false);
+  const categoryLoaderRef = useRef(null);
+
+  // Load a single category's places
+  const loadCategoryPlaces = async (category, latitude, longitude) => {
+    try {
+      const placesResponse = await categoryService.getPlacesByCategory(
+        category.key,
+        latitude,
+        longitude,
+        { limit: 10 }
+      );
+
+      if (placesResponse.success && placesResponse.data.length > 0) {
+        const transformedPlaces = placesResponse.data.map(place => {
+          const addressStr = place.shortAddress || place.address || '';
+          const formattedLocation = formatPlaceAddress(addressStr);
+
+          return normalizePlaceImages({
+            id: place.id,
+            name: place.name || place.title,
+            title: place.title || place.name,
+            rating: place.rating,
+            location: formattedLocation,
+            image: place.imageUrl || place.image,
+            images: place.images || [],
+            isBookmarked: place.isBookmarked || false
+          });
+        });
+
+        return { ...category, places: transformedPlaces };
+      }
+      return { ...category, places: [] };
+    } catch (error) {
+      console.warn(`Failed to load places for category ${category.key}:`, error);
+      return { ...category, places: [] };
+    }
+  };
+
+  // Load initial categories (first 5 only)
   useEffect(() => {
     let isMounted = true;
 
-    const loadCategoryRecommendations = async () => {
+    const loadInitialCategories = async () => {
       if (!currentLocation || !isMounted) return;
 
       try {
-        console.log('Loading categories for location:', currentLocation);
+        console.log('Loading initial categories for location:', currentLocation);
 
-        // Load places for each fixed category
-        const placesPromises = fixedCategories.map(async (category) => {
-          try {
-            const placesResponse = await categoryService.getPlacesByCategory(
-              category.key,
-              currentLocation.latitude,
-              currentLocation.longitude,
-              { limit: 10 }
-            );
-
-            if (placesResponse.success && placesResponse.data.length > 0) {
-              console.log(`Places loaded for category ${category.key}:`, placesResponse.data.length);
-
-              const transformedPlaces = placesResponse.data.map(place => {
-                const addressStr = place.shortAddress || place.address || '';
-                const formattedLocation = formatPlaceAddress(addressStr);
-
-                return normalizePlaceImages({
-                  id: place.id,
-                  name: place.name || place.title,
-                  title: place.title || place.name,
-                  rating: place.rating,
-                  location: formattedLocation,
-                  image: place.imageUrl || place.image,
-                  images: place.images || [],
-                  isBookmarked: place.isBookmarked || false
-                });
-              });
-
-              return { ...category, places: transformedPlaces };
-            }
-            return { ...category, places: [] };
-          } catch (error) {
-            console.warn(`Failed to load places for category ${category.key}:`, error);
-            return { ...category, places: [] };
-          }
-        });
+        // Only load the first few categories initially
+        const initialCategories = fixedCategories.slice(0, INITIAL_CATEGORIES_COUNT);
+        const placesPromises = initialCategories.map(category =>
+          loadCategoryPlaces(category, currentLocation.latitude, currentLocation.longitude)
+        );
 
         const placesResults = await Promise.all(placesPromises);
 
@@ -907,10 +1271,10 @@ export default function HomePage() {
           }
 
           setCategoriesPlaces(placesMap);
-          console.log('Categories loaded:', categoriesWithPlaces.length);
+          console.log('Initial categories loaded:', categoriesWithPlaces.length);
         }
       } catch (error) {
-        console.warn('Failed to load category recommendations:', error);
+        console.warn('Failed to load initial category recommendations:', error);
         if (isMounted) {
           setCategories([]);
           setCategoriesPlaces({});
@@ -919,13 +1283,88 @@ export default function HomePage() {
     };
 
     if (currentLocation) {
-      loadCategoryRecommendations();
+      loadInitialCategories();
     }
 
     return () => {
       isMounted = false;
     };
   }, [currentLocation]);
+
+  // Load more categories when user scrolls down (IntersectionObserver)
+  useEffect(() => {
+    if (!categoryLoaderRef.current || !currentLocation) return;
+
+    const observer = new IntersectionObserver(
+      async (entries) => {
+        const [entry] = entries;
+        if (entry.isIntersecting && !isLoadingMoreCategories && loadedCategoryCount < fixedCategories.length) {
+          setIsLoadingMoreCategories(true);
+
+          const nextBatch = fixedCategories.slice(loadedCategoryCount, loadedCategoryCount + CATEGORIES_BATCH_SIZE);
+          if (nextBatch.length === 0) {
+            setIsLoadingMoreCategories(false);
+            return;
+          }
+
+          console.log(`Loading more categories: ${loadedCategoryCount} to ${loadedCategoryCount + nextBatch.length}`);
+
+          try {
+            const placesPromises = nextBatch.map(category =>
+              loadCategoryPlaces(category, currentLocation.latitude, currentLocation.longitude)
+            );
+
+            const placesResults = await Promise.all(placesPromises);
+            const newCategoriesWithPlaces = placesResults.filter(r => r.places.length > 0);
+
+            if (newCategoriesWithPlaces.length > 0) {
+              // Apply bookmark status
+              let updatedPlacesMap = { ...categoriesPlaces };
+
+              if (authService.isAuthenticated()) {
+                const allPlaces = newCategoriesWithPlaces.flatMap(r => r.places);
+                if (allPlaces.length > 0) {
+                  const placesWithBookmarks = await bookmarkService.applyBookmarkStatus(allPlaces);
+                  const bookmarkMap = new Map(placesWithBookmarks.map(p => [p.id, p.isBookmarked]));
+
+                  newCategoriesWithPlaces.forEach(result => {
+                    updatedPlacesMap[result.key] = {
+                      title: result.title,
+                      places: result.places.map(place => ({
+                        ...place,
+                        isBookmarked: bookmarkMap.get(place.id) || false
+                      }))
+                    };
+                  });
+                }
+              } else {
+                newCategoriesWithPlaces.forEach(result => {
+                  updatedPlacesMap[result.key] = {
+                    title: result.title,
+                    places: result.places
+                  };
+                });
+              }
+
+              setCategories(prev => [...prev, ...newCategoriesWithPlaces]);
+              setCategoriesPlaces(updatedPlacesMap);
+            }
+
+            setLoadedCategoryCount(prev => prev + CATEGORIES_BATCH_SIZE);
+          } catch (error) {
+            console.warn('Failed to load more categories:', error);
+          } finally {
+            setIsLoadingMoreCategories(false);
+          }
+        }
+      },
+      { rootMargin: '200px' } // Start loading before the element is visible
+    );
+
+    observer.observe(categoryLoaderRef.current);
+
+    return () => observer.disconnect();
+  }, [currentLocation, loadedCategoryCount, isLoadingMoreCategories, fixedCategories, categoriesPlaces]);
 
   // Load recommendations based on login status
   useEffect(() => {
@@ -1311,6 +1750,19 @@ export default function HomePage() {
                 }
               );
             })}
+
+            {/* Lazy load trigger for more categories */}
+            {loadedCategoryCount < fixedCategories.length && (
+              <div
+                ref={categoryLoaderRef}
+                className={styles.categoryLoader}
+                style={{ height: '40px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}
+              >
+                {isLoadingMoreCategories && (
+                  <span style={{ color: '#7D848D', fontSize: '13px' }}>더 많은 카테고리 로딩 중...</span>
+                )}
+              </div>
+            )}
 
             {/* Fallback if no category sections loaded */}
             {categories.length === 0 && popularPlaces.length > 0 &&

@@ -1,8 +1,24 @@
 import i18n from '@/i18n';
+import { Capacitor } from '@capacitor/core';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL !== undefined
-  ? import.meta.env.VITE_API_BASE_URL
-  : 'http://localhost:8000';
+// Determine API base URL based on platform (same logic as apiService.js)
+const getApiBaseUrl = () => {
+  // For native platforms, always use absolute URL
+  if (Capacitor.isNativePlatform()) {
+    return 'https://mohe.today';
+  }
+
+  // For web, use environment variable or empty string for relative paths
+  return import.meta.env.VITE_API_BASE_URL !== undefined
+    ? import.meta.env.VITE_API_BASE_URL
+    : '';
+};
+
+const API_BASE_URL = getApiBaseUrl();
+
+// Debug: Log the API base URL being used
+console.log('🔐 Auth API Base URL:', API_BASE_URL || '(empty - using relative paths)',
+  '| Platform:', Capacitor.getPlatform());
 
 const getLocalizedAuthError = (type, originalMessage = '') => {
   if (!originalMessage) {
