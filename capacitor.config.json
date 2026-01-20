@@ -4,8 +4,8 @@
   "webDir": "dist",
   "server": {
     "androidScheme": "https",
-    "iosScheme": "capacitor",
-    "hostname": "localhost",
+    "iosScheme": "https",
+    "hostname": "mohe.today",
     "allowNavigation": [
       "mohe.today",
       "*.mohe.today",
@@ -39,6 +39,9 @@
   "ios": {
     "scheme": "mohe",
     "backgroundColor": "#ffffff",
-    "webContentsDebuggingEnabled": true
+    "webContentsDebuggingEnabled": true,
+    "limitsNavigationsToAppBoundDomains": false,
+    "allowsLinkPreview": false,
+    "scrollEnabled": true
   }
 }

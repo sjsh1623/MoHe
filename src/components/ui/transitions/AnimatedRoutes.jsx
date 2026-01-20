@@ -1,6 +1,6 @@
-import React, { useRef, useEffect, useCallback } from 'react';
+import React, { useRef, useEffect, useCallback, useState } from 'react';
 import { Routes, Route, useLocation, useNavigationType, useNavigate } from 'react-router-dom';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, motion, useMotionValue, useTransform } from 'framer-motion';
 import { initializeDeepLinkListener } from '@/utils/capacitorDeepLink';
 
 // Global scroll position store
@@ -78,12 +78,96 @@ const AUTH_ROUTES = new Set([
   '/password-setup'
 ]);
 
+// Routes where swipe back should be disabled (root level pages)
+const NO_SWIPE_BACK_ROUTES = new Set([
+  '/',
+  '/login',
+  '/home',
+  '/hello'
+]);
+
 export default function AnimatedRoutes() {
   const location = useLocation();
   const navigationType = useNavigationType();
   const navigate = useNavigate();
   const prevLocation = useRef(location.pathname);
   const currentContainerRef = useRef(null);
+
+  // Swipe back gesture state
+  const [isDragging, setIsDragging] = useState(false);
+  const dragX = useMotionValue(0);
+  const dragOpacity = useTransform(dragX, [0, 150], [0, 0.3]);
+
+  // Touch tracking for edge swipe
+  const touchStartX = useRef(0);
+  const touchStartY = useRef(0);
+  const isEdgeSwipe = useRef(false);
+  const swipeThreshold = 100; // Minimum swipe distance to trigger back
+  const edgeWidth = 25; // Width of edge detection zone (px)
+
+  // Check if swipe back is allowed for current route
+  const canSwipeBack = !NO_SWIPE_BACK_ROUTES.has(location.pathname);
+
+  // Handle touch start - detect edge swipe
+  const handleTouchStart = useCallback((e) => {
+    if (!canSwipeBack) return;
+
+    const touch = e.touches[0];
+    touchStartX.current = touch.clientX;
+    touchStartY.current = touch.clientY;
+
+    // Only trigger edge swipe if touch starts within edge zone
+    if (touch.clientX <= edgeWidth) {
+      isEdgeSwipe.current = true;
+      setIsDragging(true);
+    } else {
+      isEdgeSwipe.current = false;
+    }
+  }, [canSwipeBack]);
+
+  // Handle touch move - track swipe progress
+  const handleTouchMove = useCallback((e) => {
+    if (!isEdgeSwipe.current || !canSwipeBack) return;
+
+    const touch = e.touches[0];
+    const deltaX = touch.clientX - touchStartX.current;
+    const deltaY = Math.abs(touch.clientY - touchStartY.current);
+
+    // If vertical movement is greater, cancel the swipe (user is scrolling)
+    if (deltaY > Math.abs(deltaX) && deltaX < 30) {
+      isEdgeSwipe.current = false;
+      setIsDragging(false);
+      dragX.set(0);
+      return;
+    }
+
+    // Only allow right swipe (positive deltaX)
+    if (deltaX > 0) {
+      dragX.set(deltaX);
+    }
+  }, [canSwipeBack, dragX]);
+
+  // Handle touch end - trigger navigation if threshold met
+  const handleTouchEnd = useCallback(() => {
+    if (!isEdgeSwipe.current || !canSwipeBack) {
+      isEdgeSwipe.current = false;
+      setIsDragging(false);
+      dragX.set(0);
+      return;
+    }
+
+    const currentDragX = dragX.get();
+
+    if (currentDragX >= swipeThreshold) {
+      // Trigger back navigation
+      navigate(-1);
+    }
+
+    // Reset state
+    isEdgeSwipe.current = false;
+    setIsDragging(false);
+    dragX.set(0);
+  }, [canSwipeBack, dragX, navigate, swipeThreshold]);
 
   // Initialize deep link listener for Capacitor
   useEffect(() => {
@@ -191,15 +275,56 @@ export default function AnimatedRoutes() {
   const shellPaddingBottom = 'var(--app-shell-safe-bottom, 0px)';
 
   return (
-    <div style={{
-      position: 'relative',
-      flex: 1,
-      width: '100%',
-      minHeight: '100%',
-      display: 'flex',
-      background: 'transparent',
-      overflow: 'hidden'
-    }}>
+    <div
+      style={{
+        position: 'relative',
+        flex: 1,
+        width: '100%',
+        minHeight: '100%',
+        display: 'flex',
+        background: 'transparent',
+        overflow: 'hidden'
+      }}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+    >
+      {/* Swipe back indicator */}
+      {isDragging && canSwipeBack && (
+        <motion.div
+          style={{
+            position: 'absolute',
+            left: 0,
+            top: 0,
+            bottom: 0,
+            width: '100%',
+            background: 'black',
+            opacity: dragOpacity,
+            zIndex: 9998,
+            pointerEvents: 'none'
+          }}
+        />
+      )}
+
+      {/* Edge swipe hint indicator */}
+      {isDragging && canSwipeBack && (
+        <motion.div
+          style={{
+            position: 'absolute',
+            left: 0,
+            top: '50%',
+            transform: 'translateY(-50%)',
+            width: 4,
+            height: 60,
+            borderRadius: 2,
+            background: 'rgba(0, 0, 0, 0.3)',
+            x: dragX,
+            zIndex: 9999,
+            pointerEvents: 'none'
+          }}
+        />
+      )}
+
       <AnimatePresence initial={false} custom={slideDirection}>
         <motion.div
           key={location.pathname}
@@ -228,7 +353,9 @@ export default function AnimatedRoutes() {
             WebkitTransform: 'translate3d(0,0,0)',
             transform: 'translate3d(0,0,0)',
             WebkitOverflowScrolling: 'touch',
-            paddingBottom: shellPaddingBottom
+            paddingBottom: shellPaddingBottom,
+            // Apply drag transform when swiping
+            x: isDragging ? dragX : 0
           }}
           ref={containerRef}
           onScroll={handleScroll}
