@@ -90,7 +90,7 @@
 /* Image pagination dots */
 .imageDots {
   position: absolute;
-  bottom: calc(40px + env(safe-area-inset-top, 0px));
+  bottom: calc(96px + env(safe-area-inset-top, 0px)); /* Positioned above the bottom sheet overlap */
   left: 50%;
   transform: translateX(-50%);
   display: flex;
@@ -207,9 +207,9 @@
   z-index: 5;
   background: #fff;
   border-radius: 24px 24px 0 0;
-  margin-top: calc(356px + var(--sat, env(safe-area-inset-top, 0px))); /* 380px hero - 24px overlap for sheet effect + safe area */
+  margin-top: calc(300px + var(--sat, env(safe-area-inset-top, 0px))); /* 380px hero - 80px overlap for larger sheet effect + safe area */
   padding: 24px 28px 100px 28px;
-  min-height: calc(100vh - 356px - var(--sat, env(safe-area-inset-top, 0px)));
+  min-height: calc(100vh - 300px - var(--sat, env(safe-area-inset-top, 0px)));
 }
 
 /* Tags */
