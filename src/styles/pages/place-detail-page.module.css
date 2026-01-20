@@ -26,21 +26,53 @@
   position: fixed;
   top: 0;
   left: 0;
-  right: 0;
+  width: 100vw;
   height: calc(380px + var(--sat, env(safe-area-inset-top, 0px)));
-  padding-top: var(--sat, env(safe-area-inset-top, 0px));
   z-index: 1;
   background: #e0e0e0;
   overflow: hidden;
-  touch-action: pan-y pinch-zoom;
+}
+
+/* Horizontal scrollable image slider */
+.imageSlider {
+  display: flex;
+  width: 100vw;
+  height: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+}
+
+.imageSlider::-webkit-scrollbar {
+  display: none; /* Chrome/Safari */
+}
+
+/* Each image slide */
+.imageSlide {
+  position: relative;
+  flex: 0 0 100vw;
+  width: 100vw;
+  min-width: 100vw;
+  height: 100%;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+  overflow: hidden;
 }
 
 .heroImage {
   display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
   object-position: center;
+  transform: scale(1.05);
 }
 
 /* White overlay - covers hero image as user scrolls */

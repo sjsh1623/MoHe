@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import styles from '@/styles/pages/place-detail-page.module.css';
 import PlaceDetailSkeleton from '@/components/ui/skeletons/PlaceDetailSkeleton';
 import ErrorMessage from '@/components/ui/alerts/ErrorMessage';
@@ -95,10 +95,9 @@ export default function PlaceDetailPage({ place = null }) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const modalContentRef = useRef(null);
 
-  // Image slider touch handling
-  const touchStartX = useRef(0);
-  const touchEndX = useRef(0);
+  // Image slider refs
   const heroRef = useRef(null);
+  const imageSliderRef = useRef(null);
 
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [isBookmarkLoading, setIsBookmarkLoading] = useState(false);
@@ -373,31 +372,27 @@ export default function PlaceDetailPage({ place = null }) {
     setIsShareModalOpen(true);
   };
 
-  // Image slider touch handlers
-  const handleTouchStart = useCallback((e) => {
-    touchStartX.current = e.touches[0].clientX;
-    touchEndX.current = e.touches[0].clientX;
-  }, []);
-
-  const handleTouchMove = useCallback((e) => {
-    touchEndX.current = e.touches[0].clientX;
-  }, []);
-
-  const handleTouchEnd = useCallback(() => {
-    const diffX = touchStartX.current - touchEndX.current;
-    const minSwipeDistance = 50;
-
-    if (Math.abs(diffX) > minSwipeDistance) {
-      const imageCount = images?.length || 1;
-      if (diffX > 0 && currentImageIndex < imageCount - 1) {
-        // Swipe left - next image
-        setCurrentImageIndex(prev => prev + 1);
-      } else if (diffX < 0 && currentImageIndex > 0) {
-        // Swipe right - previous image
-        setCurrentImageIndex(prev => prev - 1);
-      }
+  // Image slider scroll handler - update current index based on scroll position
+  const handleImageSliderScroll = useCallback((e) => {
+    const slider = e.target;
+    const scrollLeft = slider.scrollLeft;
+    const itemWidth = slider.offsetWidth;
+    const newIndex = Math.round(scrollLeft / itemWidth);
+    if (newIndex !== currentImageIndex) {
+      setCurrentImageIndex(newIndex);
     }
-  }, [currentImageIndex, images?.length]);
+  }, [currentImageIndex]);
+
+  // Scroll to specific image when indicator is clicked
+  const scrollToImage = useCallback((index) => {
+    if (imageSliderRef.current) {
+      const itemWidth = imageSliderRef.current.offsetWidth;
+      imageSliderRef.current.scrollTo({
+        left: index * itemWidth,
+        behavior: 'smooth'
+      });
+    }
+  }, []);
 
   if (isLoading) return <PlaceDetailSkeleton />;
 
@@ -506,21 +501,28 @@ export default function PlaceDetailPage({ place = null }) {
           opacity: isHeroHidden ? 0 : 1,
           visibility: isHeroHidden ? 'hidden' : 'visible',
         }}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
       >
-        {/* Hero image */}
-        <img
-          src={images[currentImageIndex]}
-          alt={placeData.name || placeData.title}
-          className={styles.heroImage}
-          style={{ opacity: heroImageOpacity }}
-          draggable={false}
-          onError={(e) => {
-            e.target.style.background = '#ccc';
-          }}
-        />
+        {/* Horizontal scrollable image slider */}
+        <div
+          ref={imageSliderRef}
+          className={styles.imageSlider}
+          onScroll={handleImageSliderScroll}
+        >
+          {images.map((imgSrc, i) => (
+            <div key={i} className={styles.imageSlide}>
+              <img
+                src={imgSrc}
+                alt={`${placeData.name || placeData.title} ${i + 1}`}
+                className={styles.heroImage}
+                style={{ opacity: heroImageOpacity }}
+                draggable={false}
+                onError={(e) => {
+                  e.target.style.background = '#ccc';
+                }}
+              />
+            </div>
+          ))}
+        </div>
 
         {/* White overlay - fades in as you scroll */}
         <div
@@ -538,7 +540,7 @@ export default function PlaceDetailPage({ place = null }) {
               <button
                 key={i}
                 className={`${styles.imageDot} ${i === currentImageIndex ? styles.activeDot : ''}`}
-                onClick={() => setCurrentImageIndex(i)}
+                onClick={() => scrollToImage(i)}
                 aria-label={`Image ${i + 1}`}
               />
             ))}

@@ -194,7 +194,7 @@ export const testBackendConnection = async () => {
   console.log('🔗 Testing Backend Connection...');
   
   try {
-ㅔㅐ    const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+    const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
     console.log('Backend URL:', baseUrl);
     
     // Test health endpoint (if available)
