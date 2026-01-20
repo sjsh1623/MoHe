@@ -22,6 +22,11 @@
   z-index: 100;
 }
 
+/* iOS safe area padding - only applied on iOS devices */
+.iosDevice .header {
+  padding-top: calc(env(safe-area-inset-top, 0px) + 16px);
+}
+
 .headerSpacer {
   flex: 1;
 }

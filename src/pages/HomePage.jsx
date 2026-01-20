@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Capacitor } from '@capacitor/core';
 import styles from '@/styles/pages/home-page.module.css';
 
 import PlaceCard from '@/components/ui/cards/PlaceCard';
@@ -8,7 +9,7 @@ import ProfileButton from '@/components/ui/buttons/ProfileButton';
 import OutlineButton from '@/components/ui/buttons/OutlineButton';
 import SearchBar from '@/components/ui/inputs/SearchBar';
 import SearchModal from '@/components/ui/modals/SearchModal';
-import HomePageSkeleton from '@/components/ui/skeletons/HomePageSkeleton';
+import SectionSkeleton from '@/components/ui/skeletons/SectionSkeleton';
 import ErrorMessage from '@/components/ui/alerts/ErrorMessage';
 import { useGeolocation, useLocationStorage } from '@/hooks/useGeolocation';
 import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
@@ -62,6 +63,9 @@ export default function HomePage() {
   const navigate = useNavigate();
   console.log('HomePage component loaded');
 
+  // Check if running on iOS native platform
+  const isIOS = Capacitor.getPlatform() === 'ios';
+
   // Location and weather state
   const { requestLocation, loading: locationLoading } = useGeolocation();
   const { saveLocation, getStoredLocation } = useLocationStorage();
@@ -69,7 +73,6 @@ export default function HomePage() {
   const [recommendations, setRecommendations] = useState([]);
   const [currentLocation, setCurrentLocation] = useState(() => getStoredLocation());
   const [locationPermissionRequested, setLocationPermissionRequested] = useState(false);
-  const [isInitialLoading, setIsInitialLoading] = useState(true); // Only for first load
   const [error, setError] = useState(null);
   const [user, setUser] = useState(() => authService.getCurrentUser());
   const [popularPlaces, setPopularPlaces] = useState([]);
@@ -81,11 +84,19 @@ export default function HomePage() {
   const [dynamicMessage, setDynamicMessage] = useState('지금 가기 좋은 플레이스');
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
   const { recentlyViewed, addRecentlyViewed } = useRecentlyViewed();
-  const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
+
+  // Section-level loading states for progressive rendering
+  const [sectionsLoading, setSectionsLoading] = useState({
+    recommendations: true,
+    nearby: true,
+    popular: true,
+    categories: true,
+    homeImages: true
+  });
 
   // Prevent back navigation to login page
   useEffect(() => {
-    const preventBackToLogin = (e) => {
+    const preventBackToLogin = () => {
       // Push current state to prevent going back
       window.history.pushState(null, '', window.location.pathname);
     };
@@ -142,7 +153,6 @@ export default function HomePage() {
         if (isMounted) {
           console.error('Failed to initialize app:', error);
           setError('앱 초기화 중 오류가 발생했습니다.');
-          setIsInitialLoading(false);
         }
       }
     };
@@ -366,23 +376,28 @@ export default function HomePage() {
 
         if (!isMounted) return;
 
-        if (!user.isGuest && recommendationsData.length > 0) {
-          recommendationsData = await loadBookmarkStatus(recommendationsData);
-        }
-
+        // Set data immediately for fast rendering
         if (isMounted) {
           console.log('HomePage: About to set recommendations with data:', recommendationsData);
-          console.log('HomePage: Recommendations data length:', recommendationsData.length);
           setRecommendations(recommendationsData);
-          setIsInitialLoading(false);
-          setHasLoadedOnce(true);
-          console.log('HomePage: Successfully set recommendations and loading to false');
+          setSectionsLoading(prev => ({ ...prev, recommendations: false }));
+          console.log('HomePage: Successfully set recommendations');
+        }
+
+        // Load bookmark status asynchronously after initial render
+        if (!user.isGuest && recommendationsData.length > 0 && isMounted) {
+          loadBookmarkStatus(recommendationsData).then(placesWithBookmarks => {
+            if (isMounted) {
+              setRecommendations(placesWithBookmarks);
+            }
+          });
         }
 
       } catch (error) {
         if (isMounted) {
           console.error('Failed to load recommendations:', error);
           setRecommendations([]);
+          setSectionsLoading(prev => ({ ...prev, recommendations: false }));
 
           if (!user.isGuest) {
             if (error.message?.includes('403') || error.message?.includes('Forbidden')) {
@@ -391,9 +406,6 @@ export default function HomePage() {
               setError('추천 장소를 불러오는데 실패했습니다.');
             }
           }
-
-          setIsInitialLoading(false);
-          setHasLoadedOnce(true);
         }
       }
     };
@@ -518,12 +530,8 @@ export default function HomePage() {
         if (response.success && isMounted) {
           console.log('✅ Bookmark-based places loaded:', response.data.length);
           // Transform the data to match the expected format
-          let transformedPlaces = response.data.map(place => {
-            // Use shortAddress field from backend
-            // Backend sends: shortAddress = formatted address, address = full address
+          const transformedPlaces = response.data.map(place => {
             const addressStr = place.shortAddress || place.address || '';
-
-            // Format the address to show district + detailed address
             const formattedLocation = formatPlaceAddress(addressStr);
 
             return normalizePlaceImages({
@@ -538,20 +546,28 @@ export default function HomePage() {
             });
           });
 
-          // Apply bookmark status for authenticated users
-          if (authService.isAuthenticated()) {
-            transformedPlaces = await bookmarkService.applyBookmarkStatus(transformedPlaces);
-          }
-
+          // Set data immediately for fast rendering
           setPopularPlaces(transformedPlaces);
+          setSectionsLoading(prev => ({ ...prev, popular: false }));
+
+          // Apply bookmark status asynchronously
+          if (authService.isAuthenticated()) {
+            bookmarkService.applyBookmarkStatus(transformedPlaces).then(placesWithBookmarks => {
+              if (isMounted) {
+                setPopularPlaces(placesWithBookmarks);
+              }
+            });
+          }
         } else if (isMounted) {
           console.warn('⚠️ Bookmark-based places API returned no success:', response);
           setPopularPlaces([]);
+          setSectionsLoading(prev => ({ ...prev, popular: false }));
         }
       } catch (error) {
         console.warn('⚠️ Bookmark-based places failed, continuing without them:', error);
         if (isMounted) {
           setPopularPlaces([]);
+          setSectionsLoading(prev => ({ ...prev, popular: false }));
         }
       }
     };
@@ -582,7 +598,7 @@ export default function HomePage() {
 
         if (response.success && isMounted && response.data?.length > 0) {
           console.log('✅ Nearby places loaded:', response.data.length);
-          let transformedPlaces = response.data.map(place => {
+          const transformedPlaces = response.data.map(place => {
             const addressStr = place.shortAddress || place.address || '';
             const formattedLocation = formatPlaceAddress(addressStr);
 
@@ -599,19 +615,27 @@ export default function HomePage() {
             });
           });
 
-          // Apply bookmark status for authenticated users
-          if (authService.isAuthenticated()) {
-            transformedPlaces = await bookmarkService.applyBookmarkStatus(transformedPlaces);
-          }
-
+          // Set data immediately for fast rendering
           setNearbyPlaces(transformedPlaces);
+          setSectionsLoading(prev => ({ ...prev, nearby: false }));
+
+          // Apply bookmark status asynchronously
+          if (authService.isAuthenticated()) {
+            bookmarkService.applyBookmarkStatus(transformedPlaces).then(placesWithBookmarks => {
+              if (isMounted) {
+                setNearbyPlaces(placesWithBookmarks);
+              }
+            });
+          }
         } else if (isMounted) {
           setNearbyPlaces([]);
+          setSectionsLoading(prev => ({ ...prev, nearby: false }));
         }
       } catch (error) {
         console.warn('⚠️ Failed to load nearby places:', error);
         if (isMounted) {
           setNearbyPlaces([]);
+          setSectionsLoading(prev => ({ ...prev, nearby: false }));
         }
       }
     };
@@ -1235,49 +1259,48 @@ export default function HomePage() {
           const categoriesWithPlaces = placesResults.filter(r => r.places.length > 0);
           setCategories(categoriesWithPlaces);
 
+          // Build placesMap immediately for fast rendering
           const placesMap = {};
+          categoriesWithPlaces.forEach(result => {
+            placesMap[result.key] = {
+              title: result.title,
+              places: result.places
+            };
+          });
 
-          // Apply bookmark status for authenticated users
+          setCategoriesPlaces(placesMap);
+          setSectionsLoading(prev => ({ ...prev, categories: false }));
+          console.log('Initial categories loaded:', categoriesWithPlaces.length);
+
+          // Apply bookmark status asynchronously
           if (authService.isAuthenticated()) {
             const allPlaces = categoriesWithPlaces.flatMap(r => r.places);
             if (allPlaces.length > 0) {
-              const placesWithBookmarks = await bookmarkService.applyBookmarkStatus(allPlaces);
-              const bookmarkMap = new Map(placesWithBookmarks.map(p => [p.id, p.isBookmarked]));
-
-              categoriesWithPlaces.forEach(result => {
-                placesMap[result.key] = {
-                  title: result.title,
-                  places: result.places.map(place => ({
-                    ...place,
-                    isBookmarked: bookmarkMap.get(place.id) || false
-                  }))
-                };
-              });
-            } else {
-              categoriesWithPlaces.forEach(result => {
-                placesMap[result.key] = {
-                  title: result.title,
-                  places: result.places
-                };
+              bookmarkService.applyBookmarkStatus(allPlaces).then(placesWithBookmarks => {
+                if (isMounted) {
+                  const bookmarkMap = new Map(placesWithBookmarks.map(p => [p.id, p.isBookmarked]));
+                  const updatedPlacesMap = {};
+                  categoriesWithPlaces.forEach(result => {
+                    updatedPlacesMap[result.key] = {
+                      title: result.title,
+                      places: result.places.map(place => ({
+                        ...place,
+                        isBookmarked: bookmarkMap.get(place.id) || false
+                      }))
+                    };
+                  });
+                  setCategoriesPlaces(updatedPlacesMap);
+                }
               });
             }
-          } else {
-            categoriesWithPlaces.forEach(result => {
-              placesMap[result.key] = {
-                title: result.title,
-                places: result.places
-              };
-            });
           }
-
-          setCategoriesPlaces(placesMap);
-          console.log('Initial categories loaded:', categoriesWithPlaces.length);
         }
       } catch (error) {
         console.warn('Failed to load initial category recommendations:', error);
         if (isMounted) {
           setCategories([]);
           setCategoriesPlaces({});
+          setSectionsLoading(prev => ({ ...prev, categories: false }));
         }
       }
     };
@@ -1294,6 +1317,8 @@ export default function HomePage() {
   // Load more categories when user scrolls down (IntersectionObserver)
   useEffect(() => {
     if (!categoryLoaderRef.current || !currentLocation) return;
+
+    let isMounted = true;
 
     const observer = new IntersectionObserver(
       async (entries) => {
@@ -1318,36 +1343,44 @@ export default function HomePage() {
             const newCategoriesWithPlaces = placesResults.filter(r => r.places.length > 0);
 
             if (newCategoriesWithPlaces.length > 0) {
-              // Apply bookmark status
-              let updatedPlacesMap = { ...categoriesPlaces };
-
-              if (authService.isAuthenticated()) {
-                const allPlaces = newCategoriesWithPlaces.flatMap(r => r.places);
-                if (allPlaces.length > 0) {
-                  const placesWithBookmarks = await bookmarkService.applyBookmarkStatus(allPlaces);
-                  const bookmarkMap = new Map(placesWithBookmarks.map(p => [p.id, p.isBookmarked]));
-
-                  newCategoriesWithPlaces.forEach(result => {
-                    updatedPlacesMap[result.key] = {
-                      title: result.title,
-                      places: result.places.map(place => ({
-                        ...place,
-                        isBookmarked: bookmarkMap.get(place.id) || false
-                      }))
-                    };
-                  });
-                }
-              } else {
-                newCategoriesWithPlaces.forEach(result => {
-                  updatedPlacesMap[result.key] = {
-                    title: result.title,
-                    places: result.places
-                  };
-                });
-              }
+              // Set data immediately for fast rendering
+              const updatedPlacesMap = { ...categoriesPlaces };
+              newCategoriesWithPlaces.forEach(result => {
+                updatedPlacesMap[result.key] = {
+                  title: result.title,
+                  places: result.places
+                };
+              });
 
               setCategories(prev => [...prev, ...newCategoriesWithPlaces]);
               setCategoriesPlaces(updatedPlacesMap);
+
+              // Apply bookmark status asynchronously
+              if (authService.isAuthenticated()) {
+                const allPlaces = newCategoriesWithPlaces.flatMap(r => r.places);
+                if (allPlaces.length > 0) {
+                  bookmarkService.applyBookmarkStatus(allPlaces).then(placesWithBookmarks => {
+                    if (isMounted) {
+                      const bookmarkMap = new Map(placesWithBookmarks.map(p => [p.id, p.isBookmarked]));
+                      setCategoriesPlaces(prev => {
+                        const updated = { ...prev };
+                        newCategoriesWithPlaces.forEach(result => {
+                          if (updated[result.key]) {
+                            updated[result.key] = {
+                              ...updated[result.key],
+                              places: updated[result.key].places.map(place => ({
+                                ...place,
+                                isBookmarked: bookmarkMap.get(place.id) || false
+                              }))
+                            };
+                          }
+                        });
+                        return updated;
+                      });
+                    }
+                  });
+                }
+              }
             }
 
             setLoadedCategoryCount(prev => prev + CATEGORIES_BATCH_SIZE);
@@ -1363,40 +1396,41 @@ export default function HomePage() {
 
     observer.observe(categoryLoaderRef.current);
 
-    return () => observer.disconnect();
+    return () => {
+      isMounted = false;
+      observer.disconnect();
+    };
   }, [currentLocation, loadedCategoryCount, isLoadingMoreCategories, fixedCategories, categoriesPlaces]);
 
   // Load recommendations based on login status
   useEffect(() => {
     let isMounted = true;
 
-    const loadRecommendations = async () => {
+    const loadHomeRecommendations = async () => {
       try {
         console.log('Loading recommendations based on user status...');
-        
+
         // Check if user is logged in
         const isLoggedIn = user && user.id && user.id !== 'guest';
-        
+
         if (isLoggedIn) {
           console.log('👤 User is logged in, loading MBTI-based recommendations');
-          // MBTI-based recommendations for logged-in users
           await loadMBTIRecommendations(isMounted);
         } else {
           console.log('🌍 Guest user, loading weather/time-based recommendations');
-          // Weather/time-based recommendations for guests
           await loadWeatherTimeRecommendations(isMounted);
         }
-        
+
       } catch (error) {
         console.warn('⚠️ Failed to load recommendations:', error);
         if (isMounted) {
-          // No fallback - keep empty array to show only real database data
           setHomeImages([]);
+          setSectionsLoading(prev => ({ ...prev, homeImages: false }));
         }
       }
     };
 
-    loadRecommendations();
+    loadHomeRecommendations();
 
     return () => {
       isMounted = false;
@@ -1405,13 +1439,11 @@ export default function HomePage() {
 
   const loadMBTIRecommendations = async (isMounted) => {
     try {
-      // Try backend MBTI recommendations first
       const response = await homeService.getHomeImages();
 
       if (response.success && response.data.length > 0 && isMounted) {
         console.log('✅ MBTI recommendations loaded from database:', response.data.length);
-        let transformedPlaces = response.data.map(place => {
-          // Use shortAddress field from backend
+        const transformedPlaces = response.data.map(place => {
           const addressStr = place.shortAddress || place.address || '';
           const formattedLocation = formatPlaceAddress(addressStr);
 
@@ -1421,36 +1453,44 @@ export default function HomePage() {
           });
         });
 
-        // Apply bookmark status for authenticated users
-        if (authService.isAuthenticated()) {
-          transformedPlaces = await bookmarkService.applyBookmarkStatus(transformedPlaces);
-        }
-
+        // Set data immediately for fast rendering
         setHomeImages(transformedPlaces);
+        setSectionsLoading(prev => ({ ...prev, homeImages: false }));
+
+        // Apply bookmark status asynchronously
+        if (authService.isAuthenticated()) {
+          bookmarkService.applyBookmarkStatus(transformedPlaces).then(placesWithBookmarks => {
+            if (isMounted) {
+              setHomeImages(placesWithBookmarks);
+            }
+          });
+        }
       } else if (isMounted) {
-        // No fallback - keep empty array to show only real database data
         console.log('🎯 No backend data available, showing empty state');
         setHomeImages([]);
+        setSectionsLoading(prev => ({ ...prev, homeImages: false }));
       }
     } catch {
       if (isMounted) {
         console.log('🎯 Backend unavailable, showing empty state');
         setHomeImages([]);
+        setSectionsLoading(prev => ({ ...prev, homeImages: false }));
       }
     }
   };
 
   const loadWeatherTimeRecommendations = async (isMounted) => {
     try {
-      // Weather/time recommendations should come from backend API
       console.log('🌤️ Weather recommendations unavailable, showing empty state');
       if (isMounted) {
         setHomeImages([]);
+        setSectionsLoading(prev => ({ ...prev, homeImages: false }));
       }
     } catch {
       if (isMounted) {
         console.log('🌤️ Weather recommendations unavailable, showing empty state');
         setHomeImages([]);
+        setSectionsLoading(prev => ({ ...prev, homeImages: false }));
       }
     }
   };
@@ -1590,9 +1630,15 @@ export default function HomePage() {
   // Retry function for error handling
   const handleRetry = () => {
     setError(null);
-    setIsInitialLoading(true);
-    setHasLoadedOnce(false);
-    window.location.reload(); // Simple retry by reloading
+    // Reset section loading states and reload
+    setSectionsLoading({
+      recommendations: true,
+      nearby: true,
+      popular: true,
+      categories: true,
+      homeImages: true
+    });
+    window.location.reload();
   };
 
   const handleCardKeyDown = (event, placeId) => {
@@ -1660,7 +1706,7 @@ export default function HomePage() {
   };
 
   return (
-    <div className={styles.pageContainer}>
+    <div className={`${styles.pageContainer} ${isIOS ? styles.iosDevice : ''}`}>
       {/* Header - Always shown immediately */}
       <header className={styles.header}>
         <img src={logoHeader} alt="MOHE" className={styles.logo} />
@@ -1696,48 +1742,57 @@ export default function HomePage() {
         </div>
       )}
 
-      {/* Main content - Show skeleton only on initial load when no data exists */}
-      {isInitialLoading && !hasLoadedOnce && recommendations.length === 0 ? (
-        <HomePageSkeleton />
-      ) : (
-        <div className={styles.contentContainer}>
-          <div className={styles.content}>
-            {/* Recently Viewed Places */}
-            {recentlyViewed.length > 0 && renderPlacesSection('최근 본 장소', recentlyViewed, {
-              sectionKey: 'recently-viewed'
-            })}
-
-            {renderPlacesSection(dynamicMessage, recommendations, {
-              emptyMessage: '현재 추천 장소를 불러오고 있습니다.',
+      {/* Main content - Progressive rendering with section-level skeletons */}
+      <div className={styles.contentContainer}>
+        <div className={styles.content}>
+          {/* Primary Recommendations Section */}
+          {sectionsLoading.recommendations && recommendations.length === 0 ? (
+            <SectionSkeleton titleWidth="180px" />
+          ) : (
+            renderPlacesSection(dynamicMessage, recommendations, {
               sectionKey: 'primary-recommendations'
-            })}
+            })
+          )}
 
-            <div className={styles.bannerWrapper}>
-              <HomeBanner
-                title="지금 뭐하지?"
-                description={`시간, 기분, 취향을 반영해서
+          <div className={styles.bannerWrapper}>
+            <HomeBanner
+              title="지금 뭐하지?"
+              description={`시간, 기분, 취향을 반영해서
 당신에게 어울리는 곳을 골라봤어요.`}
-                image={bannerLeft}
-                onClick={handleBannerClick}
-              />
-            </div>
+              image={bannerLeft}
+              onClick={handleBannerClick}
+            />
+          </div>
 
-            {/* Nearby Places Section */}
-            {nearbyPlaces.length > 0 && renderPlacesSection('내 주변 장소', nearbyPlaces, {
+          {/* Nearby Places Section */}
+          {sectionsLoading.nearby && nearbyPlaces.length === 0 ? (
+            <SectionSkeleton titleWidth="120px" />
+          ) : (
+            nearbyPlaces.length > 0 && renderPlacesSection('내 주변 장소', nearbyPlaces, {
               description: '가까운 거리에 있는 장소들이에요',
               sectionKey: 'nearby-places'
-            })}
+            })
+          )}
 
-            {homeImages.length > 0
-              ? renderPlacesSection(
-                  user && user.id && user.id !== 'guest' ? '당신을 위한 추천' : '지금 이 시간 추천',
-                  homeImages,
-                  { sectionKey: 'time-recommendations' }
-                )
-              : null}
+          {/* Home Images / Time Recommendations Section */}
+          {sectionsLoading.homeImages && homeImages.length === 0 ? (
+            <SectionSkeleton titleWidth="140px" />
+          ) : (
+            homeImages.length > 0 && renderPlacesSection(
+              user && user.id && user.id !== 'guest' ? '당신을 위한 추천' : '지금 이 시간 추천',
+              homeImages,
+              { sectionKey: 'time-recommendations' }
+            )
+          )}
 
-            {/* Category-based Sections */}
-            {categories.length > 0 && categories.map((category) => {
+          {/* Category-based Sections */}
+          {sectionsLoading.categories && categories.length === 0 ? (
+            <>
+              <SectionSkeleton titleWidth="160px" />
+              <SectionSkeleton titleWidth="140px" />
+            </>
+          ) : (
+            categories.length > 0 && categories.map((category) => {
               const categoryData = categoriesPlaces[category.key];
               if (!categoryData || !categoryData.places || categoryData.places.length === 0) {
                 return null;
@@ -1749,34 +1804,34 @@ export default function HomePage() {
                   sectionKey: `category-${category.key}`,
                 }
               );
+            })
+          )}
+
+          {/* Lazy load trigger for more categories */}
+          {loadedCategoryCount < fixedCategories.length && (
+            <div
+              ref={categoryLoaderRef}
+              className={styles.categoryLoader}
+              style={{ height: '40px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}
+            >
+              {isLoadingMoreCategories && (
+                <span style={{ color: '#7D848D', fontSize: '13px' }}>더 많은 카테고리 로딩 중...</span>
+              )}
+            </div>
+          )}
+
+          {/* Fallback if no category sections loaded */}
+          {!sectionsLoading.categories && categories.length === 0 && popularPlaces.length > 0 &&
+            renderPlacesSection('오늘은 이런 곳 어떠세요?', popularPlaces, {
+              footer: (
+                <OutlineButton onClick={handleSeeMore}>
+                  더 많은 장소 보기
+                </OutlineButton>
+              ),
+              sectionKey: 'popular-places',
             })}
-
-            {/* Lazy load trigger for more categories */}
-            {loadedCategoryCount < fixedCategories.length && (
-              <div
-                ref={categoryLoaderRef}
-                className={styles.categoryLoader}
-                style={{ height: '40px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}
-              >
-                {isLoadingMoreCategories && (
-                  <span style={{ color: '#7D848D', fontSize: '13px' }}>더 많은 카테고리 로딩 중...</span>
-                )}
-              </div>
-            )}
-
-            {/* Fallback if no category sections loaded */}
-            {categories.length === 0 && popularPlaces.length > 0 &&
-              renderPlacesSection('오늘은 이런 곳 어떠세요?', popularPlaces, {
-                footer: (
-                  <OutlineButton onClick={handleSeeMore}>
-                    더 많은 장소 보기
-                  </OutlineButton>
-                ),
-                sectionKey: 'popular-places',
-              })}
-          </div>
         </div>
-      )}
+      </div>
 
       {/* Footer */}
       <footer className={styles.footer}>
