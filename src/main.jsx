@@ -11,11 +11,15 @@ import GlobalFloatingButton from '@/components/ui/layout/GlobalFloatingButton';
 import GlobalMessageInput from '@/components/ui/layout/GlobalMessageInput';
 import { AppShell } from '@/components/ui/layout';
 import { initializeWebViewOptimizations } from '@/utils/webviewOptimizations';
+import { initializeVersionCheck } from '@/utils/versionCheck';
 import ErrorBoundary from '@/components/ErrorBoundary';
 
 
 // Initialize WebView optimizations
 initializeWebViewOptimizations();
+
+// Initialize version check for cache busting
+initializeVersionCheck();
 
 // Load API test utilities in development
 

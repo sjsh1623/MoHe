@@ -4,16 +4,62 @@ import react from '@vitejs/plugin-react';
 import path from 'path';
 // ESM 환경에서 __dirname 을 사용할 수 있게 변환해 주는 코드
 import { fileURLToPath, URL } from 'url';
+import fs from 'fs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname  = path.dirname(__filename);
 
+// 빌드 타임스탬프 생성 (캐시 버스팅용)
+const buildTimestamp = Date.now().toString();
+
+// 버전 정보 생성 플러그인
+function versionPlugin() {
+  return {
+    name: 'version-plugin',
+    buildStart() {
+      // version.json 파일 생성
+      const versionInfo = {
+        version: buildTimestamp,
+        buildTime: new Date().toISOString(),
+      };
+
+      // public 폴더에 version.json 생성
+      const publicDir = path.resolve(__dirname, 'public');
+      if (!fs.existsSync(publicDir)) {
+        fs.mkdirSync(publicDir, { recursive: true });
+      }
+      fs.writeFileSync(
+        path.resolve(publicDir, 'version.json'),
+        JSON.stringify(versionInfo, null, 2)
+      );
+    },
+  };
+}
+
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), versionPlugin()],
+  define: {
+    // 빌드 타임스탬프를 전역 변수로 주입
+    '__APP_VERSION__': JSON.stringify(buildTimestamp),
+    '__BUILD_TIME__': JSON.stringify(new Date().toISOString()),
+  },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, 'src'),
     }
+  },
+  build: {
+    // 캐시 버스팅을 위한 파일명 해시 설정
+    rollupOptions: {
+      output: {
+        // 청크 파일에 해시 추가
+        chunkFileNames: 'assets/[name]-[hash].js',
+        entryFileNames: 'assets/[name]-[hash].js',
+        assetFileNames: 'assets/[name]-[hash].[ext]',
+      },
+    },
+    // 소스맵 생성 (디버깅용)
+    sourcemap: false,
   },
   server: {
     host: '0.0.0.0', // Allow external connections for mobile testing and Docker

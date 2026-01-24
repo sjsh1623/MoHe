@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "build:prod": "npm run build && npm run cap:sync",
     "lint": "eslint .",
     "preview": "vite preview",
     "cap:sync": "cap sync",
