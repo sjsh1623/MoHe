@@ -27,7 +27,7 @@
   top: 0;
   left: 0;
   width: 100vw;
-  height: calc(380px + var(--sat, env(safe-area-inset-top, 0px)));
+  height: calc(420px + var(--sat, env(safe-area-inset-top, 0px)));
   z-index: 1;
   background: #e0e0e0;
   overflow: hidden;
@@ -90,7 +90,7 @@
 /* Image pagination dots */
 .imageDots {
   position: absolute;
-  bottom: calc(96px + env(safe-area-inset-top, 0px)); /* Positioned above the bottom sheet overlap */
+  bottom: 96px; /* Positioned above the bottom sheet overlap - no safe area needed here */
   left: 50%;
   transform: translateX(-50%);
   display: flex;
@@ -207,9 +207,9 @@
   z-index: 5;
   background: #fff;
   border-radius: 24px 24px 0 0;
-  margin-top: calc(300px + var(--sat, env(safe-area-inset-top, 0px))); /* 380px hero - 80px overlap for larger sheet effect + safe area */
+  margin-top: calc(340px + var(--sat, env(safe-area-inset-top, 0px))); /* 420px hero - 80px overlap for larger sheet effect + safe area */
   padding: 24px 28px 100px 28px;
-  min-height: calc(100vh - 300px - var(--sat, env(safe-area-inset-top, 0px)));
+  min-height: calc(100vh - 340px - var(--sat, env(safe-area-inset-top, 0px)));
 }
 
 /* Tags */

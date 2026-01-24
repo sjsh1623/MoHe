@@ -1,82 +1,127 @@
-/* Mobile-optimized auth page */
+/* Auth Page - Simple & Impactful */
 .pageContainer {
-    height: 100dvh; /* Dynamic viewport height for mobile */
+    min-height: 100dvh;
+    min-height: 100vh; /* Fallback */
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+    overflow-x: hidden;
+}
+
+/* Header */
+.header {
     display: flex;
     align-items: center;
-    padding: var(--auth-padding-desktop);
-    max-width: 440px;
-    margin: 0 auto;
-    background: white;
-    overflow: auto; /* Enable scroll only when content exceeds container */
+    justify-content: flex-end;
+    padding: 12px 20px;
+    padding-top: calc(env(safe-area-inset-top, 0px) + 12px);
 }
 
-.content {
-    width: 100%;
-    padding: 1rem 0;
+.headerSpacer {
+    flex: 1;
 }
 
-.illustration {
-    width: 80%; /* Responsive but capped at 305px */
-    max-width: 440px;
-    height: auto;
-}
-
-.signupLink,
-.skipLink,
-.guestBrowseLink {
-    font-size: var(--font-size-caption);
-    font-family: var(--font-family-base);
-    line-height: var(--line-height-regular);
+.exploreBtn {
+    background: none;
+    border: none;
+    font-size: 15px;
+    font-weight: 600;
+    color: #222;
+    cursor: pointer;
+    padding: 8px 0;
     text-decoration: underline;
-    display: block;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.exploreBtn:active {
+    color: #666;
+}
+
+/* Main Content */
+.content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 0 24px;
+    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 40px);
+    max-width: 400px;
+    width: 100%;
+    margin: 0 auto;
+    box-sizing: border-box;
+}
+
+/* Brand Section */
+.brandSection {
+    text-align: center;
+    margin-bottom: 48px;
+}
+
+.logo {
+    height: 48px;
+    width: auto;
+    margin-bottom: 16px;
+}
+
+.tagline {
+    font-size: 16px;
+    color: #717171;
+    margin: 0;
+    font-weight: 400;
+}
+
+/* Action Section */
+.actionSection {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 100%;
+}
+
+/* Divider */
+.divider {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin: 8px 0;
+}
+
+.dividerLine {
+    flex: 1;
+    height: 1px;
+    background: #E0E0E0;
+}
+
+.dividerText {
+    font-size: 13px;
+    color: #717171;
+    font-weight: 400;
+}
+
+/* Signup Link */
+.signupLink {
+    font-size: 14px;
+    font-family: inherit;
     text-align: center;
     background: none;
     border: none;
     cursor: pointer;
-    padding: 0.5rem;
-    min-height: 44px;
-    touch-action: manipulation;
+    padding: 16px 0;
+    color: #717171;
+    -webkit-tap-highlight-color: transparent;
 }
 
-.signupLink {
-    color: #1e1e1e;
+.signupHighlight {
+    color: #FF385C;
+    font-weight: 600;
+    text-decoration: underline;
 }
 
-.skipLink {
-    color: #7D848D;
+.signupLink:active .signupHighlight {
+    color: #E31C5F;
 }
 
-.skipLink:hover {
-    color: #666;
-}
-
-.skipLink:active {
-    color: #555;
-}
-
-.guestBrowseLink {
-    color: #3b82f6;
-    font-weight: 500;
-}
-
-.guestBrowseLink:hover {
-    color: #2563eb;
-}
-
-.guestBrowseLink:active {
-    color: #1d4ed8;
-}
-
-/* Mobile WebView optimizations - LOGIN PAGE STANDARD */
-@media (max-width: 480px) {
-  .pageContainer {
-    padding: var(--auth-padding-mobile);
-    max-width: 100%;
-  }
-}
-
-/* Improve touch interactions */
+/* Touch optimizations */
 * {
-  -webkit-tap-highlight-color: transparent;
-  touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
 }

@@ -2,10 +2,8 @@ import React, { useEffect } from 'react';
 import {useNavigate} from 'react-router-dom';
 import styles from '@/styles/pages/auth/auth-page.module.css';
 
-import {Container, Stack} from '@/components/ui/layout';
 import {StandardButton, SocialButtons} from '@/components/ui/buttons';
-import AuthHeader from '@/components/layout/AuthHeader';
-import loginImage from '@/assets/image/login_image.png';
+import logoHeader from '@/assets/image/logo-header.svg';
 import { authService } from '@/services/authService';
 
 export default function AuthPage() {
@@ -35,24 +33,52 @@ export default function AuthPage() {
         navigate('/signup');
     };
 
+    const handleExplore = (e) => {
+        e.preventDefault();
+        navigate('/home');
+    };
 
     return (
-        <Container className={styles.pageContainer}>
-            <Stack spacing="lg" align="center" className={styles.content}>
-                <AuthHeader/>
-                <img className={styles.illustration} src={loginImage} alt="MOHE Login Illustration"/>
-                <StandardButton onClick={handleLogin}>
-                    MOHE 아이디로 로그인
-                </StandardButton>
-                <SocialButtons/>
-                <button
-                    className={styles.signupLink}
-                    onClick={handleSignup}
-                    type="button"
-                >
-                    회원가입
+        <div className={styles.pageContainer}>
+            {/* Header with explore button */}
+            <header className={styles.header}>
+                <div className={styles.headerSpacer} />
+                <button onClick={handleExplore} className={styles.exploreBtn}>
+                    둘러보기
                 </button>
-            </Stack>
-        </Container>
+            </header>
+
+            {/* Main Content */}
+            <main className={styles.content}>
+                {/* Logo & Tagline */}
+                <div className={styles.brandSection}>
+                    <img src={logoHeader} alt="MOHE" className={styles.logo} draggable={false} />
+                    <p className={styles.tagline}>MBTI 기반 맞춤 장소 추천</p>
+                </div>
+
+                {/* Action Buttons */}
+                <div className={styles.actionSection}>
+                    <StandardButton onClick={handleLogin}>
+                        MOHE 계정으로 시작하기
+                    </StandardButton>
+
+                    <div className={styles.divider}>
+                        <span className={styles.dividerLine}></span>
+                        <span className={styles.dividerText}>또는</span>
+                        <span className={styles.dividerLine}></span>
+                    </div>
+
+                    <SocialButtons/>
+
+                    <button
+                        className={styles.signupLink}
+                        onClick={handleSignup}
+                        type="button"
+                    >
+                        계정이 없으신가요? <span className={styles.signupHighlight}>회원가입</span>
+                    </button>
+                </div>
+            </main>
+        </div>
     );
 }

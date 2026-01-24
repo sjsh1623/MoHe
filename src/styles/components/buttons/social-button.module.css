@@ -1,51 +1,94 @@
+/* Airbnb-style Social Buttons */
 .buttonGroup {
     display: flex;
-    gap: 1.5rem; /* 24px */
-    justify-content: center;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
 }
 
 .btn {
-    width: 3.75rem;    /* 60px */
-    height: 3.75rem;
-    border: none;
-    border-radius: 50%;
+    width: 100%;
+    height: 52px;
+    border: 1px solid #222222;
+    border-radius: 12px;
     display: flex;
-    justify-content: center;
     align-items: center;
+    justify-content: center;
+    gap: 12px;
     cursor: pointer;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.btn:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.2s ease, transform 0.1s ease;
+    font-family: inherit;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .btn:active {
-    transform: translateY(0);
+    transform: scale(0.98);
 }
 
-.naver {
-    background: #03c75a;
+.iconWrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
 }
 
+.label {
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: -0.2px;
+}
+
+/* Kakao Button */
 .kakao {
-    background: #fee500;
+    background: #FEE500;
+    border-color: #FEE500;
 }
 
+.kakao .label {
+    color: #191919;
+}
+
+.kakao:hover {
+    background: #F5DC00;
+    border-color: #F5DC00;
+}
+
+.kakao:active {
+    background: #E6CE00;
+    border-color: #E6CE00;
+}
+
+/* Google Button */
 .google {
-    background: #ffffff;
-    border: 1px solid #e5e8eb;
+    background: #FFFFFF;
+    border-color: #DDDDDD;
 }
 
+.google .label {
+    color: #222222;
+}
+
+.google:hover {
+    background: #F7F7F7;
+}
+
+.google:active {
+    background: #EBEBEB;
+}
+
+/* Disabled state */
 .disabled {
     opacity: 0.6;
     cursor: not-allowed;
+    pointer-events: none;
 }
 
+/* Loading spinner */
 .spinner {
-    width: 20px;
-    height: 20px;
+    width: 18px;
+    height: 18px;
     border: 2px solid rgba(0, 0, 0, 0.1);
     border-top-color: currentColor;
     border-radius: 50%;
@@ -53,7 +96,7 @@
 }
 
 .kakao .spinner {
-    border-top-color: #000;
+    border-top-color: #191919;
 }
 
 .google .spinner {

@@ -16,7 +16,7 @@ import ShareModal from '@/components/ui/modals/ShareModal';
 // CONFIGURATION
 // ============================================
 const SHOW_HEADER_TITLE = false; // Set to true to show place name in sticky header
-const BASE_HERO_HEIGHT = 380; // Base hero image height in pixels (excluding safe area)
+const BASE_HERO_HEIGHT = 420; // Base hero image height in pixels (excluding safe area)
 const HEADER_HEIGHT = 56; // Sticky header height (excluding safe area)
 
 const formatDate = (dateString) => {
