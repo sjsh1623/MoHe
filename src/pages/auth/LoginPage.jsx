@@ -9,6 +9,7 @@ import Checkbox from '@/components/ui/inputs/Checkbox';
 import PrimaryButton from '@/components/ui/buttons/PrimaryButton';
 import SocialButtons from '@/components/ui/buttons/SocialButton';
 import TextLink from '@/components/ui/links/TextLink';
+import BackButton from '@/components/ui/buttons/BackButton';
 import {AuthContainer, AuthTitle} from '@/components/auth';
 import {useAuthNavigation} from '@/hooks/useAuthNavigation';
 import { useBackButton } from '@/contexts/BackButtonContext';
@@ -136,6 +137,10 @@ export default function LoginPage() {
             pageClassName={styles.pageContainer}
             contentClassName={styles.content}
         >
+            <header className={styles.header}>
+                <BackButton />
+            </header>
+
             <AuthTitle
                 title={
                     <span dangerouslySetInnerHTML={{ __html: t('auth.login.title') }} />

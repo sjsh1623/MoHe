@@ -8,6 +8,7 @@ import { AuthContainer, AuthTitle } from '@/components/auth';
 import { useAuthNavigation } from '@/hooks/useAuthNavigation';
 import FormInput from '@/components/ui/inputs/FormInput';
 import PrimaryButton from '@/components/ui/buttons/PrimaryButton';
+import BackButton from '@/components/ui/buttons/BackButton';
 import { authService } from '@/services/authService';
 
 export default function EmailSignupPage() {
@@ -59,10 +60,14 @@ export default function EmailSignupPage() {
   const isValidEmail = email.trim() && email.includes('@') && email.includes('.');
 
   return (
-    <AuthContainer 
+    <AuthContainer
       pageClassName={styles.pageContainer}
       contentClassName={styles.content}
     >
+      <header className={styles.header}>
+        <BackButton />
+      </header>
+
       <AuthTitle
         title={
           <span dangerouslySetInnerHTML={{ __html: t('auth.signup.title') }} />

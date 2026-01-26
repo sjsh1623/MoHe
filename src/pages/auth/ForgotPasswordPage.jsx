@@ -6,6 +6,7 @@ import { Stack } from '@/components/ui/layout';
 import { AuthContainer, AuthTitle } from '@/components/auth';
 import FormInput from '@/components/ui/inputs/FormInput';
 import PrimaryButton from '@/components/ui/buttons/PrimaryButton';
+import BackButton from '@/components/ui/buttons/BackButton';
 import { authService } from '@/services/authService';
 
 export default function ForgotPasswordPage() {
@@ -32,10 +33,14 @@ export default function ForgotPasswordPage() {
   const isValidEmail = email.trim() && email.includes('@');
 
   return (
-    <AuthContainer 
+    <AuthContainer
       pageClassName={styles.pageContainer}
       contentClassName={styles.content}
     >
+      <header className={styles.header}>
+        <BackButton />
+      </header>
+
       <AuthTitle
         title={t('auth.forgotPassword.title')}
         subtitle={t('auth.forgotPassword.description')}
