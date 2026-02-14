@@ -3,6 +3,7 @@
   "appName": "Mohe",
   "webDir": "dist",
   "server": {
+    "url": "https://mohe.today",
     "androidScheme": "https",
     "iosScheme": "https",
     "hostname": "mohe.today",
