@@ -42,9 +42,10 @@
     flex: 1;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: space-between;
     padding: 0 24px;
-    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 40px);
+    padding-top: 15dvh;
+    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 48px);
     max-width: 400px;
     width: 100%;
     margin: 0 auto;
@@ -54,27 +55,28 @@
 /* Brand Section */
 .brandSection {
     text-align: center;
-    margin-bottom: 48px;
+    margin-bottom: 0;
 }
 
 .logo {
     height: 48px;
     width: auto;
-    margin-bottom: 16px;
+    margin-bottom: 20px;
 }
 
 .tagline {
-    font-size: 16px;
-    color: #717171;
+    font-size: 15px;
+    color: #999;
     margin: 0;
     font-weight: 400;
+    letter-spacing: 0.02em;
 }
 
 /* Action Section */
 .actionSection {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 12px;
     width: 100%;
 }
 

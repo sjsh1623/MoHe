@@ -8,8 +8,6 @@ import FormInput from '@/components/ui/inputs/FormInput';
 import Checkbox from '@/components/ui/inputs/Checkbox';
 import PrimaryButton from '@/components/ui/buttons/PrimaryButton';
 import SocialButtons from '@/components/ui/buttons/SocialButton';
-import TextLink from '@/components/ui/links/TextLink';
-import BackButton from '@/components/ui/buttons/BackButton';
 import {AuthContainer, AuthTitle} from '@/components/auth';
 import {useAuthNavigation} from '@/hooks/useAuthNavigation';
 import { useBackButton } from '@/contexts/BackButtonContext';
@@ -102,22 +100,18 @@ export default function LoginPage() {
         const fromPath = location.state?.from;
         const isProtectedRoute = typeof fromPath === 'string' && PROTECTED_ROUTES.some(route => fromPath.startsWith(route));
 
-        if (!isProtectedRoute) {
-            if (handlerSetRef.current) {
-                clearBackClickHandler();
-                handlerSetRef.current = false;
-            }
-            return;
-        }
-
-        // Only set handler once per mount to prevent infinite loops
         if (!handlerSetRef.current) {
-            // Force back button to go home (replace entry) instead of retrying protected route
-            const handleBackToHome = () => {
-                navigate('/home', { replace: true });
+            const handleBack = () => {
+                if (isProtectedRoute) {
+                    // Came from a protected route — go home instead of retrying
+                    navigate('/home', { replace: true });
+                } else {
+                    // Default — go back to landing page
+                    navigate('/');
+                }
             };
 
-            setBackClickHandler(handleBackToHome);
+            setBackClickHandler(handleBack);
             handlerSetRef.current = true;
         }
 
@@ -137,10 +131,6 @@ export default function LoginPage() {
             pageClassName={styles.pageContainer}
             contentClassName={styles.content}
         >
-            <header className={styles.header}>
-                <BackButton />
-            </header>
-
             <AuthTitle
                 title={
                     <span dangerouslySetInnerHTML={{ __html: t('auth.login.title') }} />

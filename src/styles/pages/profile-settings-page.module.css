@@ -5,14 +5,15 @@
   min-height: 100vh;
   background: #fff;
   padding: 16px 20px;
-  padding-top: 60px;
+  padding-top: calc(var(--app-shell-safe-top, 0px) + 60px);
+  padding-bottom: calc(var(--app-shell-safe-bottom, 0px) + 16px);
 }
 
 /* Header */
 .header {
   display: flex;
   align-items: center;
-  padding: 12px 16px;
+  padding: calc(var(--app-shell-safe-top, 0px) + 12px) 16px 12px;
   position: fixed;
   top: 0;
   left: 0;
@@ -172,7 +173,8 @@
 @media (max-width: 480px) {
   .container {
     padding: 16px;
-    padding-top: 50px;
+    padding-top: calc(var(--app-shell-safe-top, 0px) + 50px);
+    padding-bottom: calc(var(--app-shell-safe-bottom, 0px) + 16px);
   }
 
   .profileImage {

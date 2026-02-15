@@ -18,7 +18,7 @@
 }
 
 .header {
-  height: 56px;
+  height: calc(var(--app-shell-safe-top, 0px) + 56px);
   flex-shrink: 0;
 }
 
@@ -182,7 +182,7 @@
   text-decoration: underline;
   cursor: pointer;
   padding: 8px;
-  margin: 0 auto 24px auto;
+  margin: 0 auto calc(var(--app-shell-safe-bottom, 0px) + 24px) auto;
 }
 
 /* Responsive */
@@ -210,9 +210,3 @@
   }
 }
 
-/* iOS Safe Area */
-@supports (padding-bottom: env(safe-area-inset-bottom)) {
-  .content {
-    padding-bottom: env(safe-area-inset-bottom);
-  }
-}

@@ -53,7 +53,7 @@ export default function AuthPage() {
                 {/* Logo & Tagline */}
                 <div className={styles.brandSection}>
                     <img src={logoHeader} alt="MOHE" className={styles.logo} draggable={false} />
-                    <p className={styles.tagline}>MBTI 기반 맞춤 장소 추천</p>
+                    <p className={styles.tagline}>당신의 취향이 이끄는 곳으로</p>
                 </div>
 
                 {/* Action Buttons */}

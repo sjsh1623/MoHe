@@ -44,7 +44,7 @@ a {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 12px 16px;
+    padding: calc(var(--app-shell-safe-top, 0px) + 12px) 16px 12px;
     position: fixed;
     top: 0;
     left: 0;
@@ -74,7 +74,7 @@ a {
     position: absolute;
     width: 100%;
     height: 120px;
-    top: 120px;
+    top: calc(var(--app-shell-safe-top, 0px) + 120px);
     left: 0;
     display: flex;
     justify-content: center;
@@ -124,7 +124,7 @@ a {
     position: absolute;
     width: 259px;
     height: 42px;
-    top: 280px;
+    top: calc(var(--app-shell-safe-top, 0px) + 280px);
     left: 50%;
     transform: translateX(-50%);
 }
@@ -211,7 +211,7 @@ a {
 /* Save Button */
 .saveButtonContainer {
     position: absolute;
-    top: 340px;
+    top: calc(var(--app-shell-safe-top, 0px) + 340px);
     left: 50%;
     transform: translateX(-50%);
     width: min(320px, 80vw);
