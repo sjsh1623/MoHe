@@ -101,9 +101,10 @@ export default function AnimatedRoutes() {
   // Touch tracking for edge swipe
   const touchStartX = useRef(0);
   const touchStartY = useRef(0);
+  const touchStartTime = useRef(0);
   const isEdgeSwipe = useRef(false);
-  const swipeThreshold = 100; // Minimum swipe distance to trigger back
-  const edgeWidth = 25; // Width of edge detection zone (px)
+  const swipeThreshold = 80; // Minimum swipe distance to trigger back
+  const edgeWidth = 40; // Width of edge detection zone (px)
 
   // Check if swipe back is allowed for current route
   const canSwipeBack = !NO_SWIPE_BACK_ROUTES.has(location.pathname);
@@ -115,6 +116,7 @@ export default function AnimatedRoutes() {
     const touch = e.touches[0];
     touchStartX.current = touch.clientX;
     touchStartY.current = touch.clientY;
+    touchStartTime.current = Date.now();
 
     // Only trigger edge swipe if touch starts within edge zone
     if (touch.clientX <= edgeWidth) {
@@ -157,8 +159,10 @@ export default function AnimatedRoutes() {
     }
 
     const currentDragX = dragX.get();
+    const elapsed = Date.now() - touchStartTime.current;
+    const velocity = currentDragX / (elapsed || 1); // px/ms
 
-    if (currentDragX >= swipeThreshold) {
+    if (currentDragX >= swipeThreshold || (velocity > 0.5 && currentDragX > 30)) {
       // Trigger back navigation
       navigate(-1);
     }
