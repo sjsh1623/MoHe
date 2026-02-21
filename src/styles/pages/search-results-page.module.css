@@ -1,23 +1,21 @@
-/* Search Results Page - Airbnb Style */
+/* Search Results Page - Chat Style */
+
 .pageContainer {
-  min-height: 100dvh;
-  background: #fff;
-  max-width: 100%;
-  margin: 0 auto;
+  height: 100dvh;
+  background: #f8f8f8;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
-/* Header */
+/* ── Header — back button only ───────────── */
 .header {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px 20px;
-  padding-top: calc(env(safe-area-inset-top, 0px) + 12px);
-  position: sticky;
-  top: 0;
-  background: #fff;
-  z-index: 100;
-  border-bottom: 1px solid #F2F4F6;
+  padding: 8px 12px;
+  padding-top: calc(env(safe-area-inset-top, 0px) + 8px);
+  background: #f8f8f8;
+  flex-shrink: 0;
 }
 
 .backButton {
@@ -31,80 +29,220 @@
   cursor: pointer;
   color: #222;
   border-radius: 50%;
-  transition: background 0.2s;
+  transition: background 0.15s;
   -webkit-tap-highlight-color: transparent;
+  flex-shrink: 0;
 }
 
 .backButton:active {
-  background: #F2F4F6;
-}
-
-.headerTitle {
-  flex: 1;
-  font-size: 16px;
-  font-weight: 600;
-  color: #222;
-  text-align: center;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  background: #e8e8e8;
 }
 
 .headerSpacer {
-  width: 40px;
+  flex: 1;
 }
 
-/* Title Section */
-.titleSection {
-  padding: 16px 20px 8px;
+/* ── Chat area ───────────────────────────── */
+.chatArea {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  /* bottom padding = input bar height (56) + gap (16) + safe area */
+  padding: 16px 16px calc(env(safe-area-inset-bottom, 0px) + 88px);
+  gap: 10px;
+  -webkit-overflow-scrolling: touch;
 }
 
-.title {
-  font-size: 22px;
+/* Push messages to the bottom when content is short */
+.spacer {
+  flex: 1;
+}
+
+/* ── User bubble ─────────────────────────── */
+.userMessageRow {
+  display: flex;
+  justify-content: flex-end;
+  padding-left: 56px;
+}
+
+.userBubble {
+  background: #1a1a1a;
+  color: #fff;
+  border-radius: 20px 20px 4px 20px;
+  padding: 12px 16px;
+  font-size: 15px;
+  line-height: 1.5;
+  max-width: 100%;
+  word-break: break-word;
+}
+
+/* ── AI message row ──────────────────────── */
+.aiMessageRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.aiAvatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #6C63FF 0%, #4ECDC4 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
   font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.aiBubble {
+  background: #fff;
   color: #222;
-  margin: 0 0 4px 0;
-  line-height: 1.3;
+  border-radius: 4px 20px 20px 20px;
+  padding: 12px 16px;
+  font-size: 15px;
+  line-height: 1.6;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.07);
 }
 
-.subtitle {
-  font-size: 14px;
-  color: #717171;
+/* ── Streaming cursor ────────────────────── */
+.streamCursor {
+  display: inline-block;
+  width: 2px;
+  height: 1em;
+  background: #555;
+  margin-left: 2px;
+  vertical-align: text-bottom;
+  border-radius: 1px;
+  animation: cursorBlink 0.75s infinite;
+}
+
+@keyframes cursorBlink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* ── Login prompt bubble ─────────────────── */
+.loginBubble {
+  background: #fff;
+  border-radius: 4px 20px 20px 20px;
+  padding: 16px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.loginBubbleText {
+  font-size: 15px;
+  line-height: 1.6;
+  color: #222;
   margin: 0;
+  white-space: pre-line;
 }
 
-.errorWrapper {
-  padding: 0 20px;
-  margin-bottom: 16px;
-}
-
-/* Results Grid */
-.resultsGrid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 24px 16px;
-  padding: 16px 20px;
-  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 24px);
-}
-
-/* Place Card - Airbnb Style */
-.placeCard {
+.loginButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  background: #1a1a1a;
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  padding: 11px 16px;
+  font-size: 14px;
+  font-weight: 600;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
+  transition: background 0.15s, transform 0.15s;
+  font-family: inherit;
+}
+
+.loginButton:active {
+  background: #333;
+  transform: scale(0.97);
+}
+
+/* ── Loading bubble (cycling messages) ────── */
+.loadingBubble {
+  background: #fff;
+  border-radius: 4px 20px 20px 20px;
+  padding: 12px 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+  min-width: 160px;
+  overflow: hidden;
+}
+
+.loadingText {
+  font-size: 14px;
+  color: #555;
+  line-height: 1;
+  display: block;
+  flex: 1;
+  white-space: nowrap;
+}
+
+.loadingDots {
+  display: inline-flex;
+  gap: 3px;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #bbb;
+  animation: bounce 1.2s infinite ease-in-out;
+}
+
+.loadingDots .dot:nth-child(1) { animation-delay: 0s; }
+.loadingDots .dot:nth-child(2) { animation-delay: 0.18s; }
+.loadingDots .dot:nth-child(3) { animation-delay: 0.36s; }
+
+@keyframes bounce {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.35; }
+  30% { transform: translateY(-5px); opacity: 1; }
+}
+
+/* ── Card wrapper (motion div around each card) ── */
+/* Indented to align with AI content (avatar 34 + gap 10 = 44px) */
+.cardWrapper {
+  padding-left: 44px;
+}
+
+/* ── Place Card ──────────────────────────── */
+.placeCard {
+  background: #fff;
+  border-radius: 16px;
+  overflow: hidden;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  transition: transform 0.15s;
 }
 
 .placeCard:active {
-  opacity: 0.9;
+  transform: scale(0.985);
 }
 
-/* Image Container */
+/* Image slider */
 .imageContainer {
   position: relative;
   width: 100%;
-  aspect-ratio: 1;
-  border-radius: 12px;
+  aspect-ratio: 4 / 3;
   overflow: hidden;
-  background: #F2F4F6;
+  background: #e8e8e8;
 }
 
 .imageSlider {
@@ -124,8 +262,6 @@
 
 .imageSlide {
   flex: 0 0 100%;
-  width: 100%;
-  height: 100%;
   scroll-snap-align: start;
   scroll-snap-stop: always;
 }
@@ -136,31 +272,38 @@
   object-fit: cover;
   user-select: none;
   -webkit-user-drag: none;
+  display: block;
 }
 
-/* Bookmark Button */
+/* Bookmark button */
 .bookmarkButton {
   position: absolute;
-  top: 10px;
-  right: 10px;
-  width: 32px;
-  height: 32px;
-  background: transparent;
+  top: 12px;
+  right: 12px;
+  width: 34px;
+  height: 34px;
+  background: rgba(0,0,0,0.18);
   border: none;
+  border-radius: 50%;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 10;
   -webkit-tap-highlight-color: transparent;
-  transition: transform 0.2s;
+  backdrop-filter: blur(4px);
+  transition: background 0.15s, transform 0.15s;
 }
 
 .bookmarkButton:active {
-  transform: scale(0.9);
+  transform: scale(0.88);
 }
 
-/* Image Indicators */
+.bookmarkButton.bookmarked {
+  background: rgba(255,255,255,0.9);
+}
+
+/* Image indicators */
 .imageIndicators {
   position: absolute;
   bottom: 10px;
@@ -175,18 +318,18 @@
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.5);
-  transition: background 0.2s, width 0.2s;
+  background: rgba(255,255,255,0.5);
+  transition: background 0.2s, transform 0.2s;
 }
 
 .indicator.active {
   background: #fff;
-  width: 6px;
+  transform: scale(1.2);
 }
 
-/* Place Info */
+/* Place info */
 .placeInfo {
-  padding: 10px 2px 0;
+  padding: 14px 16px 16px;
 }
 
 .placeHeader {
@@ -194,13 +337,13 @@
   justify-content: space-between;
   align-items: flex-start;
   gap: 8px;
-  margin-bottom: 2px;
+  margin-bottom: 4px;
 }
 
 .placeName {
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 600;
-  color: #222;
+  color: #111;
   margin: 0;
   line-height: 1.3;
   flex: 1;
@@ -219,15 +362,15 @@
 
 .rating span {
   font-size: 14px;
-  font-weight: 400;
+  font-weight: 500;
   color: #222;
 }
 
 .placeLocation {
-  font-size: 14px;
-  color: #717171;
-  margin: 0 0 4px 0;
-  line-height: 1.3;
+  font-size: 13px;
+  color: #888;
+  margin: 0 0 6px 0;
+  line-height: 1.4;
   display: -webkit-box;
   -webkit-line-clamp: 1;
   -webkit-box-orient: vertical;
@@ -236,9 +379,9 @@
 
 .placeDescription {
   font-size: 13px;
-  color: #717171;
-  margin: 0 0 6px 0;
-  line-height: 1.4;
+  color: #666;
+  margin: 0 0 8px 0;
+  line-height: 1.5;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -253,84 +396,219 @@
 
 .tag {
   font-size: 12px;
-  color: #717171;
+  color: #999;
 }
 
-/* Empty State */
-.emptyState {
+/* ── Hamburger button ────────────────────── */
+.hamburgerButton {
+  width: 40px;
+  height: 40px;
+  background: none;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #222;
+  border-radius: 50%;
+  transition: background 0.15s;
+  -webkit-tap-highlight-color: transparent;
+  flex-shrink: 0;
+}
+
+.hamburgerButton:active {
+  background: #e8e8e8;
+}
+
+/* ── History Sidebar ──────────────────────── */
+.sidebarOverlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 100;
+}
+
+.sidebar {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 82%;
+  max-width: 300px;
+  height: 100%;
+  background: #fff;
+  z-index: 101;
+  display: flex;
+  flex-direction: column;
+  box-shadow: -6px 0 32px rgba(0, 0, 0, 0.12);
+  overflow: hidden;
+}
+
+.sidebarHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 16px 16px;
+  padding-top: calc(env(safe-area-inset-top, 0px) + 20px);
+  border-bottom: 1px solid #f0f0f0;
+  flex-shrink: 0;
+}
+
+.sidebarTitle {
+  font-size: 16px;
+  font-weight: 700;
+  color: #111;
+}
+
+.sidebarClose {
+  width: 36px;
+  height: 36px;
+  background: #f5f5f5;
+  border: none;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #555;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.15s;
+}
+
+.sidebarClose:active {
+  background: #eaeaea;
+}
+
+.sidebarList {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.sidebarEmpty {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 60px 20px;
+  flex: 1;
+  padding: 48px 24px;
+  gap: 8px;
   text-align: center;
 }
 
-.emptyIcon {
-  margin-bottom: 16px;
+.sidebarEmptyIcon {
+  margin-bottom: 4px;
+  opacity: 0.5;
 }
 
-.emptyTitle {
-  font-size: 18px;
-  font-weight: 600;
-  color: #222;
-  margin: 0 0 8px 0;
-}
-
-.emptySubtitle {
+.sidebarEmptyText {
   font-size: 14px;
-  color: #717171;
+  font-weight: 600;
+  color: #aaa;
   margin: 0;
 }
 
-/* Mobile Optimizations */
-@media (max-width: 480px) {
-  .resultsGrid {
-    gap: 20px 12px;
-    padding: 12px 16px;
-    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 20px);
-  }
-
-  .header {
-    padding: 10px 16px;
-    padding-top: calc(env(safe-area-inset-top, 0px) + 10px);
-  }
-
-  .titleSection {
-    padding: 12px 16px 8px;
-  }
-
-  .title {
-    font-size: 20px;
-  }
-
-  .imageContainer {
-    border-radius: 10px;
-  }
-
-  .placeName {
-    font-size: 14px;
-  }
-
-  .placeLocation {
-    font-size: 13px;
-  }
+.sidebarEmptySubtext {
+  font-size: 12px;
+  color: #ccc;
+  margin: 0;
 }
 
-/* Large screens - 3 columns */
-@media (min-width: 768px) {
-  .pageContainer {
-    max-width: 1200px;
-  }
-
-  .resultsGrid {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 32px 24px;
-    padding: 24px 32px;
-  }
+.sidebarItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+  border-radius: 12px;
+  padding: 2px 4px 2px 0;
+  transition: background 0.12s;
 }
 
-/* Touch Optimizations */
+.sidebarItem:active {
+  background: #f7f7f7;
+}
+
+.sidebarItemMain {
+  flex: 1;
+  background: none;
+  border: none;
+  padding: 10px 8px 10px 12px;
+  cursor: pointer;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  -webkit-tap-highlight-color: transparent;
+  min-width: 0;
+  border-radius: 12px;
+}
+
+.sidebarItemTop {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.sidebarItemQuery {
+  font-size: 14px;
+  font-weight: 600;
+  color: #111;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 1.4;
+}
+
+.sidebarItemDate {
+  font-size: 11px;
+  color: #bbb;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.sidebarItemThumbs {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.sidebarItemThumb {
+  width: 36px;
+  height: 36px;
+  border-radius: 7px;
+  object-fit: cover;
+  flex-shrink: 0;
+  background: #ebebeb;
+}
+
+.sidebarItemDelete {
+  width: 32px;
+  height: 32px;
+  background: none;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #d0d0d0;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 8px;
+  transition: background 0.15s, color 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.sidebarItemDelete:active {
+  background: #f0f0f0;
+  color: #888;
+}
+
+
+/* ── Touch optimizations ─────────────────── */
 * {
   -webkit-tap-highlight-color: transparent;
 }

@@ -19,6 +19,7 @@ import bannerLeft from '@/assets/image/banner_left.png';
 import logoHeader from '@/assets/image/logo-header.svg';
 import { buildImageUrl, normalizePlaceImages } from '@/utils/image';
 import { HomeSection, HomeHorizontalScroller, HomeBanner } from '@/components/ui/home';
+import LoginRequiredSheet from '@/components/ui/modals/LoginRequiredSheet';
 
 /**
  * Format address to show district + detailed address
@@ -83,6 +84,7 @@ export default function HomePage() {
   const [categoriesPlaces, setCategoriesPlaces] = useState({});
   const [dynamicMessage, setDynamicMessage] = useState('지금 가기 좋은 플레이스');
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
+  const [showLoginSheet, setShowLoginSheet] = useState(false);
   const { recentlyViewed, addRecentlyViewed } = useRecentlyViewed();
 
   // Section-level loading states for progressive rendering
@@ -2130,7 +2132,10 @@ export default function HomePage() {
 
 
   const handleProfileClick = () => {
-    console.log('Profile clicked');
+    if (!user || user.isGuest) {
+      setShowLoginSheet(true);
+      return;
+    }
     navigate('/profile-settings');
   };
 
@@ -2138,13 +2143,7 @@ export default function HomePage() {
     try {
       // Check if user is guest
       if (!user || user.isGuest) {
-        console.log('Guest user redirected to login for bookmarking');
-        navigate('/login', {
-          state: {
-            from: '/home',
-            message: '북마크 기능을 사용하려면 로그인이 필요합니다.'
-          }
-        });
+        setShowLoginSheet(true);
         return;
       }
 
@@ -2180,15 +2179,8 @@ export default function HomePage() {
 
   const handleBannerClick = () => {
     console.log('Banner clicked');
-    // Check if user is logged in
     if (!user || user.isGuest) {
-      // Not logged in - redirect to login page
-      navigate('/login', {
-        state: {
-          from: '/home',
-          message: '이 기능을 사용하려면 로그인이 필요합니다.'
-        }
-      });
+      setShowLoginSheet(true);
       return;
     }
 
@@ -2464,6 +2456,16 @@ export default function HomePage() {
             })}
         </div>
       </div>
+
+      {/* Login Required Sheet */}
+      <LoginRequiredSheet
+        visible={showLoginSheet}
+        onClose={() => setShowLoginSheet(false)}
+        onLogin={() => {
+          setShowLoginSheet(false);
+          navigate('/login', { state: { from: '/home' } });
+        }}
+      />
 
       {/* Footer */}
       <footer className={styles.footer}>

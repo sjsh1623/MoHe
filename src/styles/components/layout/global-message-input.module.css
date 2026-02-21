@@ -1,27 +1,34 @@
-/* Global Message Input - Fixed to viewport bottom */
-.messageContainer {
+/* Global Message Input ─────────────────────────────────────────── */
+
+/* Outer: handles fixed positioning. Width is driven by left/right — NOT inline width */
+.messageOuter {
   position: fixed;
-  bottom: calc(var(--app-shell-safe-bottom, 0px) + 20px);
-  left: calc(var(--app-shell-offset, 0px) + var(--app-shell-safe-left, 0px) + var(--app-shell-horizontal-gutter, 16px));
-  right: calc(var(--app-shell-offset, 0px) + var(--app-shell-safe-right, 0px) + var(--app-shell-horizontal-gutter, 16px));
-  margin: 0 auto;
-  background: rgba(229, 231, 235, 0.95);
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 16px);
+  /* Align inside the app shell using the same offset the shell uses */
+  left: calc(var(--app-shell-offset, 0px) + 16px);
+  right: calc(var(--app-shell-offset, 0px) + 16px);
+  z-index: 10000;
+  pointer-events: none;
+}
+
+/* Inner: the visible pill — Framer Motion animates opacity/y only */
+.messageContainer {
+  width: 100%;
+  background: rgba(235, 235, 237, 0.96);
+  border-radius: 28px;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.12), 0 1px 4px rgba(0,0,0,0.08);
   overflow: hidden;
-  z-index: 10000; /* Ensure it stays on top of everything */
   pointer-events: all;
-  will-change: transform;
-  border-radius: 16px;
-  backdrop-filter: blur(18px);
-  max-width: min(100%, var(--app-shell-max-width, 428px));
-  box-shadow: 0 16px 32px rgba(15, 23, 42, 0.12);
 }
 
 .messageInputWrapper {
   display: flex;
   align-items: center;
-  width: 100%;
-  height: 100%;
-  padding: 0 18px;
+  padding: 12px 12px 12px 18px;
+  gap: 10px;
+  min-height: 52px;
 }
 
 .messageInput {
@@ -29,49 +36,56 @@
   border: none;
   background: none;
   outline: none;
-  font-size: 0.875rem; /* 14px */
-  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 15px;
+  font-family: inherit;
   font-weight: 400;
-  color: #1f2937;
-  line-height: 1; /* 14px */
-  letter-spacing: 0.025em;
+  color: #111;
+  line-height: 1.4;
+  caret-color: #6C63FF;
 }
 
 .messageInput::placeholder {
-  color: #9ca3af;
+  color: #aaa;
 }
 
+/* Send button */
 .sendButton {
-  width: 25.62px;
-  height: 25.62px;
-  background: #9ca3af;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  background: #d1d1d6;
   border: none;
-  border-radius: 100px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: background-color 0.2s ease;
-  color: #e5e7eb;
+  color: #888;
+  transition: background 0.2s, color 0.2s, transform 0.15s;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.sendButton:hover:not(:disabled) {
-  background: #6b7280;
+.sendButtonActive {
+  background: #1a1a1a;
+  color: #fff;
+}
+
+.sendButton:active:not(:disabled) {
+  transform: scale(0.9);
 }
 
 .sendButton:disabled {
-  opacity: 0.5;
   cursor: not-allowed;
 }
 
-/* Mobile optimizations */
+/* Mobile */
 @media (max-width: 480px) {
-  .messageContainer {
-    border-radius: 12px;
+  .messageOuter {
+    left: calc(var(--app-shell-offset, 0px) + 12px);
+    right: calc(var(--app-shell-offset, 0px) + 12px);
   }
 }
 
-/* Improve touch interactions */
 * {
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;

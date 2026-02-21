@@ -2,13 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { contextualRecommendationService } from '@/services/apiService';
+import { authService } from '@/services/authService';
 import { useGeolocation } from '@/hooks/useGeolocation';
 import styles from '@/styles/components/layout/global-message-input.module.css';
 
-// Routes where the message input should be shown
-const VISIBLE_ROUTES = [
-  '/search-results'
-];
+const VISIBLE_ROUTES = ['/search-results'];
 
 export default function GlobalMessageInput() {
   const location = useLocation();
@@ -17,17 +15,12 @@ export default function GlobalMessageInput() {
   const [message, setMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { location: userLocation } = useGeolocation();
-  
-  // Show message input only on specified routes
+
   const shouldShow = VISIBLE_ROUTES.includes(location.pathname);
 
-  // Show message box after page content has rendered
   useEffect(() => {
     if (shouldShow) {
-      const timer = setTimeout(() => {
-        setShowMessageBox(true);
-      }, 800); // Wait for page to fully render
-      
+      const timer = setTimeout(() => setShowMessageBox(true), 500);
       return () => clearTimeout(timer);
     } else {
       setShowMessageBox(false);
@@ -37,19 +30,30 @@ export default function GlobalMessageInput() {
   const handleSendMessage = async () => {
     if (!message.trim() || isLoading) return;
 
+    // Non-authenticated users get redirected to login prompt in the chat
+    const user = authService.getCurrentUser();
+    const isGuest = !user || user.isGuest;
+    if (isGuest) {
+      navigate('/search-results', {
+        state: {
+          loginRequired: true,
+          query: message.trim(),
+        }
+      });
+      setMessage('');
+      return;
+    }
+
     try {
       setIsLoading(true);
-      
-      // Get user location for contextual search
-      let latitude = 37.5665; // Default Seoul coordinates
+
+      let latitude = 37.5665;
       let longitude = 126.9780;
-      
       if (userLocation) {
         latitude = userLocation.latitude;
         longitude = userLocation.longitude;
       }
 
-      // Perform contextual search
       const response = await contextualRecommendationService.getContextualRecommendations(
         message.trim(),
         latitude,
@@ -58,7 +62,6 @@ export default function GlobalMessageInput() {
       );
 
       if (response.success) {
-        // Navigate to search results with the query and results
         navigate('/search-results', {
           state: {
             query: message.trim(),
@@ -68,8 +71,6 @@ export default function GlobalMessageInput() {
           }
         });
       } else {
-        console.error('Search failed:', response.message);
-        // Still navigate to show empty results with the query
         navigate('/search-results', {
           state: {
             query: message.trim(),
@@ -82,8 +83,6 @@ export default function GlobalMessageInput() {
       setMessage('');
     } catch (error) {
       console.error('Error performing contextual search:', error);
-      
-      // Navigate to search results even on error to show the user's query
       navigate('/search-results', {
         state: {
           query: message.trim(),
@@ -91,7 +90,6 @@ export default function GlobalMessageInput() {
           error: '검색 중 오류가 발생했습니다. 다시 시도해주세요.'
         }
       });
-      
       setMessage('');
     } finally {
       setIsLoading(false);
@@ -99,64 +97,53 @@ export default function GlobalMessageInput() {
   };
 
   const handleKeyPress = (e) => {
-    if (e.key === 'Enter') {
-      handleSendMessage();
-    }
+    if (e.key === 'Enter') handleSendMessage();
   };
 
-  if (!shouldShow) {
-    return null;
-  }
+  if (!shouldShow) return null;
 
   return (
-    <AnimatePresence>
-      {showMessageBox && (
-        <motion.div
-          className={styles.messageContainer}
-          initial={{
-            width: 26,
-            height: 26,
-            borderRadius: '50%',
-            x: 187, // Center the initial circle relative to final input width
-          }}
-          animate={{
-            width: 400,
-            height: 41,
-            borderRadius: '20px',
-            x: 0,
-          }}
-          transition={{
-            duration: 0.6,
-            ease: [0.25, 0.46, 0.45, 0.94], // easeOutCubic
-          }}
-        >
+    /* Outer div handles fixed positioning — width controlled purely by CSS left/right */
+    <div className={styles.messageOuter}>
+      <AnimatePresence>
+        {showMessageBox && (
           <motion.div
-            className={styles.messageInputWrapper}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.3, duration: 0.3 }}
+            className={styles.messageContainer}
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 16 }}
+            transition={{ duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}
           >
-            <input
-              type="text"
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              onKeyPress={handleKeyPress}
-              placeholder="어떤 장소를 찾고 계신가요?"
-              className={styles.messageInput}
-            />
-            <button 
-              className={styles.sendButton}
-              onClick={handleSendMessage}
-              disabled={!message.trim() || isLoading}
-            >
-              <svg width="19" height="18" viewBox="0 0 19 18" fill="none">
-                <path d="M6.07531 5.01655L12.289 2.94533C15.0774 2.01584 16.5924 3.53815 15.6703 6.32661L13.599 12.5403C12.2085 16.7193 9.925 16.7193 8.53443 12.5403L7.91965 10.6959L6.07531 10.0812C1.89628 8.69058 1.89628 6.41444 6.07531 5.01655Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                <path d="M8.05872 10.3816L10.6788 7.75415" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            </button>
+            <div className={styles.messageInputWrapper}>
+              <input
+                type="text"
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                onKeyPress={handleKeyPress}
+                placeholder="어떤 장소를 찾고 계신가요?"
+                className={styles.messageInput}
+              />
+              <button
+                className={`${styles.sendButton} ${message.trim() && !isLoading ? styles.sendButtonActive : ''}`}
+                onClick={handleSendMessage}
+                disabled={!message.trim() || isLoading}
+              >
+                {isLoading ? (
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                    <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeDasharray="40 20">
+                      <animateTransform attributeName="transform" type="rotate" from="0 12 12" to="360 12 12" dur="0.8s" repeatCount="indefinite"/>
+                    </circle>
+                  </svg>
+                ) : (
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                    <path d="M12 19V5M5 12l7-7 7 7" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                )}
+              </button>
+            </div>
           </motion.div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+        )}
+      </AnimatePresence>
+    </div>
   );
 }
